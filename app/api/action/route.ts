@@ -26,6 +26,10 @@ export async function POST(request: NextRequest) {
 
   const data = await response.json();
 
+  if (response.status === 401) {
+    return NextResponse.json(data, { status: 401 });
+  }
+
   let authToken: string | undefined;
   if (data.auth && data.auth.token) {
     authToken = data.auth.token;

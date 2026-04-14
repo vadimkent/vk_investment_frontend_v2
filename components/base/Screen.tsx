@@ -22,7 +22,7 @@ export function ScreenComponent({ component }: { component: SDUIComponent }) {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen flex flex-col">
       <div className="p-4">
         <div className="flex items-center gap-3">
           {hasBackAction && (
@@ -44,9 +44,11 @@ export function ScreenComponent({ component }: { component: SDUIComponent }) {
           </div>
         </div>
       </div>
-      {component.children?.map((child) => (
-        <ComponentRenderer key={child.id} component={child} />
-      ))}
+      <div className="flex-1 flex flex-col">
+        {component.children?.map((child) => (
+          <ComponentRenderer key={child.id} component={child} />
+        ))}
+      </div>
     </div>
   );
 }

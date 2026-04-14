@@ -15,7 +15,12 @@ export function ButtonComponent({ component }: { component: SDUIComponent }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ endpoint, method, data }),
     });
-    return response.json();
+    const body = await response.json();
+    if (response.status === 401 && body.redirect) {
+      router.push(body.redirect);
+      return { action: "none" };
+    }
+    return body;
   }
   const label = component.props.label as string | undefined;
   const imageSrc = component.props.image_src as string | undefined;

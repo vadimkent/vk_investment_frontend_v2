@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import type { SDUIComponent } from "@/lib/types/sdui";
 
 const MIDDLEEND_URL = process.env.MIDDLEEND_URL ?? "http://localhost:8081";
@@ -26,6 +27,11 @@ async function fetchSDUI(
     cache: "no-store",
     headers: await serverHeaders(platform),
   });
+  if (response.status === 401) {
+    const body = await response.json().catch(() => null);
+    const loginPath = body?.redirect ?? "/login";
+    redirect(loginPath);
+  }
   if (!response.ok) {
     throw new Error(`Failed to fetch ${path}: ${response.status}`);
   }
