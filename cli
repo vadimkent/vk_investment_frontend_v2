@@ -16,8 +16,13 @@ case "$COMMAND" in
     pnpm vitest run --reporter=json "$@" 2>&1
     ;;
   lint)
-    OUTPUT=$(pnpm eslint . 2>&1 && pnpm prettier --check . 2>&1) && STATUS="success" || STATUS="failure"
-    echo '{"command":"lint","status":"'"$STATUS"'","summary":"'"$(echo "$OUTPUT" | head -1)"'","timestamp":"'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'"}'
+    if OUTPUT=$(pnpm eslint . 2>&1 && pnpm prettier --check . 2>&1); then
+      echo '{"command":"lint","status":"success","summary":"","timestamp":"'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'"}'
+    else
+      printf '%s\n' "$OUTPUT"
+      echo '{"command":"lint","status":"failure","summary":"'"$(echo "$OUTPUT" | head -1)"'","timestamp":"'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'"}'
+      exit 1
+    fi
     ;;
   info)
     echo '{"command":"info","status":"success","summary":"vk-investment-frontend-v2","details":{"name":"vk-investment-frontend-v2","stack":"typescript","framework":"nextjs"},"timestamp":"'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'"}'

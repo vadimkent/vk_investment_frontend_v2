@@ -1,16 +1,8 @@
-import type { SDUIComponent } from "@/lib/types/sdui";
-import { ComponentRenderer } from "@/components/renderer";
+"use client";
 
-export function ContentSlotComponent({
-  component,
-}: {
-  component: SDUIComponent;
-}) {
-  return (
-    <div className="flex-1">
-      {component.children?.map((child) => (
-        <ComponentRenderer key={child.id} component={child} />
-      ))}
-    </div>
-  );
+import { useShellChildren } from "@/components/shell-children-context";
+
+export function ContentSlotComponent() {
+  const slot = useShellChildren();
+  return <div className="flex-1">{slot}</div>;
 }

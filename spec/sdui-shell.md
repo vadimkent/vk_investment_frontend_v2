@@ -6,15 +6,19 @@ The shell is the persistent outer frame of the application -- navigation, header
 
 ## 1. How the Shell Works
 
+The shell lives in a Next.js route group layout so it is fetched once and persists across client-side navigations. Screens rendered inside the group become the layout's `children` and are surfaced in the `content_slot` via React context.
+
 ```
-page.tsx (server component)
-  ├── fetchShell()    → GET /shell  → shell component tree
-  ├── fetchScreen()   → GET /screens/home  → screen component tree
-  └── injectScreen(shell, screen)  → merged tree
-        └── <ComponentRenderer component={page} />
+app/
+├── (shell)/
+│   ├── layout.tsx   → fetchShell()  → renders shell tree, wraps children in ShellChildrenProvider
+│   ├── page.tsx     → fetchScreen("/screens/home")  → renders the screen (becomes layout children)
+│   └── <other routes with shell>
+├── screens/[...path]/page.tsx  → standalone screens without shell (login, register)
+└── layout.tsx       → root html/body
 ```
 
-The shell tree is a top-level component (typically `type: "screen"` or a container) whose children include layout slots and a `content_slot`. The screen is injected into `content_slot` before rendering.
+The shell tree is a top-level container whose children include layout slots and a `content_slot`. `ContentSlotComponent` reads the current screen from context and renders it in place. Layouts in Next.js App Router do not re-render on client-side navigation between pages under the same layout, so the shell fetch happens only on the first SSR of the group.
 
 ---
 
@@ -35,25 +39,34 @@ export async function fetchShell(platform?: string): Promise<SDUIComponent> {
 
 ---
 
-## 3. Screen Injection (`injectScreen`)
+## 3. Screen Injection via Context
 
-Defined in `app/page.tsx.tmpl`:
+`ContentSlotComponent` is a client component that consumes the React node provided by `ShellChildrenProvider`:
 
-```typescript
-function injectScreen(shell: SDUIComponent, screen: SDUIComponent): SDUIComponent {
-  return {
-    ...shell,
-    children: shell.children?.map((child) => {
-      if (child.type === "content_slot") {
-        return { ...child, children: [screen] };
-      }
-      return child;
-    }),
-  };
+```tsx
+// components/base/ContentSlot.tsx
+"use client";
+import { useShellChildren } from "@/components/shell-children-context";
+
+export function ContentSlotComponent() {
+  const slot = useShellChildren();
+  return <div className="flex-1">{slot}</div>;
 }
 ```
 
-The function shallow-clones the shell and replaces the `content_slot`'s children with the screen tree. This produces a single unified tree that `ComponentRenderer` renders top-down.
+The layout wraps its children with the provider:
+
+```tsx
+// app/(shell)/layout.tsx
+const shell = await fetchShell();
+return (
+  <ShellChildrenProvider value={children}>
+    <ComponentRenderer component={shell} />
+  </ShellChildrenProvider>
+);
+```
+
+This avoids mutating the SDUI tree. The shell is rendered as-is, and whenever `ComponentRenderer` reaches a `content_slot`, the screen's React output is slotted in through context.
 
 ---
 
@@ -61,12 +74,12 @@ The function shallow-clones the shell and replaces the `content_slot`'s children
 
 The middleend returns a shell with navigation components based on the platform and app configuration. The frontend does not switch on a `nav_type` value directly -- it simply renders the components present in the shell tree. Common patterns:
 
-| Pattern | Shell Children | Visual Result |
-|---------|---------------|---------------|
-| Sidebar | `nav_header` + `nav_main` + `nav_footer` + `content_slot` | Left sidebar with header, scrollable nav items, footer. Content fills remaining space. |
-| Bottom bar | `content_slot` + `bottombar` | Content area with fixed bottom tab bar. |
-| Minimal | `content_slot` only | No navigation chrome. Used for login, onboarding. |
-| Sidebar + Bottom | All of the above | Sidebar for desktop, bottom bar for mobile (middleend decides per platform). |
+| Pattern          | Shell Children                                            | Visual Result                                                                          |
+| ---------------- | --------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| Sidebar          | `nav_header` + `nav_main` + `nav_footer` + `content_slot` | Left sidebar with header, scrollable nav items, footer. Content fills remaining space. |
+| Bottom bar       | `content_slot` + `bottombar`                              | Content area with fixed bottom tab bar.                                                |
+| Minimal          | `content_slot` only                                       | No navigation chrome. Used for login, onboarding.                                      |
+| Sidebar + Bottom | All of the above                                          | Sidebar for desktop, bottom bar for mobile (middleend decides per platform).           |
 
 The middleend controls which navigation components appear. The frontend renders whatever it receives.
 
@@ -76,14 +89,14 @@ The middleend controls which navigation components appear. The frontend renders 
 
 Shell slot components and their roles:
 
-| Slot Component | React Component | Purpose |
-|----------------|-----------------|---------|
-| `nav_header` | `NavHeaderComponent` | Brand/logo area at top of sidebar. Renders children (typically `image` + `text`). Bordered bottom. |
-| `nav_main` | `NavMainComponent` | Scrollable navigation list. Contains `nav_item` children. Renders as `<nav>`. |
-| `nav_footer` | `NavFooterComponent` | Bottom of sidebar. User info, settings, logout. Bordered top. |
-| `nav_item` | `NavItemComponent` | Individual nav link. Icon + label + optional badge. Handles navigate action on click. |
-| `bottombar` | `BottomBarComponent` | Fixed bottom tab bar. Contains `nav_item` children distributed with `justify-around`. |
-| `content_slot` | `ContentSlotComponent` | Injection point for screen content. Renders as `div.flex-1`. |
+| Slot Component | React Component        | Purpose                                                                                            |
+| -------------- | ---------------------- | -------------------------------------------------------------------------------------------------- |
+| `nav_header`   | `NavHeaderComponent`   | Brand/logo area at top of sidebar. Renders children (typically `image` + `text`). Bordered bottom. |
+| `nav_main`     | `NavMainComponent`     | Scrollable navigation list. Contains `nav_item` children. Renders as `<nav>`.                      |
+| `nav_footer`   | `NavFooterComponent`   | Bottom of sidebar. User info, settings, logout. Bordered top.                                      |
+| `nav_item`     | `NavItemComponent`     | Individual nav link. Icon + label + optional badge. Handles navigate action on click.              |
+| `bottombar`    | `BottomBarComponent`   | Fixed bottom tab bar. Contains `nav_item` children distributed with `justify-around`.              |
+| `content_slot` | `ContentSlotComponent` | Injection point for screen content. Renders as `div.flex-1`.                                       |
 
 ---
 
@@ -92,7 +105,9 @@ Shell slot components and their roles:
 The `X-Platform` header is set in `lib/middleend.ts.tmpl` via the `serverHeaders` function:
 
 ```typescript
-async function serverHeaders(platform?: string): Promise<Record<string, string>> {
+async function serverHeaders(
+  platform?: string,
+): Promise<Record<string, string>> {
   const h: Record<string, string> = {
     "X-Platform": platform ?? "web",
     "Content-Type": "application/json",
@@ -133,7 +148,11 @@ A typical sidebar shell returned by `GET /shell`:
               "id": "nav-hdr",
               "props": {},
               "children": [
-                { "type": "text", "id": "brand", "props": { "content": "My App", "weight": "bold" } }
+                {
+                  "type": "text",
+                  "id": "brand",
+                  "props": { "content": "My App", "weight": "bold" }
+                }
               ]
             },
             {
@@ -141,8 +160,26 @@ A typical sidebar shell returned by `GET /shell`:
               "id": "nav-body",
               "props": {},
               "children": [
-                { "type": "nav_item", "id": "nav-home", "props": { "label": "Home", "icon": "H" }, "actions": [{ "trigger": "click", "type": "navigate", "url": "/" }] },
-                { "type": "nav_item", "id": "nav-settings", "props": { "label": "Settings", "icon": "S" }, "actions": [{ "trigger": "click", "type": "navigate", "url": "/settings" }] }
+                {
+                  "type": "nav_item",
+                  "id": "nav-home",
+                  "props": { "label": "Home", "icon": "H" },
+                  "actions": [
+                    { "trigger": "click", "type": "navigate", "url": "/" }
+                  ]
+                },
+                {
+                  "type": "nav_item",
+                  "id": "nav-settings",
+                  "props": { "label": "Settings", "icon": "S" },
+                  "actions": [
+                    {
+                      "trigger": "click",
+                      "type": "navigate",
+                      "url": "/settings"
+                    }
+                  ]
+                }
               ]
             },
             {
@@ -150,7 +187,16 @@ A typical sidebar shell returned by `GET /shell`:
               "id": "nav-ftr",
               "props": {},
               "children": [
-                { "type": "button", "id": "logout-btn", "props": { "label": "Logout", "variant": "secondary", "style": "ghost" }, "actions": [{ "trigger": "click", "type": "logout" }] }
+                {
+                  "type": "button",
+                  "id": "logout-btn",
+                  "props": {
+                    "label": "Logout",
+                    "variant": "secondary",
+                    "style": "ghost"
+                  },
+                  "actions": [{ "trigger": "click", "type": "logout" }]
+                }
               ]
             }
           ]

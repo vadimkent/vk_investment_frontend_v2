@@ -1,4 +1,6 @@
 .env
+.env*.local
+SCAFFOLDING_GAPS.md
 node_modules/
 .next/
 out/

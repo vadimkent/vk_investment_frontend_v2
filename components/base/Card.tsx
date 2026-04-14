@@ -1,6 +1,6 @@
 import type { SDUIComponent } from "@/lib/types/sdui";
 import { ComponentRenderer } from "@/components/renderer";
-import { containerProps } from "@/lib/sdui-utils";
+import { containerProps, radiusMap } from "@/lib/sdui-utils";
 
 export function CardComponent({ component }: { component: SDUIComponent }) {
   const shared = containerProps(component);
@@ -22,8 +22,8 @@ export function CardComponent({ component }: { component: SDUIComponent }) {
     .join(" ");
 
   const cardStyle: Record<string, string> = {};
-  if (borderRadius) {
-    cardStyle.borderRadius = borderRadius;
+  if (borderRadius && radiusMap[borderRadius]) {
+    cardStyle.borderRadius = radiusMap[borderRadius];
   }
   const mergedStyle = Object.assign({}, shared.style, cardStyle);
   const hasStyle = Object.keys(mergedStyle).length > 0;

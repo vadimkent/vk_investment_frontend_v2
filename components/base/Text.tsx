@@ -22,6 +22,8 @@ const colorStyles: Record<string, string> = {
   secondary: "text-gray-600",
   muted: "text-gray-400",
   error: "text-red-600",
+  positive: "text-green-600",
+  negative: "text-red-600",
 };
 
 const decorationStyles: Record<string, string> = {

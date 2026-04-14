@@ -1,4 +1,5 @@
 import type { SDUIComponent } from "@/lib/types/sdui";
+import { objectFitSet, radiusMap } from "@/lib/sdui-utils";
 
 export function ImageComponent({ component }: { component: SDUIComponent }) {
   const width = component.props.width as string | undefined;
@@ -9,9 +10,9 @@ export function ImageComponent({ component }: { component: SDUIComponent }) {
   const imgStyle: Record<string, string> = {};
   if (width) imgStyle.width = width;
   if (height) imgStyle.height = height;
-  if (fit) imgStyle.objectFit = fit;
-  if (borderRadius) {
-    imgStyle.borderRadius = borderRadius === "full" ? "9999px" : borderRadius;
+  if (fit && objectFitSet.has(fit)) imgStyle.objectFit = fit;
+  if (borderRadius && radiusMap[borderRadius]) {
+    imgStyle.borderRadius = radiusMap[borderRadius];
   }
 
   const hasStyle = Object.keys(imgStyle).length > 0;

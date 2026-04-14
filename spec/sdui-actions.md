@@ -10,12 +10,12 @@ Defined in `lib/types/sdui.ts`:
 
 ```typescript
 interface SDUIAction {
-  trigger: string;    // "click", "submit", etc.
-  type: string;       // Action type (see table below)
-  url?: string;       // Target URL for navigation
-  target?: string;    // "blank" for new tab
-  endpoint?: string;  // Middleend endpoint for server actions
-  method?: string;    // HTTP method (default "POST")
+  trigger: string; // "click", "submit", etc.
+  type: string; // Action type (see table below)
+  url?: string; // Target URL for navigation
+  target?: string; // "blank" for new tab
+  endpoint?: string; // Middleend endpoint for server actions
+  method?: string; // HTTP method (default "POST")
   target_id?: string; // Form container ID for data collection
 }
 ```
@@ -28,16 +28,16 @@ Actions are in the `actions` array on any `SDUIComponent`. Button uses the first
 
 All action types handled by `ButtonComponent`:
 
-| Type | Behavior | Required Fields |
-|------|----------|-----------------|
-| `navigate` | Client-side navigation via `router.push(url)`. Opens new tab if `target === "blank"`. | `url` |
-| `navigate_back` | Browser back via `router.back()`. | (none) |
-| `submit` | Collects form data from `target_id` container, sends to middleend via `/api/action` proxy, processes response. | `endpoint`, optionally `target_id`, `method` |
-| `reload` | Sends GET to middleend endpoint via `/api/action`, processes response. | `endpoint` |
-| `refresh` | Triggers `router.refresh()` to re-render server components. | (none) |
-| `open_url` | Opens URL in a new tab via `window.open`. | `url` |
-| `dismiss` | No-op in current implementation. Reserved for modal dismiss. | (none) |
-| `logout` | POSTs to `/api/auth/logout`, then navigates to `/login`. | (none) |
+| Type            | Behavior                                                                                                       | Required Fields                              |
+| --------------- | -------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| `navigate`      | Client-side navigation via `router.push(url)`. Opens new tab if `target === "blank"`.                          | `url`                                        |
+| `navigate_back` | Browser back via `router.back()`.                                                                              | (none)                                       |
+| `submit`        | Collects form data from `target_id` container, sends to middleend via `/api/action` proxy, processes response. | `endpoint`, optionally `target_id`, `method` |
+| `reload`        | Sends GET to middleend endpoint via `/api/action`, processes response.                                         | `endpoint`                                   |
+| `refresh`       | Triggers `router.refresh()` to re-render server components.                                                    | (none)                                       |
+| `open_url`      | Opens URL in a new tab via `window.open`.                                                                      | `url`                                        |
+| `dismiss`       | No-op in current implementation. Reserved for modal dismiss.                                                   | (none)                                       |
+| `logout`        | POSTs to `/api/auth/logout`, then navigates to `/login`.                                                       | (none)                                       |
 
 ---
 
@@ -50,6 +50,7 @@ const container = document.querySelector(`[data-sdui-id="${targetId}"]`);
 ```
 
 It collects values from:
+
 - `input[name]` elements (checkbox values as `"true"`/`"false"`, others as `.value`)
 - `select[name]` elements
 - `textarea[name]` elements
@@ -99,12 +100,12 @@ interface SDUIActionResponse {
 
 `ButtonComponent.handleActionResponse` processes the response:
 
-| Response Action | Frontend Behavior |
-|-----------------|-------------------|
-| `navigate` | `router.push(target_id)` -- client-side navigation to the given path. |
-| `refresh` | `router.refresh()` -- re-runs server components to fetch fresh data. |
-| `replace` | Not yet implemented in Button. Reserved for partial tree replacement. |
-| `none` | No navigation. Used when the action has side effects only (e.g., sending email). |
+| Response Action | Frontend Behavior                                                                |
+| --------------- | -------------------------------------------------------------------------------- |
+| `navigate`      | `router.push(target_id)` -- client-side navigation to the given path.            |
+| `refresh`       | `router.refresh()` -- re-runs server components to fetch fresh data.             |
+| `replace`       | Not yet implemented in Button. Reserved for partial tree replacement.            |
+| `none`          | No navigation. Used when the action has side effects only (e.g., sending email). |
 
 ---
 
@@ -144,12 +145,12 @@ The token **never reaches client-side JavaScript**. All subsequent requests from
 
 ## 7. Other Components with Actions
 
-| Component | Action Types Handled | Behavior |
-|-----------|---------------------|----------|
-| `ScreenComponent` | `navigate_back`, `navigate` | Back button in header. Falls back to `router.back()`. |
-| `ListItemComponent` | `navigate` | Click row to navigate. Supports `target: "blank"`. |
-| `NavItemComponent` | `navigate` | Sidebar/bottom bar navigation links. |
-| `ErrorComponent` | `reload`, `refresh` | Retry button sends reload request or refreshes page. |
+| Component           | Action Types Handled        | Behavior                                              |
+| ------------------- | --------------------------- | ----------------------------------------------------- |
+| `ScreenComponent`   | `navigate_back`, `navigate` | Back button in header. Falls back to `router.back()`. |
+| `ListItemComponent` | `navigate`                  | Click row to navigate. Supports `target: "blank"`.    |
+| `NavItemComponent`  | `navigate`                  | Sidebar/bottom bar navigation links.                  |
+| `ErrorComponent`    | `reload`, `refresh`         | Retry button sends reload request or refreshes page.  |
 
 ---
 

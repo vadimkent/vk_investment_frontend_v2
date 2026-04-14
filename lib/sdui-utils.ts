@@ -31,6 +31,32 @@ const positionMap: Record<string, string> = {
   absolute: "absolute",
 };
 
+export const gapMap: Record<string, string> = {
+  none: "0",
+  xs: "4px",
+  sm: "8px",
+  md: "16px",
+  lg: "24px",
+  xl: "32px",
+  "2xl": "48px",
+};
+
+export const radiusMap: Record<string, string> = {
+  none: "0",
+  sm: "4px",
+  md: "8px",
+  lg: "16px",
+  full: "9999px",
+};
+
+export const objectFitSet = new Set([
+  "cover",
+  "contain",
+  "fill",
+  "none",
+  "scale-down",
+]);
+
 /**
  * Extract container-level shared props (alignment, gap) as Tailwind classes and inline styles.
  * Use on components that render children.
@@ -53,8 +79,8 @@ export function containerProps(component: SDUIComponent): {
   }
 
   const gap = component.props.gap as string | undefined;
-  if (gap) {
-    style.gap = gap;
+  if (gap && gapMap[gap]) {
+    style.gap = gapMap[gap];
   }
 
   return { className: classes.join(" "), style };

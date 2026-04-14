@@ -48,66 +48,76 @@ The `TextComponent` is an exception -- it calls `selfProps` directly and applies
 
 ## 2. Container Props
 
-| Prop | Type | Description |
-|------|------|-------------|
-| `align_items` | string | Cross-axis alignment of children |
-| `justify_items` | string | Main-axis alignment of children |
-| `gap` | string | CSS gap value (e.g. `"8px"`, `"1rem"`) |
+| Prop            | Type   | Description                       |
+| --------------- | ------ | --------------------------------- |
+| `align_items`   | string | Cross-axis alignment of children  |
+| `justify_items` | string | Main-axis alignment of children   |
+| `gap`           | string | Spacing token (see mapping below) |
 
 ### `align_items` Mapping
 
-| Value | Tailwind Class |
-|-------|---------------|
-| `left` | `items-start` |
-| `center` | `items-center` |
-| `right` | `items-end` |
+| Value     | Tailwind Class  |
+| --------- | --------------- |
+| `left`    | `items-start`   |
+| `center`  | `items-center`  |
+| `right`   | `items-end`     |
 | `stretch` | `items-stretch` |
 
 ### `justify_items` Mapping
 
-| Value | Tailwind Class |
-|-------|---------------|
-| `top` | `justify-start` |
-| `center` | `justify-center` |
-| `bottom` | `justify-end` |
+| Value     | Tailwind Class    |
+| --------- | ----------------- |
+| `top`     | `justify-start`   |
+| `center`  | `justify-center`  |
+| `bottom`  | `justify-end`     |
 | `stretch` | `justify-stretch` |
 
-### `gap`
+### `gap` Mapping
 
-Applied as an inline style (`style.gap = value`), not a Tailwind class. Accepts any valid CSS value.
+Token-based. Unknown or raw CSS values (e.g. `"12px"`) are ignored silently.
+
+| Value  | CSS Value |
+| ------ | --------- |
+| `none` | `0`       |
+| `xs`   | `4px`     |
+| `sm`   | `8px`     |
+| `md`   | `16px`    |
+| `lg`   | `24px`    |
+| `xl`   | `32px`    |
+| `2xl`  | `48px`    |
 
 ---
 
 ## 3. Self Props
 
-| Prop | Type | Description |
-|------|------|-------------|
-| `align_self` | string | Cross-axis self-alignment within parent |
-| `justify_self` | string | Main-axis self-alignment within parent |
-| `position` | string | CSS positioning mode |
+| Prop           | Type   | Description                             |
+| -------------- | ------ | --------------------------------------- |
+| `align_self`   | string | Cross-axis self-alignment within parent |
+| `justify_self` | string | Main-axis self-alignment within parent  |
+| `position`     | string | CSS positioning mode                    |
 
 ### `align_self` Mapping
 
-| Value | Tailwind Class |
-|-------|---------------|
-| `left` | `self-start` |
-| `center` | `self-center` |
-| `right` | `self-end` |
+| Value    | Tailwind Class |
+| -------- | -------------- |
+| `left`   | `self-start`   |
+| `center` | `self-center`  |
+| `right`  | `self-end`     |
 
 ### `justify_self` Mapping
 
-| Value | Tailwind Class |
-|-------|---------------|
-| `top` | `justify-self-start` |
+| Value    | Tailwind Class        |
+| -------- | --------------------- |
+| `top`    | `justify-self-start`  |
 | `center` | `justify-self-center` |
-| `bottom` | `justify-self-end` |
+| `bottom` | `justify-self-end`    |
 
 ### `position` Mapping
 
-| Value | Tailwind Class |
-|-------|---------------|
-| `fixed` | `fixed` |
-| `absolute` | `absolute` |
+| Value      | Tailwind Class |
+| ---------- | -------------- |
+| `fixed`    | `fixed`        |
+| `absolute` | `absolute`     |
 
 ---
 
