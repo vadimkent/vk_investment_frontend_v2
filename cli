@@ -1,0 +1,33 @@
+#!/bin/sh
+set -e
+
+COMMAND="$1"
+shift 2>/dev/null || true
+
+case "$COMMAND" in
+  run)
+    pnpm dev "$@"
+    ;;
+  build)
+    pnpm build "$@"
+    echo '{"command":"build","status":"success","summary":"Next.js build complete","timestamp":"'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'"}'
+    ;;
+  test)
+    pnpm vitest run --reporter=json "$@" 2>&1
+    ;;
+  lint)
+    OUTPUT=$(pnpm eslint . 2>&1 && pnpm prettier --check . 2>&1) && STATUS="success" || STATUS="failure"
+    echo '{"command":"lint","status":"'"$STATUS"'","summary":"'"$(echo "$OUTPUT" | head -1)"'","timestamp":"'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'"}'
+    ;;
+  info)
+    echo '{"command":"info","status":"success","summary":"vk-investment-frontend-v2","details":{"name":"vk-investment-frontend-v2","stack":"typescript","framework":"nextjs"},"timestamp":"'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'"}'
+    ;;
+  clean)
+    rm -rf .next/ node_modules/
+    echo '{"command":"clean","status":"success","summary":"Build artifacts removed","timestamp":"'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'"}'
+    ;;
+  *)
+    echo '{"command":"unknown","status":"error","summary":"Usage: cli [run|build|test|lint|info|clean]","timestamp":"'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'"}'
+    exit 2
+    ;;
+esac
