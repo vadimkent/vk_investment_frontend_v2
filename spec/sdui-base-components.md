@@ -221,15 +221,16 @@ Empty space of a given height.
 
 Primary interactive element. Handles all action types.
 
-| Prop      | Type    | Required | Description                                                                    |
-| --------- | ------- | -------- | ------------------------------------------------------------------------------ |
-| label     | string  | no       | Button text                                                                    |
-| image_src | string  | no       | Icon image URL                                                                 |
-| variant   | string  | no       | `primary` (default), `secondary`                                               |
-| style     | string  | no       | `solid` (default), `ghost`, `outline`                                          |
-| size      | string  | no       | `xs`, `sm`, `md` (default), `lg`. Controls label text size and button padding. |
-| disabled  | boolean | no       | Disable button                                                                 |
-| loading   | boolean | no       | Show spinner and "Loading..." text                                             |
+| Prop      | Type    | Required | Description                                                                                                                                           |
+| --------- | ------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| label     | string  | no       | Button text                                                                                                                                           |
+| icon      | string  | no       | Icon token (e.g. `refresh`, `plus`, `delete`). Looked up in `lib/icon-registry.ts` and rendered as an SVG component. Takes priority over `image_src`. |
+| image_src | string  | no       | Fallback image URL. Only used when `icon` is absent.                                                                                                  |
+| variant   | string  | no       | `primary` (default), `secondary`                                                                                                                      |
+| style     | string  | no       | `solid` (default), `ghost`, `outline`                                                                                                                 |
+| size      | string  | no       | `xs`, `sm`, `md` (default), `lg`. Controls label text size and button padding.                                                                        |
+| disabled  | boolean | no       | Disable button                                                                                                                                        |
+| loading   | boolean | no       | Show spinner and "Loading..." text                                                                                                                    |
 
 - **React**: `ButtonComponent` -- `components/base/Button.tsx`
 - **"use client"**: Yes

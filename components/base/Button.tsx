@@ -7,6 +7,7 @@ import {
   useActionDispatcher,
 } from "@/components/action-dispatcher";
 import { useTheme } from "@/components/theme-provider";
+import { getIcon } from "@/lib/icon-registry";
 
 export function ButtonComponent({ component }: { component: SDUIComponent }) {
   const router = useRouter();
@@ -15,6 +16,7 @@ export function ButtonComponent({ component }: { component: SDUIComponent }) {
 
   const label = component.props.label as string | undefined;
   const imageSrc = component.props.image_src as string | undefined;
+  const iconName = component.props.icon as string | undefined;
   const btnVariant = (component.props.variant as string) ?? "primary";
   const btnStyle = (component.props.style as string) ?? "solid";
   const disabled = component.props.disabled === true;
@@ -104,7 +106,13 @@ export function ButtonComponent({ component }: { component: SDUIComponent }) {
       {loading && (
         <span className="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full" />
       )}
-      {imageSrc && !loading && (
+      {!loading &&
+        iconName &&
+        (() => {
+          const Icon = getIcon(iconName);
+          return Icon ? <Icon className="w-4 h-4" /> : null;
+        })()}
+      {!loading && !iconName && imageSrc && (
         <img src={imageSrc} alt="" className="w-5 h-5" />
       )}
       {label && <span>{loading ? "Loading..." : label}</span>}
