@@ -3,6 +3,7 @@ import "./globals.css";
 import { OverrideMapProvider } from "@/components/override-map-context";
 import { ThemeProvider } from "@/components/theme-provider";
 import { FullLoadingOverlay } from "@/components/full-loading-overlay";
+import { SensitiveProvider } from "@/components/sensitive-provider";
 
 export const metadata: Metadata = {
   title: "vk-investment-frontend-v2",
@@ -30,10 +31,12 @@ export default function RootLayout({
       </head>
       <body suppressHydrationWarning>
         <ThemeProvider>
-          <OverrideMapProvider>
-            {children}
-            <FullLoadingOverlay />
-          </OverrideMapProvider>
+          <SensitiveProvider>
+            <OverrideMapProvider>
+              {children}
+              <FullLoadingOverlay />
+            </OverrideMapProvider>
+          </SensitiveProvider>
         </ThemeProvider>
       </body>
     </html>

@@ -49,5 +49,6 @@ const iconRegistry: Record<string, LucideIcon> = {
 };
 
 export function getIcon(name: string): LucideIcon | null {
-  return iconRegistry[name] ?? null;
+  const normalized = name.replace(/-/g, "_");
+  return iconRegistry[normalized] ?? iconRegistry[name] ?? null;
 }

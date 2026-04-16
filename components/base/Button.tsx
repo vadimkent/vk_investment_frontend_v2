@@ -7,12 +7,14 @@ import {
   useActionDispatcher,
 } from "@/components/action-dispatcher";
 import { useTheme } from "@/components/theme-provider";
+import { useSensitive } from "@/components/sensitive-provider";
 import { getIcon } from "@/lib/icon-registry";
 
 export function ButtonComponent({ component }: { component: SDUIComponent }) {
   const router = useRouter();
   const dispatch = useActionDispatcher();
   const { toggle } = useTheme();
+  const { toggleSensitive } = useSensitive();
 
   const label = component.props.label as string | undefined;
   const imageSrc = component.props.image_src as string | undefined;
@@ -74,6 +76,9 @@ export function ButtonComponent({ component }: { component: SDUIComponent }) {
         break;
       case "toggle_theme":
         toggle();
+        break;
+      case "toggle_sensitive":
+        toggleSensitive();
         break;
     }
   }

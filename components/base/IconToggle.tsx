@@ -3,7 +3,19 @@
 import { useState } from "react";
 import type { SDUIComponent } from "@/lib/types/sdui";
 import { useActionDispatcher } from "@/components/action-dispatcher";
+import { useTheme } from "@/components/theme-provider";
+import { useSensitive } from "@/components/sensitive-provider";
 import { getIcon } from "@/lib/icon-registry";
+
+const CLIENT_ACTIONS: Record<string, (ctx: ClientActionCtx) => void> = {
+  toggle_theme: (ctx) => ctx.toggleTheme(),
+  toggle_sensitive: (ctx) => ctx.toggleSensitive(),
+};
+
+type ClientActionCtx = {
+  toggleTheme: () => void;
+  toggleSensitive: () => void;
+};
 
 export function IconToggleComponent({
   component,
@@ -20,6 +32,8 @@ export function IconToggleComponent({
 
   const [active, setActive] = useState(initialActive);
   const dispatch = useActionDispatcher();
+  const { toggle: toggleTheme } = useTheme();
+  const { toggleSensitive } = useSensitive();
 
   const icon = active ? iconActive : iconInactive;
   const tooltip = active ? tooltipActive : tooltipInactive;
@@ -28,7 +42,16 @@ export function IconToggleComponent({
   async function handleClick() {
     const nextActive = !active;
     const action = nextActive ? component.actions?.[0] : component.actions?.[1];
-    if (!action?.endpoint) return;
+    if (!action) return;
+
+    const clientHandler = CLIENT_ACTIONS[action.type];
+    if (clientHandler) {
+      setActive(nextActive);
+      clientHandler({ toggleTheme, toggleSensitive });
+      return;
+    }
+
+    if (!action.endpoint) return;
 
     setActive(nextActive);
 
