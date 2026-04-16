@@ -26,9 +26,14 @@
 
 ## Spec Index
 
-| Spec                                 | Description                      |
-| ------------------------------------ | -------------------------------- |
-| [SDUI Components](sdui.md)           | Custom components and screens    |
-| [Security](security.md)              | Auth handling at the web edge    |
-| [Error Handling](errors.md)          | Error categories and behavior    |
-| [Acceptance Criteria](acceptance.md) | Testable criteria for completion |
+| Spec                                                | Description                                                          |
+| --------------------------------------------------- | -------------------------------------------------------------------- |
+| [SDUI Components](sdui.md)                          | Custom components and screens (summary, links out)                   |
+| [SDUI Shell](sdui-shell.md)                         | Shell fetching, content_slot, platform detection                     |
+| [SDUI Actions](sdui-actions.md)                     | Action types, form submission, /api/action proxy, 401 handling       |
+| [SDUI Shared Props](sdui-shared-props.md)           | Container / self props, alignment and spacing tokens                 |
+| [SDUI Base Components](sdui-base-components.md)     | All base components (screen, row, column, text, table, ...)          |
+| [SDUI Custom Components](sdui-custom-components.md) | Project-specific components (charts, ...) — some entries **[draft]** |
+| [Security](security.md)                             | Auth handling at the web edge                                        |
+| [Error Handling](errors.md)                         | Error categories and behavior                                        |
+| [Acceptance Criteria](acceptance.md)                | Testable criteria for completion                                     |

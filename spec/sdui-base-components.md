@@ -148,6 +148,34 @@ Individual list entry. Supports click navigation via actions.
 - **"use client"**: Yes (uses `useRouter` for click navigation)
 - **Renders**: `div.border-b.py-3.px-4`. Adds `cursor-pointer hover:bg-gray-50` when actions are present. Uses `containerProps`.
 
+### table
+
+Tabular data with aligned columns across header and rows. The table owns column widths and alignment; rows and cells inherit them so the header and every body row line up automatically, regardless of cell content. Use `table` for data with parallel columns (positions, orders, transactions). Use `list` for uniform feeds without column structure.
+
+| Prop    | Type                                                                                  | Required | Description                                                                                                                                                                |
+| ------- | ------------------------------------------------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| columns | `{ id: string; header: string; width?: string; align?: "left"\|"center"\|"right" }[]` | yes      | Column configuration. `width` accepts grid units (`"1fr"`, `"2fr"`, `"auto"`) or fixed CSS (`"120px"`). Missing `width` defaults to `"1fr"`. `align` defaults to `"left"`. |
+
+Children must be `table_row` components. Each row's children are placed into the columns in order; the number of children per row should match `columns.length`.
+
+- **React**: `TableComponent` -- `components/base/Table.tsx`
+- **"use client"**: No (wraps children in a client `TableColumnsProvider`)
+- **Renders**: `div[role="table"]` as a CSS Grid with `grid-template-columns` derived from `columns[].width`. Header row renders above children with a bottom border and a muted background.
+
+### table_row
+
+A row inside a `table`. Uses CSS subgrid so every row shares the same column tracks as the table — the header and every body row align on the same boundaries. Supports `navigate` / `navigate_back` click actions for row-level interaction (e.g. row click opens a detail screen).
+
+| Prop   | Type | Required | Description                |
+| ------ | ---- | -------- | -------------------------- |
+| (none) | --   | --       | Shape comes from the table |
+
+Each child of `table_row` is rendered into a cell (`div[role="cell"]`) and aligned according to the column's `align`. Use `text`, `badge`, `image`, or any component as a cell; the scaffold does not constrain cell content.
+
+- **React**: `TableRowComponent` -- `components/base/TableRow.tsx`
+- **"use client"**: Yes (uses `useRouter` for click navigation and `useTableColumns` for per-cell alignment)
+- **Renders**: `div[role="row"]` as a subgrid that spans all columns. Each cell is wrapped in `div[role="cell"]` with `px-4 py-3` padding and alignment classes. Adds `cursor-pointer hover:bg-gray-50` when actions are present.
+
 ### badge
 
 Overlay badge on a child component. Shows count or dot indicator.
@@ -193,14 +221,15 @@ Empty space of a given height.
 
 Primary interactive element. Handles all action types.
 
-| Prop      | Type    | Required | Description                           |
-| --------- | ------- | -------- | ------------------------------------- |
-| label     | string  | no       | Button text                           |
-| image_src | string  | no       | Icon image URL                        |
-| variant   | string  | no       | `primary` (default), `secondary`      |
-| style     | string  | no       | `solid` (default), `ghost`, `outline` |
-| disabled  | boolean | no       | Disable button                        |
-| loading   | boolean | no       | Show spinner and "Loading..." text    |
+| Prop      | Type    | Required | Description                                                                    |
+| --------- | ------- | -------- | ------------------------------------------------------------------------------ |
+| label     | string  | no       | Button text                                                                    |
+| image_src | string  | no       | Icon image URL                                                                 |
+| variant   | string  | no       | `primary` (default), `secondary`                                               |
+| style     | string  | no       | `solid` (default), `ghost`, `outline`                                          |
+| size      | string  | no       | `xs`, `sm`, `md` (default), `lg`. Controls label text size and button padding. |
+| disabled  | boolean | no       | Disable button                                                                 |
+| loading   | boolean | no       | Show spinner and "Loading..." text                                             |
 
 - **React**: `ButtonComponent` -- `components/base/Button.tsx`
 - **"use client"**: Yes

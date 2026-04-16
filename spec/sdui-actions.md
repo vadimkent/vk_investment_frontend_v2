@@ -43,19 +43,23 @@ All action types handled by `ButtonComponent`:
 
 ## 3. Form Data Collection
 
-When a `submit` action has a `target_id`, `ButtonComponent.collectFormData` queries the DOM:
+When a `submit` action has a `target_id`, `collectFormData` (in `components/action-dispatcher.tsx`) queries the DOM:
 
 ```typescript
 const container = document.querySelector(`[data-sdui-id="${targetId}"]`);
 ```
 
-It collects values from:
+Values are collected with their **native types**, not stringified:
 
-- `input[name]` elements (checkbox values as `"true"`/`"false"`, others as `.value`)
-- `select[name]` elements
-- `textarea[name]` elements
+- `input[type="checkbox"]` → `boolean` (`.checked`).
+- `input[data-sdui-kind="toggle"]` → `boolean` (parsed from `.value`).
+- `input[name]` (text/email/password/etc.), `select[name]`, `textarea[name]` → `string` (`.value`).
+
+Direct-path submissions from inputs that have a `trigger: "change"` action and **no** `target_id` send `{ [name]: value }` with the native type (`boolean` for Checkbox/Toggle, `string` for Input/Select/RadioGroup). This matches what the middleend's typed struct schemas expect (Go/Java/Swift bindings all expect native JSON types, not strings).
 
 The `Form` component renders with `data-sdui-id={component.id}`, making it the target. All form input components (`Input`, `Select`, `Checkbox`, `Toggle`, `Textarea`, `RadioGroup`) render with `name` attributes.
+
+> **Contract note.** The middleend should declare action payload types as native JSON (`"include_closed": false`, not `"include_closed": "false"`). If a field needs string semantics (e.g., a currency code), the underlying input is already a `string`.
 
 ---
 
@@ -98,14 +102,33 @@ interface SDUIActionResponse {
 }
 ```
 
-`ButtonComponent.handleActionResponse` processes the response:
+All action responses are processed by the central `useActionDispatcher` hook in `components/action-dispatcher.tsx`, which every interactive component (Button, Checkbox, Toggle, Select, RadioGroup) uses:
 
-| Response Action | Frontend Behavior                                                                |
-| --------------- | -------------------------------------------------------------------------------- |
-| `navigate`      | `router.push(target_id)` -- client-side navigation to the given path.            |
-| `refresh`       | `router.refresh()` -- re-runs server components to fetch fresh data.             |
-| `replace`       | Not yet implemented in Button. Reserved for partial tree replacement.            |
-| `none`          | No navigation. Used when the action has side effects only (e.g., sending email). |
+| Response Action | Frontend Behavior                                                                                                                                                              |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `navigate`      | `router.push(target_id)` -- client-side navigation to the given path.                                                                                                          |
+| `refresh`       | `router.refresh()` -- re-runs server components to fetch fresh data.                                                                                                           |
+| `replace`       | Sets `overrideMap[target_id] = tree` via `OverrideMapProvider`. `ComponentRenderer` checks the override for every id it renders and, if present, renders the override instead. |
+| `none`          | No navigation. Used when the action has side effects only (e.g., sending email).                                                                                               |
+
+### Partial Replacement (`replace`)
+
+`replace` lets the middleend swap a subtree without a full `router.refresh()`. It is the primary pattern for optimistic toggle / inline update interactions.
+
+Lifecycle:
+
+1. User interacts (e.g., toggles a checkbox).
+2. The input component's `trigger: "change"` action posts to `/api/action`.
+3. The middleend returns `{ action: "replace", target_id: "card-settings", tree: {...} }`.
+4. The dispatcher calls `setOverride("card-settings", tree)`.
+5. `<OverrideBoundary>` around the id swaps the rendered subtree on the next render.
+6. Overrides clear automatically when `usePathname()` changes (navigation flushes stale state).
+
+The override layer is a pure client-side concern. The middleend does not see overrides; on the next full SSR of the same screen the server tree is authoritative again.
+
+### Trigger: `change` on input components
+
+`Checkbox`, `Toggle`, `Select`, and `RadioGroup` each support a single action with `trigger: "change"`. When present, the action fires on every value change. If `target_id` is provided on the action, `collectFormData(target_id)` gathers the whole form; otherwise only `{ [name]: <new value> }` is sent. The `type` is typically `submit`, and the response is handled by the same dispatcher as button submits.
 
 ---
 

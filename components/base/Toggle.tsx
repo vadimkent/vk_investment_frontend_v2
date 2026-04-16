@@ -2,6 +2,10 @@
 
 import { useState } from "react";
 import type { SDUIComponent } from "@/lib/types/sdui";
+import {
+  collectFormData,
+  useActionDispatcher,
+} from "@/components/action-dispatcher";
 
 export function ToggleComponent({ component }: { component: SDUIComponent }) {
   const name = String(component.props.name);
@@ -10,9 +14,18 @@ export function ToggleComponent({ component }: { component: SDUIComponent }) {
   const disabled = component.props.disabled === true;
   const [on, setOn] = useState(defaultChecked);
 
+  const dispatch = useActionDispatcher();
+  const changeAction = component.actions?.find((a) => a.trigger === "change");
+
   function handleToggle() {
     if (disabled) return;
-    setOn(!on);
+    const next = !on;
+    setOn(next);
+    if (!changeAction?.endpoint) return;
+    const data = changeAction.target_id
+      ? collectFormData(changeAction.target_id)
+      : { [name]: next };
+    dispatch(changeAction.endpoint, changeAction.method ?? "POST", data);
   }
 
   const trackClass = on ? "bg-blue-600" : "bg-gray-300";
@@ -28,6 +41,7 @@ export function ToggleComponent({ component }: { component: SDUIComponent }) {
         name={name}
         value={String(on)}
         data-sdui-id={component.id}
+        data-sdui-kind="toggle"
       />
       <button
         type="button"

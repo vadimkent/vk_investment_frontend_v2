@@ -1,6 +1,10 @@
 "use client";
 
 import type { SDUIComponent } from "@/lib/types/sdui";
+import {
+  collectFormData,
+  useActionDispatcher,
+} from "@/components/action-dispatcher";
 
 interface Option {
   value: string;
@@ -19,6 +23,17 @@ export function SelectComponent({ component }: { component: SDUIComponent }) {
     ? " opacity-50 cursor-not-allowed bg-gray-100"
     : "";
 
+  const dispatch = useActionDispatcher();
+  const changeAction = component.actions?.find((a) => a.trigger === "change");
+
+  function handleChange(value: string) {
+    if (!changeAction?.endpoint) return;
+    const data = changeAction.target_id
+      ? collectFormData(changeAction.target_id)
+      : { [name]: value };
+    dispatch(changeAction.endpoint, changeAction.method ?? "POST", data);
+  }
+
   return (
     <div>
       {label && (
@@ -34,6 +49,7 @@ export function SelectComponent({ component }: { component: SDUIComponent }) {
         disabled={disabled}
         className={`border rounded px-3 py-2 w-full${disabledClass}`}
         data-sdui-id={component.id}
+        onChange={(e) => handleChange(e.target.value)}
       >
         {placeholder && <option value="">{placeholder}</option>}
         {options.map((opt) => (

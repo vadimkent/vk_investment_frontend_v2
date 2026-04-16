@@ -1,0 +1,50 @@
+import type { SDUIComponent } from "@/lib/types/sdui";
+import { ComponentRenderer } from "@/components/renderer";
+import {
+  TableColumnsProvider,
+  type TableColumn,
+} from "@/components/table-columns-context";
+
+const alignClass: Record<string, string> = {
+  left: "justify-start text-left",
+  center: "justify-center text-center",
+  right: "justify-end text-right",
+};
+
+export function TableComponent({ component }: { component: SDUIComponent }) {
+  const columns = (component.props.columns as TableColumn[] | undefined) ?? [];
+  const widths =
+    columns.length > 0 ? columns.map((c) => c.width ?? "1fr").join(" ") : "1fr";
+
+  return (
+    <TableColumnsProvider columns={columns}>
+      <div
+        role="table"
+        style={{ display: "grid", gridTemplateColumns: widths }}
+      >
+        <div
+          role="row"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "subgrid",
+            gridColumn: "1 / -1",
+          }}
+          className="border-b bg-gray-50 font-medium text-sm text-gray-600"
+        >
+          {columns.map((col) => (
+            <div
+              key={col.id}
+              role="columnheader"
+              className={`flex items-center px-4 py-3 ${alignClass[col.align ?? "left"]}`}
+            >
+              {col.header}
+            </div>
+          ))}
+        </div>
+        {component.children?.map((child) => (
+          <ComponentRenderer key={child.id} component={child} />
+        ))}
+      </div>
+    </TableColumnsProvider>
+  );
+}

@@ -1,6 +1,10 @@
 "use client";
 
 import type { SDUIComponent } from "@/lib/types/sdui";
+import {
+  collectFormData,
+  useActionDispatcher,
+} from "@/components/action-dispatcher";
 
 interface Option {
   value: string;
@@ -18,6 +22,17 @@ export function RadioGroupComponent({
   const defaultValue = component.props.default_value as string | undefined;
   const required = component.props.required === true;
   const disabled = component.props.disabled === true;
+
+  const dispatch = useActionDispatcher();
+  const changeAction = component.actions?.find((a) => a.trigger === "change");
+
+  function handleChange(value: string) {
+    if (!changeAction?.endpoint) return;
+    const data = changeAction.target_id
+      ? collectFormData(changeAction.target_id)
+      : { [name]: value };
+    dispatch(changeAction.endpoint, changeAction.method ?? "POST", data);
+  }
 
   return (
     <fieldset data-sdui-id={component.id}>
@@ -41,6 +56,7 @@ export function RadioGroupComponent({
               disabled={disabled}
               required={required}
               className="w-4 h-4"
+              onChange={(e) => handleChange(e.target.value)}
             />
             <span className={disabled ? "text-gray-400" : ""}>{opt.label}</span>
           </label>

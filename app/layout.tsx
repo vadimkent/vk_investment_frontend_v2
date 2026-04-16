@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { OverrideMapProvider } from "@/components/override-map-context";
 
 export const metadata: Metadata = {
   title: "vk-investment-frontend-v2",
@@ -19,7 +20,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body suppressHydrationWarning>{children}</body>
+      <body suppressHydrationWarning>
+        <OverrideMapProvider>{children}</OverrideMapProvider>
+      </body>
     </html>
   );
 }

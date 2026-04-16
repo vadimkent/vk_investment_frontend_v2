@@ -2,26 +2,15 @@
 
 import type { SDUIComponent } from "@/lib/types/sdui";
 import { useRouter } from "next/navigation";
+import {
+  collectFormData,
+  useActionDispatcher,
+} from "@/components/action-dispatcher";
+
 export function ButtonComponent({ component }: { component: SDUIComponent }) {
   const router = useRouter();
+  const dispatch = useActionDispatcher();
 
-  async function sendAction(
-    endpoint: string,
-    method: string,
-    data?: Record<string, string>,
-  ): Promise<{ action: string; target_id?: string }> {
-    const response = await fetch("/api/action", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ endpoint, method, data }),
-    });
-    const body = await response.json();
-    if (response.status === 401 && body.redirect) {
-      router.push(body.redirect);
-      return { action: "none" };
-    }
-    return body;
-  }
   const label = component.props.label as string | undefined;
   const imageSrc = component.props.image_src as string | undefined;
   const btnVariant = (component.props.variant as string) ?? "primary";
@@ -29,45 +18,6 @@ export function ButtonComponent({ component }: { component: SDUIComponent }) {
   const disabled = component.props.disabled === true;
   const loading = component.props.loading === true;
   const isDisabled = disabled || loading;
-
-  function collectFormData(targetId: string): Record<string, string> {
-    const container = document.querySelector(`[data-sdui-id="${targetId}"]`);
-    if (!container) return {};
-    const data: Record<string, string> = {};
-    const inputs = container.querySelectorAll<HTMLInputElement>("input[name]");
-    inputs.forEach((input) => {
-      if (input.type === "checkbox") {
-        data[input.name] = String(input.checked);
-      } else {
-        data[input.name] = input.value;
-      }
-    });
-    const selects =
-      container.querySelectorAll<HTMLSelectElement>("select[name]");
-    selects.forEach((select) => {
-      data[select.name] = select.value;
-    });
-    const textareas =
-      container.querySelectorAll<HTMLTextAreaElement>("textarea[name]");
-    textareas.forEach((textarea) => {
-      data[textarea.name] = textarea.value;
-    });
-    return data;
-  }
-
-  async function handleActionResponse(res: {
-    action: string;
-    target_id?: string;
-  }) {
-    switch (res.action) {
-      case "navigate":
-        if (res.target_id) router.push(res.target_id);
-        break;
-      case "refresh":
-        router.refresh();
-        break;
-    }
-  }
 
   async function handleClick() {
     if (isDisabled) return;
@@ -93,19 +43,11 @@ export function ButtonComponent({ component }: { component: SDUIComponent }) {
           const data = action.target_id
             ? collectFormData(action.target_id)
             : {};
-          const res = await sendAction(
-            action.endpoint,
-            action.method ?? "POST",
-            data,
-          );
-          await handleActionResponse(res);
+          await dispatch(action.endpoint, action.method ?? "POST", data);
         }
         break;
       case "reload":
-        if (action.endpoint) {
-          const res = await sendAction(action.endpoint, "GET");
-          await handleActionResponse(res);
-        }
+        if (action.endpoint) await dispatch(action.endpoint, "GET");
         break;
       case "refresh":
         router.refresh();
@@ -139,11 +81,20 @@ export function ButtonComponent({ component }: { component: SDUIComponent }) {
     variantStyles[btnVariant]?.[btnStyle] ?? variantStyles.primary.solid;
   const disabledClass = isDisabled ? " opacity-50 cursor-not-allowed" : "";
 
+  const btnSize = (component.props.size as string) ?? "md";
+  const sizeStyles: Record<string, string> = {
+    xs: "text-xs px-2 py-1",
+    sm: "text-sm px-3 py-1.5",
+    md: "text-base px-4 py-2",
+    lg: "text-lg px-5 py-3",
+  };
+  const sizeClass = sizeStyles[btnSize] ?? sizeStyles.md;
+
   return (
     <button
       onClick={handleClick}
       disabled={isDisabled}
-      className={`px-4 py-2 rounded flex items-center gap-2 ${classes}${disabledClass}`}
+      className={`${sizeClass} rounded flex items-center gap-2 ${classes}${disabledClass}`}
     >
       {loading && (
         <span className="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full" />

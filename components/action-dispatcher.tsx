@@ -1,0 +1,75 @@
+"use client";
+
+import { useCallback } from "react";
+import { useRouter } from "next/navigation";
+import { useOverrideMap } from "@/components/override-map-context";
+
+type ActionResponse = {
+  action: string;
+  target_id?: string;
+  tree?: import("@/lib/types/sdui").SDUIComponent;
+  redirect?: string;
+};
+
+export function collectFormData(targetId: string): Record<string, unknown> {
+  const container = document.querySelector(`[data-sdui-id="${targetId}"]`);
+  if (!container) return {};
+  const data: Record<string, unknown> = {};
+  container.querySelectorAll<HTMLInputElement>("input[name]").forEach((i) => {
+    if (i.type === "checkbox") {
+      data[i.name] = i.checked;
+    } else if (i.dataset.sduiKind === "toggle") {
+      data[i.name] = i.value === "true";
+    } else {
+      data[i.name] = i.value;
+    }
+  });
+  container
+    .querySelectorAll<HTMLSelectElement>("select[name]")
+    .forEach((s) => (data[s.name] = s.value));
+  container
+    .querySelectorAll<HTMLTextAreaElement>("textarea[name]")
+    .forEach((t) => (data[t.name] = t.value));
+  return data;
+}
+
+export function useActionDispatcher() {
+  const router = useRouter();
+  const { setOverride } = useOverrideMap();
+
+  return useCallback(
+    async (
+      endpoint: string,
+      method: string,
+      data?: Record<string, unknown>,
+    ): Promise<ActionResponse> => {
+      const response = await fetch("/api/action", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ endpoint, method, data }),
+      });
+      const body: ActionResponse = await response.json();
+
+      if (response.status === 401 && body.redirect) {
+        router.push(body.redirect);
+        return { action: "none" };
+      }
+
+      switch (body.action) {
+        case "navigate":
+          if (body.target_id) router.push(body.target_id);
+          break;
+        case "refresh":
+          router.refresh();
+          break;
+        case "replace":
+          if (body.target_id && body.tree)
+            setOverride(body.target_id, body.tree);
+          break;
+      }
+
+      return body;
+    },
+    [router, setOverride],
+  );
+}

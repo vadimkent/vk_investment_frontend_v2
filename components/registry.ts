@@ -31,6 +31,10 @@ import { NavFooterComponent } from "@/components/base/NavFooter";
 import { NavItemComponent } from "@/components/base/NavItem";
 import { BottomBarComponent } from "@/components/base/BottomBar";
 import { ContentSlotComponent } from "@/components/base/ContentSlot";
+import { TableComponent } from "@/components/base/Table";
+import { TableRowComponent } from "@/components/base/TableRow";
+import { LineChartComponent } from "@/components/custom/LineChart";
+import { PieChartComponent } from "@/components/custom/PieChart";
 
 export type SDUIRenderer = ComponentType<{ component: SDUIComponent }>;
 
@@ -65,6 +69,10 @@ const registry: Record<string, SDUIRenderer> = {
   nav_item: NavItemComponent,
   bottombar: BottomBarComponent,
   content_slot: ContentSlotComponent,
+  table: TableComponent,
+  table_row: TableRowComponent,
+  line_chart: LineChartComponent,
+  pie_chart: PieChartComponent,
 };
 
 export function getComponent(type: string): SDUIRenderer | null {
