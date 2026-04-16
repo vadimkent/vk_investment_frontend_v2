@@ -7,10 +7,10 @@ export function BadgeComponent({ component }: { component: SDUIComponent }) {
   const child = component.children?.[0];
 
   const variantStyles: Record<string, string> = {
-    error: "bg-red-500",
-    info: "bg-blue-500",
-    warning: "bg-yellow-500",
-    success: "bg-green-500",
+    error: "bg-status-error",
+    info: "bg-accent-primary",
+    warning: "bg-status-warning",
+    success: "bg-status-success",
   };
 
   const bgClass = variantStyles[variant] ?? variantStyles.error;
@@ -21,7 +21,7 @@ export function BadgeComponent({ component }: { component: SDUIComponent }) {
     <div className="relative inline-block">
       {child && <ComponentRenderer component={child} />}
       <span
-        className={`absolute -top-1 -right-1 ${bgClass} text-white text-xs rounded-full flex items-center justify-center ${hasCount ? "min-w-[1.25rem] h-5 px-1" : "w-2.5 h-2.5"}`}
+        className={`absolute -top-1 -right-1 ${bgClass} text-content-on-accent text-xs rounded-full flex items-center justify-center ${hasCount ? "min-w-[1.25rem] h-5 px-1" : "w-2.5 h-2.5"}`}
       >
         {displayText}
       </span>

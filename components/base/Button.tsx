@@ -6,10 +6,12 @@ import {
   collectFormData,
   useActionDispatcher,
 } from "@/components/action-dispatcher";
+import { useTheme } from "@/components/theme-provider";
 
 export function ButtonComponent({ component }: { component: SDUIComponent }) {
   const router = useRouter();
   const dispatch = useActionDispatcher();
+  const { toggle } = useTheme();
 
   const label = component.props.label as string | undefined;
   const imageSrc = component.props.image_src as string | undefined;
@@ -61,19 +63,22 @@ export function ButtonComponent({ component }: { component: SDUIComponent }) {
         await fetch("/api/auth/logout", { method: "POST" });
         router.push("/login");
         break;
+      case "toggle_theme":
+        toggle();
+        break;
     }
   }
 
   const variantStyles: Record<string, Record<string, string>> = {
     primary: {
-      solid: "bg-blue-600 text-white",
-      ghost: "text-blue-600",
-      outline: "border border-blue-600 text-blue-600",
+      solid: "bg-accent-primary text-content-on-accent",
+      ghost: "text-accent-primary",
+      outline: "border border-accent-primary text-accent-primary",
     },
     secondary: {
-      solid: "bg-gray-200 text-gray-800",
-      ghost: "text-gray-600",
-      outline: "border border-gray-400 text-gray-600",
+      solid: "bg-surface-muted text-content-primary",
+      ghost: "text-content-secondary",
+      outline: "border border-border-input text-content-secondary",
     },
   };
 

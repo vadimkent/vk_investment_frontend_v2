@@ -23,12 +23,12 @@ export function ErrorComponent({ component }: { component: SDUIComponent }) {
   }
 
   return (
-    <div className="text-red-600 p-4 border border-red-200 rounded">
+    <div className="text-status-error bg-status-error-surface p-4 border border-status-error-surface rounded">
       <p>{String(component.props.message)}</p>
       {hasRetry && (
         <button
           onClick={handleRetry}
-          className="mt-2 text-sm text-red-700 underline hover:text-red-900"
+          className="mt-2 text-sm text-status-error underline"
         >
           Retry
         </button>

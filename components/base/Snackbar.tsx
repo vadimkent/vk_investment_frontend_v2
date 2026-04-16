@@ -16,17 +16,17 @@ export function SnackbarComponent({ component }: { component: SDUIComponent }) {
   if (!visible) return null;
 
   const variantStyles: Record<string, string> = {
-    success: "bg-green-600",
-    error: "bg-red-600",
-    info: "bg-blue-600",
-    warning: "bg-yellow-600",
+    success: "bg-status-success",
+    error: "bg-status-error",
+    info: "bg-accent-primary",
+    warning: "bg-status-warning",
   };
 
   const bg = variantStyles[variant] ?? variantStyles.info;
 
   return (
     <div
-      className={`fixed bottom-4 right-4 ${bg} text-white px-4 py-3 rounded shadow-lg z-50`}
+      className={`fixed bottom-4 right-4 ${bg} text-content-on-accent px-4 py-3 rounded shadow-lg z-50`}
     >
       {message}
     </div>

@@ -12,15 +12,15 @@ export function TextareaComponent({ component }: { component: SDUIComponent }) {
   const required = component.props.required === true;
   const disabled = component.props.disabled === true;
   const disabledClass = disabled
-    ? " opacity-50 cursor-not-allowed bg-gray-100"
+    ? " opacity-50 cursor-not-allowed bg-surface-muted"
     : "";
 
   return (
     <div>
       {label && (
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-content-secondary mb-1">
           {label}
-          {required && <span className="text-red-500 ml-0.5">*</span>}
+          {required && <span className="text-status-error ml-0.5">*</span>}
         </label>
       )}
       <textarea
@@ -31,7 +31,7 @@ export function TextareaComponent({ component }: { component: SDUIComponent }) {
         maxLength={maxLength}
         required={required}
         disabled={disabled}
-        className={`border rounded px-3 py-2 w-full${disabledClass}`}
+        className={`border border-border-input rounded px-3 py-2 w-full${disabledClass}`}
         data-sdui-id={component.id}
       />
     </div>

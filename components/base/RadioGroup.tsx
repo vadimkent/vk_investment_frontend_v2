@@ -37,9 +37,9 @@ export function RadioGroupComponent({
   return (
     <fieldset data-sdui-id={component.id}>
       {label && (
-        <legend className="text-sm font-medium text-gray-700 mb-2">
+        <legend className="text-sm font-medium text-content-secondary mb-2">
           {label}
-          {required && <span className="text-red-500 ml-0.5">*</span>}
+          {required && <span className="text-status-error ml-0.5">*</span>}
         </legend>
       )}
       <div className="flex flex-col gap-2">
@@ -58,7 +58,7 @@ export function RadioGroupComponent({
               className="w-4 h-4"
               onChange={(e) => handleChange(e.target.value)}
             />
-            <span className={disabled ? "text-gray-400" : ""}>{opt.label}</span>
+            <span className={disabled ? "text-content-muted" : ""}>{opt.label}</span>
           </label>
         ))}
       </div>

@@ -30,11 +30,11 @@ export function CheckboxComponent({ component }: { component: SDUIComponent }) {
         name={name}
         defaultChecked={checked}
         disabled={disabled}
-        className="w-4 h-4 rounded border-gray-300"
+        className="w-4 h-4 rounded border-border-input"
         data-sdui-id={component.id}
         onChange={(e) => handleChange(e.target.checked)}
       />
-      <span className={disabled ? "text-gray-400" : ""}>{label}</span>
+      <span className={disabled ? "text-content-muted" : ""}>{label}</span>
     </label>
   );
 }

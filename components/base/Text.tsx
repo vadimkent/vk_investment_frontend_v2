@@ -18,12 +18,12 @@ const weightStyles: Record<string, string> = {
 };
 
 const colorStyles: Record<string, string> = {
-  primary: "text-gray-900",
-  secondary: "text-gray-600",
-  muted: "text-gray-400",
-  error: "text-red-600",
-  positive: "text-green-600",
-  negative: "text-red-600",
+  primary: "text-content-primary",
+  secondary: "text-content-secondary",
+  muted: "text-content-muted",
+  error: "text-status-error",
+  positive: "text-status-success",
+  negative: "text-status-error",
 };
 
 const decorationStyles: Record<string, string> = {

@@ -15,12 +15,12 @@ export function LoadingComponent({ component }: { component: SDUIComponent }) {
   if (variant === "skeleton") {
     return (
       <div
-        className={`animate-pulse bg-gray-200 rounded w-full ${sizeClass}`}
+        className={`animate-pulse bg-surface-muted rounded w-full ${sizeClass}`}
       />
     );
   }
 
   return (
-    <div className={`animate-pulse text-gray-400 ${sizeClass}`}>Loading...</div>
+    <div className={`animate-pulse text-content-muted ${sizeClass}`}>Loading...</div>
   );
 }

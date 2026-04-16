@@ -28,7 +28,7 @@ export function ToggleComponent({ component }: { component: SDUIComponent }) {
     dispatch(changeAction.endpoint, changeAction.method ?? "POST", data);
   }
 
-  const trackClass = on ? "bg-blue-600" : "bg-gray-300";
+  const trackClass = on ? "bg-accent-primary" : "bg-surface-muted";
   const thumbPos = on ? "translate-x-5" : "translate-x-0";
   const disabledClass = disabled
     ? " opacity-50 cursor-not-allowed"
@@ -50,10 +50,10 @@ export function ToggleComponent({ component }: { component: SDUIComponent }) {
         disabled={disabled}
       >
         <span
-          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${thumbPos}`}
+          className={`inline-block h-4 w-4 transform rounded-full bg-surface-primary transition-transform ${thumbPos}`}
         />
       </button>
-      <span className={disabled ? "text-gray-400" : ""}>{label}</span>
+      <span className={disabled ? "text-content-muted" : ""}>{label}</span>
     </label>
   );
 }
