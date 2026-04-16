@@ -47,11 +47,18 @@ export function ButtonComponent({ component }: { component: SDUIComponent }) {
           const data = action.target_id
             ? collectFormData(action.target_id)
             : {};
-          await dispatch(action.endpoint, action.method ?? "POST", data);
+          await dispatch(action.endpoint, action.method ?? "POST", data, {
+            loading: action.loading,
+            targetId: action.target_id,
+          });
         }
         break;
       case "reload":
-        if (action.endpoint) await dispatch(action.endpoint, "GET");
+        if (action.endpoint)
+          await dispatch(action.endpoint, "GET", undefined, {
+            loading: action.loading,
+            targetId: action.target_id,
+          });
         break;
       case "refresh":
         router.refresh();

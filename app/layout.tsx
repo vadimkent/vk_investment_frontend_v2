@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { OverrideMapProvider } from "@/components/override-map-context";
 import { ThemeProvider } from "@/components/theme-provider";
+import { FullLoadingOverlay } from "@/components/full-loading-overlay";
 
 export const metadata: Metadata = {
   title: "vk-investment-frontend-v2",
@@ -29,7 +30,10 @@ export default function RootLayout({
       </head>
       <body suppressHydrationWarning>
         <ThemeProvider>
-          <OverrideMapProvider>{children}</OverrideMapProvider>
+          <OverrideMapProvider>
+            {children}
+            <FullLoadingOverlay />
+          </OverrideMapProvider>
         </ThemeProvider>
       </body>
     </html>

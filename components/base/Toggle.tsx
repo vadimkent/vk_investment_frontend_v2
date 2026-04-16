@@ -25,7 +25,10 @@ export function ToggleComponent({ component }: { component: SDUIComponent }) {
     const data = changeAction.target_id
       ? collectFormData(changeAction.target_id)
       : { [name]: next };
-    dispatch(changeAction.endpoint, changeAction.method ?? "POST", data);
+    dispatch(changeAction.endpoint, changeAction.method ?? "POST", data, {
+      loading: changeAction.loading,
+      targetId: changeAction.target_id,
+    });
   }
 
   const trackClass = on ? "bg-accent-primary" : "bg-surface-muted";

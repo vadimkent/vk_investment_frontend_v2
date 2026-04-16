@@ -11,6 +11,11 @@ type ActionResponse = {
   redirect?: string;
 };
 
+type DispatchOptions = {
+  loading?: "section" | "full";
+  targetId?: string;
+};
+
 export function collectFormData(targetId: string): Record<string, unknown> {
   const container = document.querySelector(`[data-sdui-id="${targetId}"]`);
   if (!container) return {};
@@ -35,41 +40,55 @@ export function collectFormData(targetId: string): Record<string, unknown> {
 
 export function useActionDispatcher() {
   const router = useRouter();
-  const { setOverride } = useOverrideMap();
+  const { setOverride, setLoading, clearLoading } = useOverrideMap();
 
   return useCallback(
     async (
       endpoint: string,
       method: string,
       data?: Record<string, unknown>,
+      options?: DispatchOptions,
     ): Promise<ActionResponse> => {
-      const response = await fetch("/api/action", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ endpoint, method, data }),
-      });
-      const body: ActionResponse = await response.json();
+      const loadingTarget = options?.targetId;
+      const loadingMode = options?.loading;
 
-      if (response.status === 401 && body.redirect) {
-        router.push(body.redirect);
-        return { action: "none" };
+      if (loadingTarget && loadingMode) {
+        setLoading(loadingTarget, loadingMode);
       }
 
-      switch (body.action) {
-        case "navigate":
-          if (body.target_id) router.push(body.target_id);
-          break;
-        case "refresh":
-          router.refresh();
-          break;
-        case "replace":
-          if (body.target_id && body.tree)
-            setOverride(body.target_id, body.tree);
-          break;
-      }
+      try {
+        const response = await fetch("/api/action", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ endpoint, method, data }),
+        });
+        const body: ActionResponse = await response.json();
 
-      return body;
+        if (response.status === 401 && body.redirect) {
+          router.push(body.redirect);
+          return { action: "none" };
+        }
+
+        switch (body.action) {
+          case "navigate":
+            if (body.target_id) router.push(body.target_id);
+            break;
+          case "refresh":
+            router.refresh();
+            break;
+          case "replace":
+            if (body.target_id && body.tree)
+              setOverride(body.target_id, body.tree);
+            break;
+        }
+
+        return body;
+      } finally {
+        if (loadingTarget) {
+          clearLoading(loadingTarget);
+        }
+      }
     },
-    [router, setOverride],
+    [router, setOverride, setLoading, clearLoading],
   );
 }

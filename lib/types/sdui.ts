@@ -6,6 +6,7 @@ export interface SDUIAction {
   endpoint?: string;
   method?: string;
   target_id?: string;
+  loading?: "section" | "full";
 }
 
 export interface SDUIComponent {

@@ -31,7 +31,10 @@ export function SelectComponent({ component }: { component: SDUIComponent }) {
     const data = changeAction.target_id
       ? collectFormData(changeAction.target_id)
       : { [name]: value };
-    dispatch(changeAction.endpoint, changeAction.method ?? "POST", data);
+    dispatch(changeAction.endpoint, changeAction.method ?? "POST", data, {
+      loading: changeAction.loading,
+      targetId: changeAction.target_id,
+    });
   }
 
   return (

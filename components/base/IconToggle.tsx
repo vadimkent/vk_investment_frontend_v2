@@ -33,7 +33,10 @@ export function IconToggleComponent({
     setActive(nextActive);
 
     try {
-      await dispatch(action.endpoint, action.method ?? "GET");
+      await dispatch(action.endpoint, action.method ?? "GET", undefined, {
+        loading: action.loading,
+        targetId: action.target_id,
+      });
     } catch {
       setActive(!nextActive);
     }
