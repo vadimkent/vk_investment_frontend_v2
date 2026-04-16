@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { OverrideMapProvider } from "@/components/override-map-context";
+import { ThemeProvider } from "@/components/theme-provider";
 
 export const metadata: Metadata = {
   title: "vk-investment-frontend-v2",
@@ -13,15 +14,22 @@ export const metadata: Metadata = {
   },
 };
 
+const FOUC_SCRIPT = '(function(){if(localStorage.getItem("theme")==="dark")document.documentElement.classList.add("dark")})()';
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: FOUC_SCRIPT }} />
+      </head>
       <body suppressHydrationWarning>
-        <OverrideMapProvider>{children}</OverrideMapProvider>
+        <ThemeProvider>
+          <OverrideMapProvider>{children}</OverrideMapProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
