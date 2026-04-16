@@ -2,7 +2,7 @@
 
 Custom components are project-specific SDUI types that are not part of the base set documented in `sdui-base-components.md`. They live in `components/custom/` and are registered in `components/registry.ts` alongside the base components.
 
-This file documents the contract the middleend is expected to emit for each custom component in this project. It is the single source of truth. Entries may be marked **[pending implementation]** when the contract is final but the frontend renderer has not been shipped yet.
+This file documents the contract the middleend is expected to emit for each custom component, attribute, and action in this project. It is the single source of truth. Entries may be marked **[pending implementation]** when the contract is final but the frontend renderer has not been shipped yet.
 
 ---
 
@@ -231,3 +231,85 @@ Allocation donut by asset:
 - Legend rendered as a flex-wrap list of buttons below the chart. Hidden-slice state kept in `useState<Set<string>>`; hidden entries drop to ~35% opacity (matching legacy).
 - Slices with `value <= 0` filtered out before rendering. Empty result hides the legend and renders `empty_message` centered.
 - Registered as `pie_chart` in `components/registry.ts`.
+
+---
+
+## 3. Custom Attributes
+
+Project-specific props that may appear on any component. The frontend reads them alongside base shared props (`align_items`, `gap`, etc.) and applies project-specific behavior.
+
+### `sensitive`
+
+Available on any component. When `true`, the frontend masks the component's visible content with `"••••"` while the HideValues toggle is active. The middleend decides **what** is sensitive; the frontend decides **when** to mask.
+
+Not all monetary values are sensitive. The rule:
+
+| Sensitive (`true`)                                                                                                 | Not sensitive                                    |
+| ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------ |
+| Absolute monetary values: Total Value, Total P&L, Avg Cost, Total Cost, Market Value, Unrealized P&L, Realized P&L | Percentages: Performance, Snapshot Change, % P&L |
+|                                                                                                                    | Counts: Open Positions, Quantity                 |
+|                                                                                                                    | Metadata: Ticker, Name, Type, Last Snapshot      |
+
+The frontend must not infer sensitivity from the value's format or color — only from the explicit `sensitive: true` prop.
+
+```json
+{
+  "type": "text",
+  "id": "summary-value-total-value-USD",
+  "props": {
+    "content": "$12,345.67",
+    "size": "xl",
+    "weight": "bold",
+    "sensitive": true
+  }
+}
+```
+
+When HideValues is active, the frontend renders `"••••"` instead of `"$12,345.67"`. The original `content` stays in the tree — the frontend just visually replaces it.
+
+**Implementation:** `ComponentRenderer` in `components/renderer.tsx` wraps sensitive components in `<SensitiveMask>` (a client component that reads from `SensitiveProvider`). When `hideValues` is true, the mask renders `"••••"` (with `select-none`); otherwise it passes children through.
+
+---
+
+## 4. Custom Actions
+
+Project-specific action types that extend the base set in `sdui-actions.md`. The frontend maps these types to local behavior; no server round-trip is involved.
+
+### `toggle_sensitive`
+
+Toggles the visibility of all components marked with `sensitive: true`. Fired by the HideValues `icon_toggle`. No `endpoint` or `target_id` — purely client-side.
+
+```json
+{
+  "trigger": "click",
+  "type": "toggle_sensitive"
+}
+```
+
+When the frontend receives this action:
+
+1. Flip the local `hideValues` boolean state (in `SensitiveProvider`).
+2. All components with `sensitive: true` in the current screen tree are masked (`"••••"`) or unmasked based on the new state.
+3. No HTTP request is made.
+
+The `icon_toggle` for HideValues carries this action in both slots (the action is the same regardless of direction):
+
+```json
+{
+  "type": "icon_toggle",
+  "id": "hide-values-toggle",
+  "props": {
+    "active": false,
+    "icon_inactive": "eye",
+    "icon_active": "eye-off",
+    "tooltip_inactive": "Hide values",
+    "tooltip_active": "Show values"
+  },
+  "actions": [
+    { "trigger": "click", "type": "toggle_sensitive" },
+    { "trigger": "click", "type": "toggle_sensitive" }
+  ]
+}
+```
+
+**Implementation:** `Button` and `IconToggle` both handle `toggle_sensitive` via the `SensitiveProvider.toggleSensitive()` function. `IconToggle` uses a `CLIENT_ACTIONS` map that dispatches client-only actions (both `toggle_theme` and `toggle_sensitive`) without hitting the server.

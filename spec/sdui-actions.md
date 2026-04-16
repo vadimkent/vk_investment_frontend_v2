@@ -29,18 +29,19 @@ Actions are in the `actions` array on any `SDUIComponent`. Button uses the first
 
 All action types handled by `ButtonComponent`:
 
-| Type               | Behavior                                                                                                       | Required Fields                              |
-| ------------------ | -------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
-| `navigate`         | Client-side navigation via `router.push(url)`. Opens new tab if `target === "blank"`.                          | `url`                                        |
-| `navigate_back`    | Browser back via `router.back()`.                                                                              | (none)                                       |
-| `submit`           | Collects form data from `target_id` container, sends to middleend via `/api/action` proxy, processes response. | `endpoint`, optionally `target_id`, `method` |
-| `reload`           | Sends GET to middleend endpoint via `/api/action`, processes response.                                         | `endpoint`                                   |
-| `refresh`          | Triggers `router.refresh()` to re-render server components.                                                    | (none)                                       |
-| `open_url`         | Opens URL in a new tab via `window.open`.                                                                      | `url`                                        |
-| `dismiss`          | No-op in current implementation. Reserved for modal dismiss.                                                   | (none)                                       |
-| `logout`           | POSTs to `/api/auth/logout`, then navigates to `/login`.                                                       | (none)                                       |
-| `toggle_theme`     | Toggles light/dark mode. Client-side only, no round-trip.                                                      | (none)                                       |
-| `toggle_sensitive` | Toggles visibility masking for components with `sensitive: true`. Client-side only, no round-trip.             | (none)                                       |
+| Type            | Behavior                                                                                                       | Required Fields                              |
+| --------------- | -------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| `navigate`      | Client-side navigation via `router.push(url)`. Opens new tab if `target === "blank"`.                          | `url`                                        |
+| `navigate_back` | Browser back via `router.back()`.                                                                              | (none)                                       |
+| `submit`        | Collects form data from `target_id` container, sends to middleend via `/api/action` proxy, processes response. | `endpoint`, optionally `target_id`, `method` |
+| `reload`        | Sends GET to middleend endpoint via `/api/action`, processes response.                                         | `endpoint`                                   |
+| `refresh`       | Triggers `router.refresh()` to re-render server components.                                                    | (none)                                       |
+| `open_url`      | Opens URL in a new tab via `window.open`.                                                                      | `url`                                        |
+| `dismiss`       | No-op in current implementation. Reserved for modal dismiss.                                                   | (none)                                       |
+| `logout`        | POSTs to `/api/auth/logout`, then navigates to `/login`.                                                       | (none)                                       |
+| `toggle_theme`  | Toggles light/dark mode. Client-side only, no round-trip.                                                      | (none)                                       |
+
+Custom action types (project-specific, not part of the base set) are documented in `sdui-custom-components.md §4`.
 
 ---
 
