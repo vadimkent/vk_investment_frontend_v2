@@ -55,12 +55,12 @@ function ChartTooltip({
   const pct =
     visibleTotal > 0 ? ((slice.value / visibleTotal) * 100).toFixed(1) : "0.0";
   return (
-    <div className="rounded-md border bg-white px-3 py-2 text-xs shadow-md">
-      <div className="font-medium text-gray-900 mb-1">{slice.label}</div>
-      <div className="text-gray-700">
+    <div className="rounded-md border border-border bg-surface-primary px-3 py-2 text-xs shadow-md">
+      <div className="font-medium text-content-primary mb-1">{slice.label}</div>
+      <div className="text-content-secondary">
         {formatValue(slice.value, valueFormat)}
       </div>
-      <div className="text-gray-500">{pct}%</div>
+      <div className="text-content-muted">{pct}%</div>
     </div>
   );
 }
@@ -108,7 +108,7 @@ export function PieChartComponent({ component }: { component: SDUIComponent }) {
       <div>
         {title && <h3 className="text-sm font-medium mb-2">{title}</h3>}
         <div
-          className={`${hClass} w-full flex items-center justify-center text-sm text-gray-500`}
+          className={`${hClass} w-full flex items-center justify-center text-sm text-content-muted`}
         >
           {emptyMessage}
         </div>

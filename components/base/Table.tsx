@@ -29,7 +29,7 @@ export function TableComponent({ component }: { component: SDUIComponent }) {
             gridTemplateColumns: "subgrid",
             gridColumn: "1 / -1",
           }}
-          className="border-b bg-gray-50 font-medium text-sm text-gray-600"
+          className="border-b border-border bg-surface-secondary font-medium text-sm text-content-secondary"
         >
           {columns.map((col) => (
             <div

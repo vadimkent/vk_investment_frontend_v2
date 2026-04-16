@@ -29,8 +29,8 @@ export function TableRowComponent({ component }: { component: SDUIComponent }) {
   }
 
   const rowClass = [
-    "border-b",
-    hasActions ? "cursor-pointer hover:bg-gray-50" : "",
+    "border-b border-border",
+    hasActions ? "cursor-pointer hover:bg-surface-secondary" : "",
   ]
     .filter(Boolean)
     .join(" ");

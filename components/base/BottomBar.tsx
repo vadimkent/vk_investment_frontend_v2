@@ -9,7 +9,7 @@ export function BottomBarComponent({
 }) {
   const shared = containerProps(component);
   const classes = [
-    "fixed bottom-0 left-0 right-0 flex justify-around items-center border-t bg-white p-2",
+    "fixed bottom-0 left-0 right-0 flex justify-around items-center border-t border-border bg-surface-primary p-2",
     shared.className,
   ]
     .filter(Boolean)

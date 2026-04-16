@@ -37,13 +37,13 @@ export function ScreenComponent({ component }: { component: SDUIComponent }) {
             {hasBackAction && (
               <button
                 onClick={handleBack}
-                className="text-gray-600 hover:text-gray-900"
+                className="text-content-secondary hover:text-content-primary"
               >
                 <span className="text-xl">&larr;</span>
               </button>
             )}
             {icon && <span className="text-2xl">{icon}</span>}
-            {subtitle && <p className="text-sm text-gray-500">{subtitle}</p>}
+            {subtitle && <p className="text-sm text-content-muted">{subtitle}</p>}
           </div>
         </div>
       )}

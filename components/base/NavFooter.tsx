@@ -8,7 +8,7 @@ export function NavFooterComponent({
   component: SDUIComponent;
 }) {
   const shared = containerProps(component);
-  const classes = ["p-4 border-t", shared.className].filter(Boolean).join(" ");
+  const classes = ["p-4 border-t border-border", shared.className].filter(Boolean).join(" ");
 
   return (
     <div

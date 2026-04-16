@@ -9,8 +9,8 @@ export function ListItemComponent({ component }: { component: SDUIComponent }) {
   const router = useRouter();
   const shared = containerProps(component);
   const hasActions = component.actions && component.actions.length > 0;
-  const clickableClass = hasActions ? " cursor-pointer hover:bg-gray-50" : "";
-  const classes = ["border-b py-3 px-4", shared.className, clickableClass]
+  const clickableClass = hasActions ? " cursor-pointer hover:bg-surface-secondary" : "";
+  const classes = ["border-b border-border py-3 px-4", shared.className, clickableClass]
     .filter(Boolean)
     .join(" ");
 

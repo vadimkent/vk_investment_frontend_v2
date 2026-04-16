@@ -58,8 +58,8 @@ function ChartTooltip({
 }: ChartTooltipProps) {
   if (!active || !payload || payload.length === 0) return null;
   return (
-    <div className="rounded-md border bg-white px-3 py-2 text-xs shadow-md">
-      <div className="font-medium text-gray-900 mb-1">
+    <div className="rounded-md border border-border bg-surface-primary px-3 py-2 text-xs shadow-md">
+      <div className="font-medium text-content-primary mb-1">
         {formatAxis(label, xFormat)}
       </div>
       {payload.map((entry) => {
@@ -71,8 +71,8 @@ function ChartTooltip({
               className="inline-block h-2 w-2 rounded-full"
               style={{ background: entry.color }}
             />
-            <span className="text-gray-600">{s.label}:</span>
-            <span className="text-gray-900">
+            <span className="text-content-secondary">{s.label}:</span>
+            <span className="text-content-primary">
               {formatValue(entry.value, s.value_format)}
             </span>
           </div>
@@ -120,7 +120,7 @@ export function LineChartComponent({
       <div>
         {title && <h3 className="text-sm font-medium mb-2">{title}</h3>}
         <div
-          className={`${hClass} w-full flex items-center justify-center text-sm text-gray-500`}
+          className={`${hClass} w-full flex items-center justify-center text-sm text-content-muted`}
         >
           {emptyMessage}
         </div>
