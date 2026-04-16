@@ -236,6 +236,29 @@ Primary interactive element. Handles all action types.
 - **"use client"**: Yes
 - **Renders**: `<button>` with variant/style Tailwind classes. See `sdui-actions.md` for action handling.
 
+### icon_toggle
+
+Binary toggle rendered as a clickable icon. Has two states (inactive / active), each with its own icon token and tooltip. On click the frontend flips the visual state instantly (optimistic) and fires the corresponding action. If the action fails, the state rolls back. Does not require a form wrapper.
+
+The component carries **two actions** in its `actions` array — a positional convention unique to this component:
+
+- `actions[0]` — fired when transitioning inactive → active (click while `active=false`).
+- `actions[1]` — fired when transitioning active → inactive (click while `active=true`).
+
+Both actions use `trigger: "click"`. The frontend selects based on the current visual state.
+
+| Prop               | Type   | Required | Description                                         |
+| ------------------ | ------ | -------- | --------------------------------------------------- |
+| `active`           | bool   | yes      | Initial state. `false` = inactive, `true` = active. |
+| `icon_inactive`    | string | yes      | Icon token shown when `active=false`.               |
+| `icon_active`      | string | yes      | Icon token shown when `active=true`.                |
+| `tooltip_inactive` | string | no       | Tooltip text when inactive.                         |
+| `tooltip_active`   | string | no       | Tooltip text when active.                           |
+
+- **React**: `IconToggleComponent` -- `components/base/IconToggle.tsx`
+- **"use client"**: Yes (uses `useState` for optimistic flip, `useActionDispatcher` for server action)
+- **Renders**: `<button>` with icon from `lib/icon-registry.ts`. Active state shows `text-accent-primary`; inactive shows `text-content-muted` with `hover:text-content-primary`. Optimistic: flips immediately on click, rolls back if the dispatch throws.
+
 ### input
 
 Text input field with label.

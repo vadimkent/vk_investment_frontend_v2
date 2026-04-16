@@ -31,6 +31,7 @@ import { NavFooterComponent } from "@/components/base/NavFooter";
 import { NavItemComponent } from "@/components/base/NavItem";
 import { BottomBarComponent } from "@/components/base/BottomBar";
 import { ContentSlotComponent } from "@/components/base/ContentSlot";
+import { IconToggleComponent } from "@/components/base/IconToggle";
 import { TableComponent } from "@/components/base/Table";
 import { TableRowComponent } from "@/components/base/TableRow";
 import { LineChartComponent } from "@/components/custom/LineChart";
@@ -69,6 +70,7 @@ const registry: Record<string, SDUIRenderer> = {
   nav_item: NavItemComponent,
   bottombar: BottomBarComponent,
   content_slot: ContentSlotComponent,
+  icon_toggle: IconToggleComponent,
   table: TableComponent,
   table_row: TableRowComponent,
   line_chart: LineChartComponent,
