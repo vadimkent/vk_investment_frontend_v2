@@ -17,6 +17,7 @@ interface SDUIAction {
   endpoint?: string; // Middleend endpoint for server actions
   method?: string; // HTTP method (default "POST")
   target_id?: string; // Form container ID for data collection
+  loading?: "section" | "full"; // Loading indicator mode (see below)
 }
 ```
 
@@ -28,17 +29,48 @@ Actions are in the `actions` array on any `SDUIComponent`. Button uses the first
 
 All action types handled by `ButtonComponent`:
 
-| Type            | Behavior                                                                                                       | Required Fields                              |
-| --------------- | -------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
-| `navigate`      | Client-side navigation via `router.push(url)`. Opens new tab if `target === "blank"`.                          | `url`                                        |
-| `navigate_back` | Browser back via `router.back()`.                                                                              | (none)                                       |
-| `submit`        | Collects form data from `target_id` container, sends to middleend via `/api/action` proxy, processes response. | `endpoint`, optionally `target_id`, `method` |
-| `reload`        | Sends GET to middleend endpoint via `/api/action`, processes response.                                         | `endpoint`                                   |
-| `refresh`       | Triggers `router.refresh()` to re-render server components.                                                    | (none)                                       |
-| `open_url`      | Opens URL in a new tab via `window.open`.                                                                      | `url`                                        |
-| `dismiss`       | No-op in current implementation. Reserved for modal dismiss.                                                   | (none)                                       |
-| `logout`        | POSTs to `/api/auth/logout`, then navigates to `/login`.                                                       | (none)                                       |
-| `toggle_theme`  | Toggles light/dark mode. Client-side only, no round-trip.                                                      | (none)                                       |
+| Type               | Behavior                                                                                                       | Required Fields                              |
+| ------------------ | -------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| `navigate`         | Client-side navigation via `router.push(url)`. Opens new tab if `target === "blank"`.                          | `url`                                        |
+| `navigate_back`    | Browser back via `router.back()`.                                                                              | (none)                                       |
+| `submit`           | Collects form data from `target_id` container, sends to middleend via `/api/action` proxy, processes response. | `endpoint`, optionally `target_id`, `method` |
+| `reload`           | Sends GET to middleend endpoint via `/api/action`, processes response.                                         | `endpoint`                                   |
+| `refresh`          | Triggers `router.refresh()` to re-render server components.                                                    | (none)                                       |
+| `open_url`         | Opens URL in a new tab via `window.open`.                                                                      | `url`                                        |
+| `dismiss`          | No-op in current implementation. Reserved for modal dismiss.                                                   | (none)                                       |
+| `logout`           | POSTs to `/api/auth/logout`, then navigates to `/login`.                                                       | (none)                                       |
+| `toggle_theme`     | Toggles light/dark mode. Client-side only, no round-trip.                                                      | (none)                                       |
+| `toggle_sensitive` | Toggles visibility masking for components with `sensitive: true`. Client-side only, no round-trip.             | (none)                                       |
+
+---
+
+## 2b. Loading Indicators
+
+Any action that hits the middleend (`submit`, `reload`) can declare a `loading` field to show a visual indicator while the request is in flight:
+
+| Value       | Behavior                                                                                       |
+| ----------- | ---------------------------------------------------------------------------------------------- |
+| `"section"` | Renders a semi-transparent overlay with spinner on the subtree whose `id` matches `target_id`. |
+| `"full"`    | Renders a fullscreen overlay (`z-50`) with spinner over the entire viewport.                   |
+| (absent)    | No loading indicator. The action completes silently (current default behavior).                |
+
+The middleend decides **when** to show loading and **what scope** — the frontend only implements the visual. Loading clears automatically when the action response arrives (in a `finally` block, so errors don't leave stale overlays).
+
+Example — reload with section loading:
+
+```json
+{
+  "trigger": "click",
+  "type": "reload",
+  "endpoint": "/actions/portfolio/live_data?live=true",
+  "target_id": "live-data-section",
+  "loading": "section"
+}
+```
+
+While the request is in flight, the OverrideBoundary for `id="live-data-section"` renders a spinner overlay on top of the existing content. When the response arrives (typically `action: "replace"` with a new tree), the overlay disappears and the new content is shown.
+
+Client-side-only actions (`toggle_theme`, `toggle_sensitive`, `navigate`, `refresh`, etc.) ignore `loading` — they are synchronous or handled by the router.
 
 ---
 
