@@ -43,7 +43,9 @@ export function ScreenComponent({ component }: { component: SDUIComponent }) {
               </button>
             )}
             {icon && <span className="text-2xl">{icon}</span>}
-            {subtitle && <p className="text-sm text-content-muted">{subtitle}</p>}
+            {subtitle && (
+              <p className="text-sm text-content-muted">{subtitle}</p>
+            )}
           </div>
         </div>
       )}

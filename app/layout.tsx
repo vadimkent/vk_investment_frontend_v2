@@ -14,7 +14,8 @@ export const metadata: Metadata = {
   },
 };
 
-const FOUC_SCRIPT = '(function(){if(localStorage.getItem("theme")==="dark")document.documentElement.classList.add("dark")})()';
+const FOUC_SCRIPT =
+  '(function(){if(localStorage.getItem("theme")==="dark")document.documentElement.classList.add("dark")})()';
 
 export default function RootLayout({
   children,

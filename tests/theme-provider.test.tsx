@@ -8,9 +8,8 @@ describe("theme-provider", () => {
 
   it("defaults to light when localStorage is empty", async () => {
     const { renderHook } = await import("@testing-library/react");
-    const { ThemeProvider, useTheme } = await import(
-      "@/components/theme-provider"
-    );
+    const { ThemeProvider, useTheme } =
+      await import("@/components/theme-provider");
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <ThemeProvider>{children}</ThemeProvider>
     );
@@ -22,9 +21,8 @@ describe("theme-provider", () => {
   it("reads dark from localStorage and applies class", async () => {
     localStorage.setItem("theme", "dark");
     const { renderHook } = await import("@testing-library/react");
-    const { ThemeProvider, useTheme } = await import(
-      "@/components/theme-provider"
-    );
+    const { ThemeProvider, useTheme } =
+      await import("@/components/theme-provider");
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <ThemeProvider>{children}</ThemeProvider>
     );
@@ -35,9 +33,8 @@ describe("theme-provider", () => {
 
   it("toggle flips theme and persists", async () => {
     const { renderHook, act } = await import("@testing-library/react");
-    const { ThemeProvider, useTheme } = await import(
-      "@/components/theme-provider"
-    );
+    const { ThemeProvider, useTheme } =
+      await import("@/components/theme-provider");
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <ThemeProvider>{children}</ThemeProvider>
     );

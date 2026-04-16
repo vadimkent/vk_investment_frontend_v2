@@ -8,7 +8,10 @@ export function NavHeaderComponent({
   component: SDUIComponent;
 }) {
   const shared = containerProps(component);
-  const classes = ["flex items-center gap-3 p-4 border-b border-border", shared.className]
+  const classes = [
+    "flex items-center gap-3 p-4 border-b border-border",
+    shared.className,
+  ]
     .filter(Boolean)
     .join(" ");
 

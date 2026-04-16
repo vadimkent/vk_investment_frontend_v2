@@ -58,7 +58,9 @@ export function RadioGroupComponent({
               className="w-4 h-4"
               onChange={(e) => handleChange(e.target.value)}
             />
-            <span className={disabled ? "text-content-muted" : ""}>{opt.label}</span>
+            <span className={disabled ? "text-content-muted" : ""}>
+              {opt.label}
+            </span>
           </label>
         ))}
       </div>

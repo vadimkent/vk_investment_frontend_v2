@@ -21,6 +21,8 @@ export function LoadingComponent({ component }: { component: SDUIComponent }) {
   }
 
   return (
-    <div className={`animate-pulse text-content-muted ${sizeClass}`}>Loading...</div>
+    <div className={`animate-pulse text-content-muted ${sizeClass}`}>
+      Loading...
+    </div>
   );
 }

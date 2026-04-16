@@ -38,7 +38,7 @@ All action types handled by `ButtonComponent`:
 | `open_url`      | Opens URL in a new tab via `window.open`.                                                                      | `url`                                        |
 | `dismiss`       | No-op in current implementation. Reserved for modal dismiss.                                                   | (none)                                       |
 | `logout`        | POSTs to `/api/auth/logout`, then navigates to `/login`.                                                       | (none)                                       |
-| `toggle_theme`  | Toggles light/dark mode. Client-side only, no round-trip. | (none) |
+| `toggle_theme`  | Toggles light/dark mode. Client-side only, no round-trip.                                                      | (none)                                       |
 
 ---
 
