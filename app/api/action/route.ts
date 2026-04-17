@@ -34,6 +34,7 @@ export async function POST(request: NextRequest) {
   if (data.auth && data.auth.token) {
     authToken = data.auth.token;
     delete data.auth;
+    data.auth_changed = true;
   }
 
   const res = NextResponse.json(data, { status: response.status });

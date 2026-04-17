@@ -9,6 +9,7 @@ type ActionResponse = {
   target_id?: string;
   tree?: import("@/lib/types/sdui").SDUIComponent;
   redirect?: string;
+  auth_changed?: boolean;
 };
 
 type DispatchOptions = {
@@ -73,7 +74,14 @@ export function useActionDispatcher() {
 
         switch (body.action) {
           case "navigate":
-            if (body.target_id) router.push(stripScreens(body.target_id));
+            if (body.target_id) {
+              const url = stripScreens(body.target_id);
+              if (body.auth_changed) {
+                window.location.href = url;
+              } else {
+                router.push(url);
+              }
+            }
             break;
           case "refresh":
             router.refresh();
