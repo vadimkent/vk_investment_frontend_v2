@@ -8,6 +8,7 @@ import {
 } from "@/components/action-dispatcher";
 import { useTheme } from "@/components/theme-provider";
 import { useSensitive } from "@/components/sensitive-provider";
+import { useSidebar } from "@/components/sidebar-provider";
 import { getIcon } from "@/lib/icon-registry";
 import { stripScreens } from "@/lib/strip-screens";
 
@@ -16,6 +17,7 @@ export function ButtonComponent({ component }: { component: SDUIComponent }) {
   const dispatch = useActionDispatcher();
   const { toggle } = useTheme();
   const { toggleSensitive } = useSensitive();
+  const { toggleSidebar } = useSidebar();
 
   const label = component.props.label as string | undefined;
   const imageSrc = component.props.image_src as string | undefined;
@@ -80,6 +82,9 @@ export function ButtonComponent({ component }: { component: SDUIComponent }) {
         break;
       case "toggle_sensitive":
         toggleSensitive();
+        break;
+      case "toggle_sidebar":
+        toggleSidebar();
         break;
     }
   }
