@@ -29,17 +29,17 @@ Actions are in the `actions` array on any `SDUIComponent`. Button uses the first
 
 All action types handled by `ButtonComponent`:
 
-| Type            | Behavior                                                                                                       | Required Fields                              |
-| --------------- | -------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
-| `navigate`      | Client-side navigation via `router.push(url)`. Opens new tab if `target === "blank"`.                          | `url`                                        |
-| `navigate_back` | Browser back via `router.back()`.                                                                              | (none)                                       |
-| `submit`        | Collects form data from `target_id` container, sends to middleend via `/api/action` proxy, processes response. | `endpoint`, optionally `target_id`, `method` |
-| `reload`        | Sends GET to middleend endpoint via `/api/action`, processes response.                                         | `endpoint`                                   |
-| `refresh`       | Triggers `router.refresh()` to re-render server components.                                                    | (none)                                       |
-| `open_url`      | Opens URL in a new tab via `window.open`.                                                                      | `url`                                        |
-| `dismiss`       | No-op in current implementation. Reserved for modal dismiss.                                                   | (none)                                       |
-| `logout`        | POSTs to `/api/auth/logout`, then navigates to `/login`.                                                       | (none)                                       |
-| `toggle_theme`  | Toggles light/dark mode. Client-side only, no round-trip.                                                      | (none)                                       |
+| Type            | Behavior                                                                                                                                                                                     | Required Fields                              |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| `navigate`      | Client-side navigation via `router.push(url)`. Opens new tab if `target === "blank"`.                                                                                                        | `url`                                        |
+| `navigate_back` | Browser back via `router.back()`.                                                                                                                                                            | (none)                                       |
+| `submit`        | Collects form data from `target_id` container, sends to middleend via `/api/action` proxy, processes response.                                                                               | `endpoint`, optionally `target_id`, `method` |
+| `reload`        | Sends GET to middleend endpoint via `/api/action`, processes response.                                                                                                                       | `endpoint`                                   |
+| `refresh`       | Triggers `router.refresh()` to re-render server components.                                                                                                                                  | (none)                                       |
+| `open_url`      | Opens URL in a new tab via `window.open`.                                                                                                                                                    | `url`                                        |
+| `dismiss`       | No-op in current implementation. Reserved for modal dismiss.                                                                                                                                 | (none)                                       |
+| `logout`        | POSTs to `/api/auth/logout` to clear the auth cookie, then hard-navigates to `/`. The shell layout re-runs without a token and the middleend's 401 redirect determines where the user lands. | (none)                                       |
+| `toggle_theme`  | Toggles light/dark mode. Client-side only, no round-trip.                                                                                                                                    | (none)                                       |
 
 Custom action types (project-specific, not part of the base set) are documented in `sdui-custom-components.md §4`.
 
@@ -190,13 +190,11 @@ The token **never reaches client-side JavaScript**. All subsequent requests from
 
 ### Logout
 
-1. Button with `logout` action calls:
-   ```typescript
-   await fetch("/api/auth/logout", { method: "POST" });
-   router.push("/login");
-   ```
-2. The `/api/auth/logout` route clears the `token` cookie.
-3. The user is redirected to `/login`.
+1. Button with `logout` action calls `POST /api/auth/logout` to clear the `token` cookie.
+2. Hard-navigates to `/` via `window.location.href` (not `router.push`) to force the shell layout to re-run server-side.
+3. The shell layout detects no token → passes through to the page.
+4. The page calls `fetchShell()` → middleend returns 401 with `{ redirect: "<login-route>" }` → the frontend redirects there.
+5. The middleend decides the login route — the frontend never hardcodes it.
 
 ---
 

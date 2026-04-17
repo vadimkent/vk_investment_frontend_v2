@@ -73,7 +73,7 @@ export function ButtonComponent({ component }: { component: SDUIComponent }) {
         break;
       case "logout":
         await fetch("/api/auth/logout", { method: "POST" });
-        router.push("/login");
+        window.location.href = "/";
         break;
       case "toggle_theme":
         toggle();

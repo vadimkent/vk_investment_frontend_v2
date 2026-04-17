@@ -1,5 +1,4 @@
 import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
 import { fetchShell } from "@/lib/middleend";
 import { stripScreens } from "@/lib/strip-screens";
 import type { SDUIComponent } from "@/lib/types/sdui";
@@ -18,13 +17,6 @@ function findDefaultRoute(shell: SDUIComponent): string | null {
 }
 
 export default async function Home() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("token")?.value;
-
-  if (!token) {
-    redirect("/login");
-  }
-
   const shell = await fetchShell();
   const defaultRoute = findDefaultRoute(shell);
   if (defaultRoute) redirect(defaultRoute);
