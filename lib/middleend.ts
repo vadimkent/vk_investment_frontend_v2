@@ -29,13 +29,11 @@ async function fetchSDUI(
   });
   if (response.status === 401) {
     const body = await response.json().catch(() => null);
-    const raw = body?.redirect as string | undefined;
-    if (!raw) {
-      throw new Error(
-        "Middleend returned 401 without a redirect field — the middleend must specify where to send the user.",
-      );
-    }
-    redirect(raw.replace(/^\/screens/, ""));
+    const loginPath = ((body?.redirect as string) ?? "/login").replace(
+      /^\/screens/,
+      "",
+    );
+    redirect(loginPath);
   }
   if (!response.ok) {
     throw new Error(`Failed to fetch ${path}: ${response.status}`);

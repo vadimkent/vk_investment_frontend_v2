@@ -1,27 +1,7 @@
-import { redirect } from "next/navigation";
-import { fetchShell } from "@/lib/middleend";
-import { stripScreens } from "@/lib/strip-screens";
-import type { SDUIComponent } from "@/lib/types/sdui";
-
-function findDefaultRoute(shell: SDUIComponent): string | null {
-  const defaultRoute = shell.props.default_route as string | undefined;
-  if (defaultRoute) return stripScreens(defaultRoute);
-
-  const navMain = shell.children?.find((c) => c.type === "nav_main");
-  const firstNavItem = navMain?.children?.[0];
-  const action = firstNavItem?.actions?.[0];
-  if (action?.type === "navigate" && action.url) {
-    return stripScreens(action.url);
-  }
-  return null;
-}
+import { fetchScreen } from "@/lib/middleend";
+import { ComponentRenderer } from "@/components/renderer";
 
 export default async function Home() {
-  const shell = await fetchShell();
-  const defaultRoute = findDefaultRoute(shell);
-  if (defaultRoute) redirect(defaultRoute);
-
-  throw new Error(
-    "Shell has no default_route and no nav items — the middleend must provide a default route.",
-  );
+  const screen = await fetchScreen("/screens/home");
+  return <ComponentRenderer component={screen} />;
 }
