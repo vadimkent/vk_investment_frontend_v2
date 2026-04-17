@@ -4,11 +4,14 @@ import type { SDUIComponent } from "@/lib/types/sdui";
 import { useRouter } from "next/navigation";
 import { getIcon } from "@/lib/icon-registry";
 import { stripScreens } from "@/lib/strip-screens";
+import { useSidebar } from "@/components/sidebar-provider";
 
 export function NavItemComponent({ component }: { component: SDUIComponent }) {
   const router = useRouter();
+  const { collapsed } = useSidebar();
   const badgeCount = component.props.badge_count as number | undefined;
   const iconName = component.props.icon as string | undefined;
+  const label = String(component.props.label);
   const Icon = iconName ? getIcon(iconName) : null;
 
   const handleClick = () => {
@@ -23,7 +26,10 @@ export function NavItemComponent({ component }: { component: SDUIComponent }) {
   return (
     <button
       onClick={handleClick}
-      className="flex items-center gap-3 w-full px-3 py-2 rounded-md text-left hover:bg-surface-secondary relative"
+      title={collapsed ? label : undefined}
+      className={`flex items-center w-full px-3 py-2 rounded-md hover:bg-surface-secondary relative ${
+        collapsed ? "justify-center" : "gap-3 text-left"
+      }`}
     >
       {iconName != null && (
         <span className="text-content-muted relative">
@@ -35,7 +41,7 @@ export function NavItemComponent({ component }: { component: SDUIComponent }) {
           )}
         </span>
       )}
-      <span>{String(component.props.label)}</span>
+      {!collapsed && <span>{label}</span>}
     </button>
   );
 }
