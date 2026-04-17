@@ -11,9 +11,8 @@ describe("toggle_sidebar action", () => {
 
   it("toggles sidebar state when button with toggle_sidebar action is clicked", async () => {
     const { render, act } = await import("@testing-library/react");
-    const { SidebarProvider, useSidebar } = await import(
-      "@/components/sidebar-provider"
-    );
+    const { SidebarProvider, useSidebar } =
+      await import("@/components/sidebar-provider");
     const { ButtonComponent } = await import("@/components/base/Button");
 
     let sidebarState: { collapsed: boolean } = { collapsed: false };

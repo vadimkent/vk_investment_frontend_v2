@@ -7,9 +7,8 @@ describe("sidebar-provider", () => {
 
   it("defaults to expanded when localStorage is empty", async () => {
     const { renderHook } = await import("@testing-library/react");
-    const { SidebarProvider, useSidebar } = await import(
-      "@/components/sidebar-provider"
-    );
+    const { SidebarProvider, useSidebar } =
+      await import("@/components/sidebar-provider");
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <SidebarProvider>{children}</SidebarProvider>
     );
@@ -20,9 +19,8 @@ describe("sidebar-provider", () => {
   it("reads collapsed state from localStorage", async () => {
     localStorage.setItem("sidebar-collapsed", "true");
     const { renderHook } = await import("@testing-library/react");
-    const { SidebarProvider, useSidebar } = await import(
-      "@/components/sidebar-provider"
-    );
+    const { SidebarProvider, useSidebar } =
+      await import("@/components/sidebar-provider");
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <SidebarProvider>{children}</SidebarProvider>
     );
@@ -32,9 +30,8 @@ describe("sidebar-provider", () => {
 
   it("toggleSidebar flips state and persists", async () => {
     const { renderHook, act } = await import("@testing-library/react");
-    const { SidebarProvider, useSidebar } = await import(
-      "@/components/sidebar-provider"
-    );
+    const { SidebarProvider, useSidebar } =
+      await import("@/components/sidebar-provider");
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <SidebarProvider>{children}</SidebarProvider>
     );
