@@ -4,6 +4,7 @@ import type { SDUIComponent } from "@/lib/types/sdui";
 import { ComponentRenderer } from "@/components/renderer";
 import { useTableColumns } from "@/components/table-columns-context";
 import { useRouter } from "next/navigation";
+import { stripScreens } from "@/lib/strip-screens";
 
 const alignClass: Record<string, string> = {
   left: "justify-start text-left",
@@ -23,7 +24,7 @@ export function TableRowComponent({ component }: { component: SDUIComponent }) {
       if (action.target === "blank") {
         window.open(action.url, "_blank");
       } else {
-        router.push(action.url);
+        router.push(stripScreens(action.url));
       }
     }
   }

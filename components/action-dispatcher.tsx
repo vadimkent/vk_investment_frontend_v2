@@ -16,6 +16,8 @@ type DispatchOptions = {
   targetId?: string;
 };
 
+import { stripScreens } from "@/lib/strip-screens";
+
 export function collectFormData(targetId: string): Record<string, unknown> {
   const container = document.querySelector(`[data-sdui-id="${targetId}"]`);
   if (!container) return {};
@@ -65,13 +67,13 @@ export function useActionDispatcher() {
         const body: ActionResponse = await response.json();
 
         if (response.status === 401 && body.redirect) {
-          router.push(body.redirect);
+          router.push(stripScreens(body.redirect));
           return { action: "none" };
         }
 
         switch (body.action) {
           case "navigate":
-            if (body.target_id) router.push(body.target_id);
+            if (body.target_id) router.push(stripScreens(body.target_id));
             break;
           case "refresh":
             router.refresh();

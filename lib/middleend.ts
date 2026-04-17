@@ -29,7 +29,10 @@ async function fetchSDUI(
   });
   if (response.status === 401) {
     const body = await response.json().catch(() => null);
-    const loginPath = body?.redirect ?? "/login";
+    const loginPath = ((body?.redirect as string) ?? "/login").replace(
+      /^\/screens/,
+      "",
+    );
     redirect(loginPath);
   }
   if (!response.ok) {

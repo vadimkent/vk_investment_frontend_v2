@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import type { SDUIComponent } from "@/lib/types/sdui";
 import { ComponentRenderer } from "@/components/renderer";
 import { useRouter } from "next/navigation";
+import { stripScreens } from "@/lib/strip-screens";
 
 const NAV_SLOT_TYPES = new Set([
   "nav_header",
@@ -125,7 +126,7 @@ function DefaultLayout({ component }: { component: SDUIComponent }) {
     if (action && action.type === "navigate_back") {
       router.back();
     } else if (action && action.type === "navigate" && action.url) {
-      router.push(action.url);
+      router.push(stripScreens(action.url));
     } else {
       router.back();
     }

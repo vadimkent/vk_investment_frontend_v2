@@ -9,6 +9,7 @@ import {
 import { useTheme } from "@/components/theme-provider";
 import { useSensitive } from "@/components/sensitive-provider";
 import { getIcon } from "@/lib/icon-registry";
+import { stripScreens } from "@/lib/strip-screens";
 
 export function ButtonComponent({ component }: { component: SDUIComponent }) {
   const router = useRouter();
@@ -37,7 +38,7 @@ export function ButtonComponent({ component }: { component: SDUIComponent }) {
           if (action.target === "blank") {
             window.open(action.url, "_blank");
           } else {
-            router.push(action.url);
+            router.push(stripScreens(action.url));
           }
         }
         break;

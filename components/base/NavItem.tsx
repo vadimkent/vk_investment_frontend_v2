@@ -3,6 +3,7 @@
 import type { SDUIComponent } from "@/lib/types/sdui";
 import { useRouter } from "next/navigation";
 import { getIcon } from "@/lib/icon-registry";
+import { stripScreens } from "@/lib/strip-screens";
 
 export function NavItemComponent({ component }: { component: SDUIComponent }) {
   const router = useRouter();
@@ -15,7 +16,7 @@ export function NavItemComponent({ component }: { component: SDUIComponent }) {
     if (!action) return;
 
     if (action.type === "navigate" && action.url) {
-      router.push(action.url);
+      router.push(stripScreens(action.url));
     }
   };
 

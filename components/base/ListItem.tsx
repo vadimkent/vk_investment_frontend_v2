@@ -4,6 +4,7 @@ import type { SDUIComponent } from "@/lib/types/sdui";
 import { ComponentRenderer } from "@/components/renderer";
 import { containerProps } from "@/lib/sdui-utils";
 import { useRouter } from "next/navigation";
+import { stripScreens } from "@/lib/strip-screens";
 
 export function ListItemComponent({ component }: { component: SDUIComponent }) {
   const router = useRouter();
@@ -27,7 +28,7 @@ export function ListItemComponent({ component }: { component: SDUIComponent }) {
       if (action.target === "blank") {
         window.open(action.url, "_blank");
       } else {
-        router.push(action.url);
+        router.push(stripScreens(action.url));
       }
     }
   }
