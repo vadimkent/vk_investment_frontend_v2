@@ -10,19 +10,30 @@ Every component receives `{ component: SDUIComponent }` as its sole prop. The `S
 
 ### screen
 
-Top-level container for a page. Renders title bar with optional back button, subtitle, and icon. Children render below the header.
+Top-level container for a page or the app shell. When `nav_type` is present, the component arranges its children (nav slots + content_slot) into the corresponding layout. When absent, it renders as a standard page with optional header.
 
-| Prop        | Type    | Required | Description                                                   |
-| ----------- | ------- | -------- | ------------------------------------------------------------- |
-| title       | string  | no       | Browser tab / document title metadata. Not rendered visually. |
-| subtitle    | string  | no       | Subtitle rendered in the header                               |
-| icon        | string  | no       | Icon/emoji rendered in the header                             |
-| back_action | boolean | no       | Show back arrow button                                        |
+| Prop        | Type    | Required | Description                                                                                                                                          |
+| ----------- | ------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| title       | string  | no       | Browser tab / document title metadata. Not rendered visually.                                                                                        |
+| nav_type    | string  | no       | Shell layout mode: `sidebar`, `bottombar`, `header_footer`, `header_only`. Determines how nav slots and content_slot are arranged. See layout table. |
+| subtitle    | string  | no       | Subtitle rendered in the header (only when `nav_type` is absent)                                                                                     |
+| icon        | string  | no       | Icon/emoji rendered in the header (only when `nav_type` is absent)                                                                                   |
+| back_action | boolean | no       | Show back arrow button (only when `nav_type` is absent)                                                                                              |
+
+**Layout by `nav_type`:**
+
+| nav_type        | Layout                                                                                                                                |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `sidebar`       | Grid `240px 1fr`. Left: nav_header + nav_main + nav_footer stacked in a sticky sidebar. Right: content_slot + other non-nav children. |
+| `bottombar`     | Flex column. Optional nav_header at top, content in the middle, bottombar fixed at bottom.                                            |
+| `header_footer` | Flex column. nav_header + nav_main at top with border, content middle, nav_footer at bottom.                                          |
+| `header_only`   | Flex column. nav_header + nav_main at top with border, content below.                                                                 |
+| (absent)        | Standard page: optional header bar (back/icon/subtitle), children stacked vertically.                                                 |
 
 - **React**: `ScreenComponent` -- `components/base/Screen.tsx`
 - **"use client"**: Yes (uses `useRouter` for back navigation)
-- **Renders**: `div.min-h-screen` > header bar + children. Back button triggers first action (navigate_back or navigate).
-- **Viewport**: `screen` fills the full viewport height (`min-h-screen`). To center content (e.g. a login card), use a `column` child with `align_items: center` and `justify_items: center`.
+- **Renders**: delegates to `SidebarLayout`, `BottombarLayout`, `HeaderFooterLayout`, `HeaderOnlyLayout`, or `DefaultLayout` based on `nav_type`. Each layout extracts nav slots from children by type and places them in the corresponding regions.
+- **Viewport**: `screen` fills the full viewport height (`min-h-screen`). To center content in a page without `nav_type` (e.g. a login card), use a `column` child with `align_items: center` and `justify_items: center`.
 
 ### row
 

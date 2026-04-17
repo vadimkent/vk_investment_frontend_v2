@@ -72,16 +72,17 @@ This avoids mutating the SDUI tree. The shell is rendered as-is, and whenever `C
 
 ## 4. Navigation Types (`nav_type`)
 
-The middleend returns a shell with navigation components based on the platform and app configuration. The frontend does not switch on a `nav_type` value directly -- it simply renders the components present in the shell tree. Common patterns:
+The middleend returns a shell as a `screen` component with `nav_type` in props and nav slot children (`nav_header`, `nav_main`, `nav_footer`, `bottombar`, `content_slot`) as flat direct children. The **frontend reads `nav_type`** and arranges the slots into the corresponding layout (per the workflow spec `07-sdui.md §7.3`).
 
-| Pattern          | Shell Children                                            | Visual Result                                                                          |
-| ---------------- | --------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| Sidebar          | `nav_header` + `nav_main` + `nav_footer` + `content_slot` | Left sidebar with header, scrollable nav items, footer. Content fills remaining space. |
-| Bottom bar       | `content_slot` + `bottombar`                              | Content area with fixed bottom tab bar.                                                |
-| Minimal          | `content_slot` only                                       | No navigation chrome. Used for login, onboarding.                                      |
-| Sidebar + Bottom | All of the above                                          | Sidebar for desktop, bottom bar for mobile (middleend decides per platform).           |
+| `nav_type`      | Layout                                                                                                      |
+| --------------- | ----------------------------------------------------------------------------------------------------------- |
+| `sidebar`       | Grid `240px 1fr`. Left: nav_header + nav_main + nav_footer in a sticky sidebar. Right: content_slot.        |
+| `bottombar`     | Flex column. Optional nav_header at top, content_slot middle, bottombar fixed at bottom.                    |
+| `header_footer` | Flex column. nav_header + nav_main at top (bordered), content_slot middle, nav_footer at bottom (bordered). |
+| `header_only`   | Flex column. nav_header + nav_main at top (bordered), content_slot below.                                   |
+| (absent)        | Standard page. No nav chrome. Used for login, onboarding, standalone screens.                               |
 
-The middleend controls which navigation components appear. The frontend renders whatever it receives.
+The middleend controls **which slots** appear and **what's inside them**. The frontend controls **where they go** based on `nav_type`.
 
 ---
 
