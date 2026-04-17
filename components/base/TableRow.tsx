@@ -53,9 +53,16 @@ export function TableRowComponent({ component }: { component: SDUIComponent }) {
           <div
             key={child.id}
             role="cell"
-            className={`flex items-center px-4 py-3 ${alignClass[align]}`}
+            className={`flex items-center px-4 py-3 min-w-0 ${alignClass[align]}`}
+            title={
+              typeof child.props?.content === "string"
+                ? child.props.content
+                : undefined
+            }
           >
-            <ComponentRenderer component={child} />
+            <div className="truncate">
+              <ComponentRenderer component={child} />
+            </div>
           </div>
         );
       })}

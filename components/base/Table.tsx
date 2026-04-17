@@ -35,9 +35,10 @@ export function TableComponent({ component }: { component: SDUIComponent }) {
             <div
               key={col.id}
               role="columnheader"
-              className={`flex items-center px-4 py-3 ${alignClass[col.align ?? "left"]}`}
+              className={`flex items-center px-4 py-3 min-w-0 ${alignClass[col.align ?? "left"]}`}
+              title={col.header}
             >
-              {col.header}
+              <span className="truncate">{col.header}</span>
             </div>
           ))}
         </div>
