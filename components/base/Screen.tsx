@@ -5,6 +5,7 @@ import type { SDUIComponent } from "@/lib/types/sdui";
 import { ComponentRenderer } from "@/components/renderer";
 import { useRouter } from "next/navigation";
 import { stripScreens } from "@/lib/strip-screens";
+import { useSidebar } from "@/components/sidebar-provider";
 
 const NAV_SLOT_TYPES = new Set([
   "nav_header",
@@ -17,15 +18,41 @@ function isNavSlot(child: SDUIComponent): boolean {
   return NAV_SLOT_TYPES.has(child.type);
 }
 
+function filterByVisibility(
+  children: SDUIComponent[],
+  collapsed: boolean,
+): SDUIComponent[] {
+  return children.reduce<SDUIComponent[]>((acc, child) => {
+    const vis =
+      (child.props.sidebar_visibility as string | undefined) ?? "always";
+    if (vis === "expanded" && collapsed) return acc;
+    if (vis === "collapsed" && !collapsed) return acc;
+    if (child.children) {
+      acc.push({
+        ...child,
+        children: filterByVisibility(child.children, collapsed),
+      });
+    } else {
+      acc.push(child);
+    }
+    return acc;
+  }, []);
+}
+
 function SidebarLayout({ component }: { component: SDUIComponent }) {
-  const navChildren = component.children?.filter((c) => isNavSlot(c)) ?? [];
-  const contentChildren =
-    component.children?.filter((c) => !isNavSlot(c)) ?? [];
+  const { collapsed } = useSidebar();
+  const allChildren = component.children ?? [];
+  const filtered = filterByVisibility(allChildren, collapsed);
+  const navChildren = filtered.filter((c) => isNavSlot(c));
+  const contentChildren = filtered.filter((c) => !isNavSlot(c));
 
   return (
     <div
-      className="min-h-screen"
-      style={{ display: "grid", gridTemplateColumns: "240px 1fr" }}
+      className="min-h-screen transition-[grid-template-columns] duration-200"
+      style={{
+        display: "grid",
+        gridTemplateColumns: collapsed ? "64px 1fr" : "240px 1fr",
+      }}
     >
       <div className="flex flex-col border-r border-border bg-surface-primary h-screen sticky top-0 overflow-y-auto">
         {navChildren.map((child) => (
