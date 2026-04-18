@@ -4,6 +4,7 @@ import type { SDUIComponent } from "@/lib/types/sdui";
 import { useRouter } from "next/navigation";
 import {
   collectFormData,
+  hasInvalidFields,
   useActionDispatcher,
 } from "@/components/action-dispatcher";
 import { useTheme } from "@/components/theme-provider";
@@ -53,6 +54,15 @@ export function ButtonComponent({ component }: { component: SDUIComponent }) {
         break;
       case "submit":
         if (action.endpoint) {
+          if (action.target_id && hasInvalidFields(action.target_id)) {
+            const container = document.querySelector(
+              `[data-sdui-id="${action.target_id}"]`,
+            );
+            container
+              ?.querySelector<HTMLElement>('[data-sdui-invalid="true"]')
+              ?.focus();
+            break;
+          }
           const data = action.target_id
             ? collectFormData(action.target_id)
             : {};
