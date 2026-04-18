@@ -275,16 +275,18 @@ Both actions use `trigger: "click"`. The frontend selects based on the current v
 
 Text input field with label.
 
-| Prop          | Type    | Required | Description                        |
-| ------------- | ------- | -------- | ---------------------------------- |
-| name          | string  | yes      | Form field name                    |
-| input_type    | string  | no       | HTML input type (default `"text"`) |
-| label         | string  | no       | Label text                         |
-| placeholder   | string  | no       | Placeholder text                   |
-| default_value | string  | no       | Pre-filled value                   |
-| max_length    | number  | no       | Max character count                |
-| required      | boolean | no       | Required indicator                 |
-| disabled      | boolean | no       | Disable input                      |
+| Prop           | Type    | Required | Description                                                                                                                                                                                                                                                                                                                                                                                                     |
+| -------------- | ------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| name           | string  | yes      | Form field name                                                                                                                                                                                                                                                                                                                                                                                                 |
+| input_type     | string  | no       | HTML input type (default `"text"`)                                                                                                                                                                                                                                                                                                                                                                              |
+| label          | string  | no       | Label text                                                                                                                                                                                                                                                                                                                                                                                                      |
+| placeholder    | string  | no       | Placeholder text                                                                                                                                                                                                                                                                                                                                                                                                |
+| default_value  | string  | no       | Pre-filled value                                                                                                                                                                                                                                                                                                                                                                                                |
+| max_length     | number  | no       | Max character count                                                                                                                                                                                                                                                                                                                                                                                             |
+| required       | boolean | no       | Required indicator                                                                                                                                                                                                                                                                                                                                                                                              |
+| disabled       | boolean | no       | Disable input                                                                                                                                                                                                                                                                                                                                                                                                   |
+| pattern        | string  | no       | Regex (ECMAScript) for on-change and on-blur validation. When the value fails the regex (and is non-empty), the input is marked invalid (`data-sdui-invalid="true"`, red border, `aria-invalid`), and form submits through a `Button`, `Select`, `Checkbox`, or `RadioGroup` with `target_id` pointing to the enclosing form are blocked until the invalid state is cleared. Invalid regex is silently ignored. |
+| auto_uppercase | boolean | no       | If true, the frontend transforms the typed value to uppercase on every input event. Combines with `pattern`: the transform runs before validation, so `auto_uppercase: true` + `pattern: "^[A-Z]+$"` accepts lowercase typing.                                                                                                                                                                                  |
 
 - **React**: `InputComponent` -- `components/base/Input.tsx`
 - **"use client"**: Yes
@@ -540,3 +542,60 @@ Placeholder where screen content is injected by the shell. See `sdui-shell.md`.
 - **React**: `ContentSlotComponent` -- `components/base/ContentSlot.tsx`
 - **"use client"**: No
 - **Renders**: `div.flex-1` containing injected children.
+
+---
+
+## Form component visibility: `visible_when`
+
+Any of the five form components (`input`, `select`, `checkbox`, `textarea`, `radio_group`) may include a `visible_when` prop to make its rendering conditional on the current value of another field in the same `form`.
+
+```ts
+type VisibleWhen = {
+  field: string; // name of another form control in the same form
+  op: "eq" | "ne";
+  value: string | boolean | number;
+};
+```
+
+Semantics:
+
+- The frontend evaluates the condition on the current value of the referenced field (reactive — re-evaluates on every change of that field).
+- `true` → component renders normally.
+- `false` → component **unmounts** (returns `null`). It is not in the DOM, and `collectFormData` does not see it → hidden fields do not contribute to form submission data.
+- Re-showing the field mounts a fresh instance starting from its `default_value` — any previously-typed value is lost by design.
+- No compound `and`/`or` expressions. If more complex logic is needed, the middleend handles it via a round-trip.
+- Outside a `form`, `visible_when` is a no-op (component always visible).
+
+**Implementation:** `components/form-state-context.tsx` owns the reactive store. `FormComponent` seeds it with `collectInitialValues` (walks its SDUI subtree for default values). Each form component publishes its value on change via `useFormState().setValue(name, value)` and, if it has `visible_when`, subscribes to the referenced field via `useFieldValue(field)`. The pure helper `evalVisibleWhen(vw, value)` returns the visibility boolean.
+
+**Example (asset create modal):**
+
+```json
+{
+  "type": "checkbox",
+  "id": "create-is-complex",
+  "props": { "name": "is_complex", "label": "Complex asset" }
+}
+
+{
+  "type": "select",
+  "id": "create-price-provider",
+  "props": {
+    "name": "price_provider",
+    "options": [],
+    "visible_when": { "field": "is_complex", "op": "eq", "value": false }
+  }
+}
+
+{
+  "type": "input",
+  "id": "create-external-ticker",
+  "props": {
+    "name": "external_ticker",
+    "input_type": "text",
+    "visible_when": { "field": "price_provider", "op": "ne", "value": "" }
+  }
+}
+```
+
+`price_provider` shows only when `is_complex` is unchecked. `external_ticker` shows only when `price_provider` has a non-empty value.
