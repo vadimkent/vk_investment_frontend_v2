@@ -2,6 +2,7 @@
 
 import {
   createContext,
+  useCallback,
   useContext,
   useMemo,
   useRef,
@@ -29,8 +30,12 @@ export function useFormState(): FormStateContextValue | null {
 
 export function useFieldValue(name: string): unknown {
   const ctx = useContext(FormStateContext);
+  const subscribe = useCallback(
+    (cb: () => void) => (ctx ? ctx.subscribe(name, cb) : () => {}),
+    [ctx, name],
+  );
   return useSyncExternalStore(
-    (cb) => (ctx ? ctx.subscribe(name, cb) : () => {}),
+    subscribe,
     () => (ctx ? ctx.getValue(name) : undefined),
     () => (ctx ? ctx.getValue(name) : undefined),
   );
@@ -57,6 +62,8 @@ export function FormStateProvider({
   const valuesRef = useRef<Map<string, unknown> | null>(null);
   const listenersRef = useRef<Map<string, Set<() => void>> | null>(null);
 
+  // Initialised once on first render. Later changes to `initial` are
+  // deliberately ignored so user edits are not overwritten by parent re-renders.
   if (!valuesRef.current) {
     valuesRef.current = new Map(Object.entries(initial));
   }
