@@ -43,6 +43,11 @@ export function collectFormData(targetId: string): Record<string, unknown> {
   return data;
 }
 
+export function hasInvalidFields(targetId: string): boolean {
+  const container = document.querySelector(`[data-sdui-id="${targetId}"]`);
+  return !!container?.querySelector('[data-sdui-invalid="true"]');
+}
+
 export function useActionDispatcher() {
   const router = useRouter();
   const { setOverride, setLoading, clearLoading } = useOverrideMap();
