@@ -1,6 +1,12 @@
 "use client";
 
 import type { SDUIComponent } from "@/lib/types/sdui";
+import {
+  evalVisibleWhen,
+  useFieldValue,
+  useFormState,
+  type VisibleWhen,
+} from "@/components/form-state-context";
 
 export function TextareaComponent({ component }: { component: SDUIComponent }) {
   const name = String(component.props.name);
@@ -11,6 +17,12 @@ export function TextareaComponent({ component }: { component: SDUIComponent }) {
   const maxLength = component.props.max_length as number | undefined;
   const required = component.props.required === true;
   const disabled = component.props.disabled === true;
+  const vw = component.props.visible_when as VisibleWhen | undefined;
+
+  const formCtx = useFormState();
+  const depValue = useFieldValue(vw?.field ?? "");
+  if (vw && formCtx && !evalVisibleWhen(vw, depValue)) return null;
+
   const disabledClass = disabled
     ? " opacity-50 cursor-not-allowed bg-surface-muted"
     : "";
@@ -31,6 +43,7 @@ export function TextareaComponent({ component }: { component: SDUIComponent }) {
         maxLength={maxLength}
         required={required}
         disabled={disabled}
+        onInput={(e) => formCtx?.setValue(name, e.currentTarget.value)}
         className={`border border-border-input rounded px-3 py-2 w-full${disabledClass}`}
         data-sdui-id={component.id}
       />
