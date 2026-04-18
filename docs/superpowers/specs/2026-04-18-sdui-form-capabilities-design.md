@@ -303,7 +303,7 @@ Manual verification via the asset create/edit/delete modals in the middleend dev
 3. **`visible_when` chain**: toggle "Complex asset" checkbox off → `price_provider` select appears. Select a provider → `external_ticker` input appears. Toggle complex back on → both disappear, don't submit.
 4. **Partial form, no regressions**: login form, filter selects on positions screen, toggle interactions — all work unchanged.
 
-No unit tests added in this scope — the project does not currently have a React testing setup for these components, and adding one is out of scope for this feature. Manual verification is the bar per existing project practice. If flakiness emerges, a follow-up can add one.
+Unit tests via the project's existing Vitest + `@testing-library/react` setup (see `tests/`). Each new module (`form-state-context`, `collect-initial-values`) and each behavior added to a component (pattern validation, auto_uppercase transform, visible_when gating, submit blocking) gets a test — following the TDD pattern used in prior plans in this repo.
 
 ---
 
