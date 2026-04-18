@@ -77,7 +77,7 @@ export function useActionDispatcher() {
           });
         } catch {
           show("Algo falló, reintentá", "error");
-          return { action: "none" };
+          return { action: "none", error: "network" };
         }
 
         let body: ActionResponse;
@@ -85,7 +85,7 @@ export function useActionDispatcher() {
           body = await response.json();
         } catch {
           show("Algo falló, reintentá", "error");
-          return { action: "none" };
+          return { action: "none", error: "parse" };
         }
 
         if (response.status === 401 && body.redirect) {
@@ -95,6 +95,7 @@ export function useActionDispatcher() {
 
         if (body.error || (!response.ok && response.status !== 401)) {
           show("Algo falló, reintentá", "error");
+          if (!body.error) body.error = `http_${response.status}`;
         }
 
         switch (body.action) {

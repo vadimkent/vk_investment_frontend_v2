@@ -72,10 +72,16 @@ export function ButtonComponent({ component }: { component: SDUIComponent }) {
             action.endpoint,
             placeholders,
           );
-          await dispatch(endpoint, action.method ?? "POST", data, {
-            loading: action.loading,
-            targetId: action.target_id,
-          });
+          const result = await dispatch(
+            endpoint,
+            action.method ?? "POST",
+            data,
+            {
+              loading: action.loading,
+              targetId: action.target_id,
+            },
+          );
+          if (!result.error) modal?.close();
         }
         break;
       case "reload":
