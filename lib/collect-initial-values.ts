@@ -24,7 +24,10 @@ function walk(node: SDUIComponent, out: Record<string, unknown>): void {
     }
   }
   if (node.children) {
-    for (const child of node.children) walk(child, out);
+    for (const child of node.children) {
+      if (child.type === "form" || child.type === "modal") continue;
+      walk(child, out);
+    }
   }
 }
 

@@ -76,4 +76,17 @@ describe("collectInitialValues", () => {
     ]);
     expect(collectInitialValues(tree)).toEqual({});
   });
+
+  it("does not descend into nested form or modal children", () => {
+    const tree = c("form", "outer", {}, [
+      c("input", "a", { name: "outer_field", default_value: "OUT" }),
+      c("form", "inner-form", {}, [
+        c("input", "b", { name: "inner_field", default_value: "IN" }),
+      ]),
+      c("modal", "inner-modal", {}, [
+        c("input", "c", { name: "modal_field", default_value: "MODAL" }),
+      ]),
+    ]);
+    expect(collectInitialValues(tree)).toEqual({ outer_field: "OUT" });
+  });
 });
