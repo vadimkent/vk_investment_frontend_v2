@@ -46,7 +46,18 @@ export function OverrideMapProvider({ children }: { children: ReactNode }) {
   const getOverride = useCallback((id: string) => overrides[id], [overrides]);
   const setOverride = useCallback(
     (id: string, tree: SDUIComponent) =>
-      setOverrides((prev) => ({ ...prev, [id]: tree })),
+      setOverrides((prev) => {
+        const next: Record<string, SDUIComponent> = {};
+        const idsInTree = new Set<string>();
+        collectIds(tree, idsInTree);
+        for (const key of Object.keys(prev)) {
+          if (key === id) continue;
+          if (idsInTree.has(key)) continue;
+          next[key] = prev[key];
+        }
+        next[id] = tree;
+        return next;
+      }),
     [],
   );
   const clearOverrides = useCallback(() => setOverrides({}), []);
@@ -92,4 +103,11 @@ export function OverrideMapProvider({ children }: { children: ReactNode }) {
 
 export function useOverrideMap() {
   return useContext(Ctx);
+}
+
+function collectIds(node: SDUIComponent, out: Set<string>): void {
+  out.add(node.id);
+  if (node.children) {
+    for (const child of node.children) collectIds(child, out);
+  }
 }
