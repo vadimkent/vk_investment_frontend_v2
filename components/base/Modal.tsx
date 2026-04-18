@@ -48,9 +48,9 @@ export function ModalComponent({ component }: { component: SDUIComponent }) {
       className={`fixed inset-0 z-50 flex ${containerClass}`}
       onClick={dismissible ? handleBackdropClick : undefined}
     >
-      <div className="absolute inset-0 bg-overlay/50" />
+      <div className="absolute inset-0 bg-overlay/70" />
       <div
-        className={`relative bg-surface-primary overflow-y-auto ${panelClass}`}
+        className={`relative bg-surface-card border border-border shadow-2xl overflow-y-auto ${panelClass}`}
         onClick={(e) => e.stopPropagation()}
       >
         {title && (
