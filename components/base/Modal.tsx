@@ -29,6 +29,15 @@ export function ModalComponent({ component }: { component: SDUIComponent }) {
     };
   }, [shown]);
 
+  useEffect(() => {
+    if (!shown || !dismissible) return;
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") close();
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [shown, dismissible, close]);
+
   if (!shown) return null;
 
   const presentationClasses: Record<string, string> = {
