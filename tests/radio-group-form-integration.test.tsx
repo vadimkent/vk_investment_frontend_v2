@@ -20,7 +20,8 @@ describe("RadioGroup + FormStateContext", () => {
   });
 
   it("publishes selected value and gates another field visibility", async () => {
-    const { RadioGroupComponent } = await import("@/components/base/RadioGroup");
+    const { RadioGroupComponent } =
+      await import("@/components/base/RadioGroup");
     const { InputComponent } = await import("@/components/base/Input");
     const { FormStateProvider } =
       await import("@/components/form-state-context");
@@ -65,7 +66,8 @@ describe("RadioGroup + FormStateContext", () => {
   });
 
   it("unmounts when its own visible_when is false", async () => {
-    const { RadioGroupComponent } = await import("@/components/base/RadioGroup");
+    const { RadioGroupComponent } =
+      await import("@/components/base/RadioGroup");
     const { FormStateProvider } =
       await import("@/components/form-state-context");
 
