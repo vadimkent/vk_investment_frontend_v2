@@ -457,8 +457,9 @@ Overlay dialog with backdrop.
 | presentation | string  | no       | `dialog` (default), `bottom_sheet`, `fullscreen` |
 
 - **React**: `ModalComponent` -- `components/base/Modal.tsx`
-- **"use client"**: Yes (uses `useEffect` to lock body scroll)
-- **Renders**: Fixed overlay (`z-50`) with semi-transparent backdrop. Content panel varies by presentation mode.
+- **"use client"**: Yes (uses `useEffect` to lock body scroll; owns an internal `dismissed` boolean that closes the modal client-side)
+- **Renders**: Fixed overlay (`z-50`) with `bg-overlay/70` backdrop. Content panel uses `bg-surface-card` with `border` and `shadow-2xl` so it floats clearly over the darkened page. Panel shape varies by `presentation`.
+- **Closing:** The panel provides a `ModalContext` via `components/modal-context.tsx` exposing `{ close: () => void }`. Any descendant `button` with `{ type: "dismiss" }` closes the modal by calling `close()` — purely client-side, no round-trip. Backdrop click also calls `close()` when `dismissible !== false`. The `dismissed` boolean resets whenever the middleend flips `visible` back to `true`, so re-opening a previously-dismissed modal works transparently.
 
 ---
 

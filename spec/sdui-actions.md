@@ -37,7 +37,7 @@ Action types handled by `ButtonComponent` (all of the below). `IconToggleCompone
 | `reload`           | Sends GET to middleend endpoint via `/api/action`, processes response.                                                           | `endpoint`                                   |
 | `refresh`          | Triggers `router.refresh()` to re-render server components.                                                                      | (none)                                       |
 | `open_url`         | Opens URL in a new tab via `window.open`.                                                                                        | `url`                                        |
-| `dismiss`          | No-op in current implementation. Reserved for modal dismiss.                                                                     | (none)                                       |
+| `dismiss`          | Closes the enclosing `modal` client-side via `useModal().close()`. No-op when the button is not inside a modal. No round-trip.   | (none)                                       |
 | `logout`           | POSTs to `/api/auth/logout`, then navigates to `/login`.                                                                         | (none)                                       |
 | `toggle_theme`     | Toggles light/dark mode. Client-side only, no round-trip.                                                                        | (none)                                       |
 | `toggle_sensitive` | Toggles the global sensitive-data mask (hides amounts/values). Client-side only.                                                 | (none)                                       |
