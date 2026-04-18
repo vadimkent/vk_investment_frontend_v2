@@ -56,7 +56,10 @@ export function ButtonComponent({ component }: { component: SDUIComponent }) {
           const data = action.target_id
             ? collectFormData(action.target_id)
             : {};
-          const endpoint = substitutePlaceholders(action.endpoint, placeholders);
+          const endpoint = substitutePlaceholders(
+            action.endpoint,
+            placeholders,
+          );
           await dispatch(endpoint, action.method ?? "POST", data, {
             loading: action.loading,
             targetId: action.target_id,
@@ -65,7 +68,10 @@ export function ButtonComponent({ component }: { component: SDUIComponent }) {
         break;
       case "reload":
         if (action.endpoint) {
-          const endpoint = substitutePlaceholders(action.endpoint, placeholders);
+          const endpoint = substitutePlaceholders(
+            action.endpoint,
+            placeholders,
+          );
           await dispatch(endpoint, "GET", undefined, {
             loading: action.loading,
             targetId: action.target_id,
@@ -133,9 +139,7 @@ export function ButtonComponent({ component }: { component: SDUIComponent }) {
   const sizeClass = iconOnly
     ? (iconOnlySizeStyles[btnSize] ?? iconOnlySizeStyles.md)
     : (sizeStyles[btnSize] ?? sizeStyles.md);
-  const layoutClass = iconOnly
-    ? "inline-flex justify-center"
-    : "flex";
+  const layoutClass = iconOnly ? "inline-flex justify-center" : "flex";
 
   return (
     <button

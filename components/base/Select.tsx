@@ -36,7 +36,10 @@ export function SelectComponent({ component }: { component: SDUIComponent }) {
     setValue(next);
     if (!changeAction?.endpoint) return;
     const placeholders = { value: next };
-    const endpoint = substitutePlaceholders(changeAction.endpoint, placeholders);
+    const endpoint = substitutePlaceholders(
+      changeAction.endpoint,
+      placeholders,
+    );
 
     switch (changeAction.type) {
       case "reload":

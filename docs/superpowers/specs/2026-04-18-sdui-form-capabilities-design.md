@@ -122,9 +122,12 @@ type VisibleWhen = { field: string; op: "eq" | "ne"; value: unknown };
 
 function evalVisibleWhen(vw: VisibleWhen, value: unknown): boolean {
   switch (vw.op) {
-    case "eq": return value === vw.value;
-    case "ne": return value !== vw.value;
-    default: return true; // unknown op → fail open
+    case "eq":
+      return value === vw.value;
+    case "ne":
+      return value !== vw.value;
+    default:
+      return true; // unknown op → fail open
   }
 }
 ```
@@ -145,6 +148,7 @@ if (vw && formCtx && !evalVisibleWhen(vw, depValue)) return null;
 The `formCtx && ...` guard makes `visible_when` a no-op outside a `Form` (fail open). Inside a `Form`, the evaluation runs with real values.
 
 Unmounting (returning `null`) means:
+
 - The input is not in the DOM → `collectFormData` skips it automatically.
 - Any typed value is discarded. Matches spec: "hidden components do not contribute to form data".
 - Re-showing the field starts from its `default_value` (inputs remount fresh). Acceptable because the user never interacted with a hidden field.
@@ -207,7 +211,7 @@ function runChecks(el: HTMLInputElement) {
   onInput={(e) => runChecks(e.currentTarget)}
   onBlur={(e) => runChecks(e.currentTarget)}
   // ...
-/>
+/>;
 ```
 
 Empty value is considered valid by pattern — `required` is a separate concern handled by the existing HTML `required` attribute. The spec also doesn't say pattern implies required.
@@ -215,6 +219,7 @@ Empty value is considered valid by pattern — `required` is a separate concern 
 ### Visual state
 
 When `invalid` is true:
+
 - `aria-invalid="true"` on the `<input>`.
 - `data-sdui-invalid="true"` on the `<input>` (used by submit blocking).
 - Classes: `border-status-error focus-visible:ring-status-error/40`. Replace default `border-border-input` class.
@@ -279,18 +284,18 @@ Invalid fields are still in the DOM — submit blocking handles them earlier; by
 
 ## Edge cases
 
-| Case | Behavior |
-|---|---|
+| Case                                                                        | Behavior                                                                                                                                                                                                                       |
+| --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `visible_when.field` points to a name that no component in the form exposes | `getValue` returns `undefined`. `op:"eq"` with any value → `false` → hidden. `op:"ne"` with any value → `true` → visible. The visibility is determined, not "broken" — middleend authoring error shows up as wrong visibility. |
-| Chained visibility: A hides B; B hides C | Works. When A hides B, B unmounts and stops publishing. C subscribes to B's name, gets `undefined`, evaluates accordingly. Each link is reactive. |
-| Invalid regex in `pattern` | `new RegExp` throws → caught → regex is `null` → no validation → field always valid. Dev warning logged. |
-| `default_value` doesn't match `pattern` | Input starts valid. Becomes invalid on first change or blur. Matches spec. |
-| `auto_uppercase` + case-sensitive pattern | Transform runs before regex test → no false invalid. |
-| User types invalid value, then submits | Button blocks, focuses first invalid input. No server round-trip. |
-| `visible_when` outside any Form | `useFormState()` returns `null` → guard skips the evaluation → component always visible. Non-form uses unaffected. |
-| Two visibility conditions compose via chain | Supported via chaining (see above). Compound `and`/`or` explicitly out of scope per middleend spec. |
-| Re-showing a field after hiding | Field unmounts on hide → remounts on show. Starts from `default_value`. Previously typed value is lost by design. |
-| `required` + `visible_when` | If hidden, not in DOM → native `required` validation doesn't fire for it → submit proceeds. Correct (hidden fields are conceptually absent). |
+| Chained visibility: A hides B; B hides C                                    | Works. When A hides B, B unmounts and stops publishing. C subscribes to B's name, gets `undefined`, evaluates accordingly. Each link is reactive.                                                                              |
+| Invalid regex in `pattern`                                                  | `new RegExp` throws → caught → regex is `null` → no validation → field always valid. Dev warning logged.                                                                                                                       |
+| `default_value` doesn't match `pattern`                                     | Input starts valid. Becomes invalid on first change or blur. Matches spec.                                                                                                                                                     |
+| `auto_uppercase` + case-sensitive pattern                                   | Transform runs before regex test → no false invalid.                                                                                                                                                                           |
+| User types invalid value, then submits                                      | Button blocks, focuses first invalid input. No server round-trip.                                                                                                                                                              |
+| `visible_when` outside any Form                                             | `useFormState()` returns `null` → guard skips the evaluation → component always visible. Non-form uses unaffected.                                                                                                             |
+| Two visibility conditions compose via chain                                 | Supported via chaining (see above). Compound `and`/`or` explicitly out of scope per middleend spec.                                                                                                                            |
+| Re-showing a field after hiding                                             | Field unmounts on hide → remounts on show. Starts from `default_value`. Previously typed value is lost by design.                                                                                                              |
+| `required` + `visible_when`                                                 | If hidden, not in DOM → native `required` validation doesn't fire for it → submit proceeds. Correct (hidden fields are conceptually absent).                                                                                   |
 
 ---
 

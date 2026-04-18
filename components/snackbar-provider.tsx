@@ -34,16 +34,13 @@ const variantStyles: Record<Variant, string> = {
 export function SnackbarProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<SnackbarItem[]>([]);
 
-  const show = useCallback(
-    (message: string, variant: Variant = "info") => {
-      const id = Date.now() + Math.random();
-      setItems((prev) => [...prev, { id, message, variant }]);
-      setTimeout(() => {
-        setItems((prev) => prev.filter((it) => it.id !== id));
-      }, 4000);
-    },
-    [],
-  );
+  const show = useCallback((message: string, variant: Variant = "info") => {
+    const id = Date.now() + Math.random();
+    setItems((prev) => [...prev, { id, message, variant }]);
+    setTimeout(() => {
+      setItems((prev) => prev.filter((it) => it.id !== id));
+    }, 4000);
+  }, []);
 
   return (
     <SnackbarContext.Provider value={{ show }}>

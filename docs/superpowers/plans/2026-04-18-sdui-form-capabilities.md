@@ -17,6 +17,7 @@
 Pure helper that walks an SDUI tree and extracts default values for every named form field. Used by `Form` to seed `FormStateContext`.
 
 **Files:**
+
 - Create: `lib/collect-initial-values.ts`
 - Test: `tests/collect-initial-values.test.ts`
 
@@ -29,17 +30,26 @@ import { describe, it, expect } from "vitest";
 import { collectInitialValues } from "@/lib/collect-initial-values";
 import type { SDUIComponent } from "@/lib/types/sdui";
 
-function c(type: string, id: string, props: Record<string, unknown> = {}, children?: SDUIComponent[]): SDUIComponent {
+function c(
+  type: string,
+  id: string,
+  props: Record<string, unknown> = {},
+  children?: SDUIComponent[],
+): SDUIComponent {
   return { type, id, props, children };
 }
 
 describe("collectInitialValues", () => {
   it("returns empty object for a leaf node with no form children", () => {
-    expect(collectInitialValues(c("text", "t1", { content: "hi" }))).toEqual({});
+    expect(collectInitialValues(c("text", "t1", { content: "hi" }))).toEqual(
+      {},
+    );
   });
 
   it("reads input default_value", () => {
-    const tree = c("form", "f", {}, [c("input", "i", { name: "ticker", default_value: "AAPL" })]);
+    const tree = c("form", "f", {}, [
+      c("input", "i", { name: "ticker", default_value: "AAPL" }),
+    ]);
     expect(collectInitialValues(tree)).toEqual({ ticker: "AAPL" });
   });
 
@@ -53,7 +63,10 @@ describe("collectInitialValues", () => {
       c("checkbox", "c1", { name: "is_complex", checked: true }),
       c("checkbox", "c2", { name: "archived" }),
     ]);
-    expect(collectInitialValues(tree)).toEqual({ is_complex: true, archived: false });
+    expect(collectInitialValues(tree)).toEqual({
+      is_complex: true,
+      archived: false,
+    });
   });
 
   it("reads select and radio_group default_value", () => {
@@ -61,25 +74,34 @@ describe("collectInitialValues", () => {
       c("select", "s", { name: "provider", default_value: "yahoo" }),
       c("radio_group", "r", { name: "kind", default_value: "stock" }),
     ]);
-    expect(collectInitialValues(tree)).toEqual({ provider: "yahoo", kind: "stock" });
+    expect(collectInitialValues(tree)).toEqual({
+      provider: "yahoo",
+      kind: "stock",
+    });
   });
 
   it("reads textarea default_value", () => {
-    const tree = c("form", "f", {}, [c("textarea", "t", { name: "notes", default_value: "hello" })]);
+    const tree = c("form", "f", {}, [
+      c("textarea", "t", { name: "notes", default_value: "hello" }),
+    ]);
     expect(collectInitialValues(tree)).toEqual({ notes: "hello" });
   });
 
   it("recurses into nested containers", () => {
     const tree = c("form", "f", {}, [
       c("column", "col", {}, [
-        c("card", "card", {}, [c("input", "i", { name: "ticker", default_value: "AAPL" })]),
+        c("card", "card", {}, [
+          c("input", "i", { name: "ticker", default_value: "AAPL" }),
+        ]),
       ]),
     ]);
     expect(collectInitialValues(tree)).toEqual({ ticker: "AAPL" });
   });
 
   it("skips components without a name prop", () => {
-    const tree = c("form", "f", {}, [c("input", "i", { default_value: "no-name" })]);
+    const tree = c("form", "f", {}, [
+      c("input", "i", { default_value: "no-name" }),
+    ]);
     expect(collectInitialValues(tree)).toEqual({});
   });
 });
@@ -160,6 +182,7 @@ git commit -m "feat: add collectInitialValues helper for SDUI form defaults"
 Reactive per-field store for forms. `Form` provides it, form components publish and subscribe.
 
 **Files:**
+
 - Create: `components/form-state-context.tsx`
 - Test: `tests/form-state-context.test.tsx`
 
@@ -181,17 +204,27 @@ import type { ReactNode } from "react";
 describe("evalVisibleWhen", () => {
   it("eq matches strictly equal values", () => {
     expect(evalVisibleWhen({ field: "x", op: "eq", value: "" }, "")).toBe(true);
-    expect(evalVisibleWhen({ field: "x", op: "eq", value: "a" }, "b")).toBe(false);
+    expect(evalVisibleWhen({ field: "x", op: "eq", value: "a" }, "b")).toBe(
+      false,
+    );
   });
   it("ne matches strictly non-equal values", () => {
-    expect(evalVisibleWhen({ field: "x", op: "ne", value: "" }, "a")).toBe(true);
-    expect(evalVisibleWhen({ field: "x", op: "ne", value: false }, false)).toBe(false);
+    expect(evalVisibleWhen({ field: "x", op: "ne", value: "" }, "a")).toBe(
+      true,
+    );
+    expect(evalVisibleWhen({ field: "x", op: "ne", value: false }, false)).toBe(
+      false,
+    );
   });
   it("unknown op fails open (returns true)", () => {
-    expect(evalVisibleWhen({ field: "x", op: "xyz" as "eq", value: "a" }, "a")).toBe(true);
+    expect(
+      evalVisibleWhen({ field: "x", op: "xyz" as "eq", value: "a" }, "a"),
+    ).toBe(true);
   });
   it("handles boolean and number equality", () => {
-    expect(evalVisibleWhen({ field: "x", op: "eq", value: true }, true)).toBe(true);
+    expect(evalVisibleWhen({ field: "x", op: "eq", value: true }, true)).toBe(
+      true,
+    );
     expect(evalVisibleWhen({ field: "x", op: "eq", value: 3 }, 3)).toBe(true);
   });
 });
@@ -219,7 +252,9 @@ describe("FormStateContext", () => {
 
   it("setValue updates the value and triggers subscribers", () => {
     const wrapper = ({ children }: { children: ReactNode }) => (
-      <FormStateProvider initial={{ ticker: "AAPL" }}>{children}</FormStateProvider>
+      <FormStateProvider initial={{ ticker: "AAPL" }}>
+        {children}
+      </FormStateProvider>
     );
     const { result } = renderHook(
       () => ({ value: useFieldValue("ticker"), ctx: useFormState() }),
@@ -235,7 +270,9 @@ describe("FormStateContext", () => {
   it("subscribers of other fields do not re-render when unrelated field changes", () => {
     let renderCount = 0;
     const wrapper = ({ children }: { children: ReactNode }) => (
-      <FormStateProvider initial={{ a: "1", b: "2" }}>{children}</FormStateProvider>
+      <FormStateProvider initial={{ a: "1", b: "2" }}>
+        {children}
+      </FormStateProvider>
     );
     const { result } = renderHook(
       () => {
@@ -382,6 +419,7 @@ git commit -m "feat: add FormStateContext for reactive form field state"
 `Form` computes initial values from its SDUI subtree and wraps children in `FormStateProvider`.
 
 **Files:**
+
 - Modify: `components/base/Form.tsx`
 - Test: `tests/form-wiring.test.tsx`
 
@@ -410,7 +448,9 @@ describe("FormComponent renders its children as an SDUI form", () => {
       ],
     };
     const { container } = render(<FormComponent component={tree} />);
-    const input = container.querySelector('input[name="ticker"]') as HTMLInputElement;
+    const input = container.querySelector(
+      'input[name="ticker"]',
+    ) as HTMLInputElement;
     expect(input).not.toBeNull();
     expect(input.value).toBe("AAPL");
   });
@@ -476,6 +516,7 @@ git commit -m "feat: wire FormComponent with FormStateProvider and initial value
 Add regex validation, uppercase transform, form-state publish, and visible_when gating to `Input`.
 
 **Files:**
+
 - Modify: `components/base/Input.tsx`
 - Test: `tests/input-pattern.test.tsx`
 - Test: `tests/input-auto-uppercase.test.tsx`
@@ -495,7 +536,11 @@ function renderInput(props: Record<string, unknown>) {
   return render(
     <FormStateProvider initial={{}}>
       <InputComponent
-        component={{ type: "input", id: "test-input", props: { name: "ticker", ...props } }}
+        component={{
+          type: "input",
+          id: "test-input",
+          props: { name: "ticker", ...props },
+        }}
       />
     </FormStateProvider>,
   );
@@ -504,7 +549,9 @@ function renderInput(props: Record<string, unknown>) {
 describe("Input pattern validation", () => {
   it("does not mark valid values as invalid on input", () => {
     const { container } = renderInput({ pattern: "^[A-Z]+$" });
-    const input = container.querySelector('input[name="ticker"]') as HTMLInputElement;
+    const input = container.querySelector(
+      'input[name="ticker"]',
+    ) as HTMLInputElement;
     fireEvent.input(input, { target: { value: "AAPL" } });
     expect(input.getAttribute("data-sdui-invalid")).toBeNull();
     expect(input.getAttribute("aria-invalid")).toBeNull();
@@ -512,7 +559,9 @@ describe("Input pattern validation", () => {
 
   it("marks invalid values on input", () => {
     const { container } = renderInput({ pattern: "^[A-Z]+$" });
-    const input = container.querySelector('input[name="ticker"]') as HTMLInputElement;
+    const input = container.querySelector(
+      'input[name="ticker"]',
+    ) as HTMLInputElement;
     fireEvent.input(input, { target: { value: "aapl" } });
     expect(input.getAttribute("data-sdui-invalid")).toBe("true");
     expect(input.getAttribute("aria-invalid")).toBe("true");
@@ -520,21 +569,30 @@ describe("Input pattern validation", () => {
 
   it("treats empty value as valid even with pattern", () => {
     const { container } = renderInput({ pattern: "^[A-Z]+$" });
-    const input = container.querySelector('input[name="ticker"]') as HTMLInputElement;
+    const input = container.querySelector(
+      'input[name="ticker"]',
+    ) as HTMLInputElement;
     fireEvent.input(input, { target: { value: "" } });
     expect(input.getAttribute("data-sdui-invalid")).toBeNull();
   });
 
   it("invalid regex is silently ignored", () => {
     const { container } = renderInput({ pattern: "[unclosed" });
-    const input = container.querySelector('input[name="ticker"]') as HTMLInputElement;
+    const input = container.querySelector(
+      'input[name="ticker"]',
+    ) as HTMLInputElement;
     fireEvent.input(input, { target: { value: "anything" } });
     expect(input.getAttribute("data-sdui-invalid")).toBeNull();
   });
 
   it("does not mark invalid on mount even if default_value fails pattern", () => {
-    const { container } = renderInput({ pattern: "^[A-Z]+$", default_value: "aapl" });
-    const input = container.querySelector('input[name="ticker"]') as HTMLInputElement;
+    const { container } = renderInput({
+      pattern: "^[A-Z]+$",
+      default_value: "aapl",
+    });
+    const input = container.querySelector(
+      'input[name="ticker"]',
+    ) as HTMLInputElement;
     expect(input.getAttribute("data-sdui-invalid")).toBeNull();
   });
 });
@@ -552,7 +610,11 @@ function renderInput(props: Record<string, unknown>) {
   return render(
     <FormStateProvider initial={{}}>
       <InputComponent
-        component={{ type: "input", id: "test-input", props: { name: "ticker", ...props } }}
+        component={{
+          type: "input",
+          id: "test-input",
+          props: { name: "ticker", ...props },
+        }}
       />
     </FormStateProvider>,
   );
@@ -561,21 +623,30 @@ function renderInput(props: Record<string, unknown>) {
 describe("Input auto_uppercase", () => {
   it("transforms typed lowercase to uppercase", () => {
     const { container } = renderInput({ auto_uppercase: true });
-    const input = container.querySelector('input[name="ticker"]') as HTMLInputElement;
+    const input = container.querySelector(
+      'input[name="ticker"]',
+    ) as HTMLInputElement;
     fireEvent.input(input, { target: { value: "aapl" } });
     expect(input.value).toBe("AAPL");
   });
 
   it("is a no-op when auto_uppercase is absent", () => {
     const { container } = renderInput({});
-    const input = container.querySelector('input[name="ticker"]') as HTMLInputElement;
+    const input = container.querySelector(
+      'input[name="ticker"]',
+    ) as HTMLInputElement;
     fireEvent.input(input, { target: { value: "aapl" } });
     expect(input.value).toBe("aapl");
   });
 
   it("combines with pattern: uppercase happens before validation", () => {
-    const { container } = renderInput({ auto_uppercase: true, pattern: "^[A-Z]+$" });
-    const input = container.querySelector('input[name="ticker"]') as HTMLInputElement;
+    const { container } = renderInput({
+      auto_uppercase: true,
+      pattern: "^[A-Z]+$",
+    });
+    const input = container.querySelector(
+      'input[name="ticker"]',
+    ) as HTMLInputElement;
     fireEvent.input(input, { target: { value: "aapl" } });
     expect(input.value).toBe("AAPL");
     expect(input.getAttribute("data-sdui-invalid")).toBeNull();
@@ -766,6 +837,7 @@ git commit -m "feat: add pattern, auto_uppercase, and visible_when to Input"
 Export a helper for scanning a form container for invalid inputs.
 
 **Files:**
+
 - Modify: `components/action-dispatcher.tsx`
 - Test: `tests/has-invalid-fields.test.ts`
 
@@ -845,6 +917,7 @@ git commit -m "feat: add hasInvalidFields helper for submit blocking"
 `ButtonComponent` checks `hasInvalidFields` before dispatching a `submit` action.
 
 **Files:**
+
 - Modify: `components/base/Button.tsx` (the `submit` case in `handleClick`)
 - Test: `tests/button-submit-blocking.test.tsx`
 
@@ -911,7 +984,9 @@ describe("Button submit blocking", () => {
         <ButtonComponent component={button} />
       </>,
     );
-    container.querySelector("#form-wrap")!.appendChild(buildFormContainer(true));
+    container
+      .querySelector("#form-wrap")!
+      .appendChild(buildFormContainer(true));
 
     fireEvent.click(container.querySelector("button")!);
     expect(dispatchSpy).not.toHaveBeenCalled();
@@ -940,7 +1015,9 @@ describe("Button submit blocking", () => {
         <ButtonComponent component={button} />
       </>,
     );
-    container.querySelector("#form-wrap")!.appendChild(buildFormContainer(false));
+    container
+      .querySelector("#form-wrap")!
+      .appendChild(buildFormContainer(false));
 
     fireEvent.click(container.querySelector("button")!);
     expect(dispatchSpy).toHaveBeenCalledOnce();
@@ -958,13 +1035,16 @@ Expected: FAIL — first test fails because dispatch is called even with invalid
 In `components/base/Button.tsx`:
 
 1. Update the import from `@/components/action-dispatcher` to include `hasInvalidFields`. The current line is:
+
    ```tsx
    import {
      collectFormData,
      useActionDispatcher,
    } from "@/components/action-dispatcher";
    ```
+
    Change to:
+
    ```tsx
    import {
      collectFormData,
@@ -1018,6 +1098,7 @@ git commit -m "feat: block Button submit when form contains invalid fields"
 `TextareaComponent` publishes its value on change and honors `visible_when`.
 
 **Files:**
+
 - Modify: `components/base/Textarea.tsx`
 - Test: `tests/textarea-form-integration.test.tsx`
 
@@ -1074,7 +1155,9 @@ describe("Textarea + FormStateContext", () => {
       </FormStateProvider>,
     );
     expect(container.querySelector('input[name="flag"]')).toBeNull();
-    const ta = container.querySelector('textarea[name="notes"]') as HTMLTextAreaElement;
+    const ta = container.querySelector(
+      'textarea[name="notes"]',
+    ) as HTMLTextAreaElement;
     fireEvent.input(ta, { target: { value: "anything" } });
     expect(container.querySelector('input[name="flag"]')).not.toBeNull();
   });
@@ -1164,6 +1247,7 @@ git commit -m "feat: add publish + visible_when to Textarea"
 `CheckboxComponent` publishes its value, honors `visible_when`, and respects submit blocking when `target_id` is present.
 
 **Files:**
+
 - Modify: `components/base/Checkbox.tsx`
 - Test: `tests/checkbox-form-integration.test.tsx`
 
@@ -1196,9 +1280,8 @@ describe("Checkbox + FormStateContext", () => {
   it("publishes checked value and gates another field visibility", async () => {
     const { CheckboxComponent } = await import("@/components/base/Checkbox");
     const { InputComponent } = await import("@/components/base/Input");
-    const { FormStateProvider } = await import(
-      "@/components/form-state-context"
-    );
+    const { FormStateProvider } =
+      await import("@/components/form-state-context");
 
     const { container } = render(
       <FormStateProvider initial={{ is_complex: false }}>
@@ -1222,8 +1305,12 @@ describe("Checkbox + FormStateContext", () => {
       </FormStateProvider>,
     );
 
-    expect(container.querySelector('input[name="external_ticker"]')).not.toBeNull();
-    const cb = container.querySelector('input[name="is_complex"]') as HTMLInputElement;
+    expect(
+      container.querySelector('input[name="external_ticker"]'),
+    ).not.toBeNull();
+    const cb = container.querySelector(
+      'input[name="is_complex"]',
+    ) as HTMLInputElement;
     fireEvent.click(cb);
     expect(container.querySelector('input[name="external_ticker"]')).toBeNull();
   });
@@ -1315,7 +1402,8 @@ export function CheckboxComponent({ component }: { component: SDUIComponent }) {
   function handleChange(value: boolean) {
     formCtx?.setValue(name, value);
     if (!changeAction?.endpoint) return;
-    if (changeAction.target_id && hasInvalidFields(changeAction.target_id)) return;
+    if (changeAction.target_id && hasInvalidFields(changeAction.target_id))
+      return;
     const data = changeAction.target_id
       ? collectFormData(changeAction.target_id)
       : { [name]: value };
@@ -1361,6 +1449,7 @@ git commit -m "feat: add publish, visible_when, and submit block to Checkbox"
 Same pattern as Checkbox.
 
 **Files:**
+
 - Modify: `components/base/RadioGroup.tsx`
 - Test: `tests/radio-group-form-integration.test.tsx`
 
@@ -1491,7 +1580,8 @@ export function RadioGroupComponent({
   function handleChange(value: string) {
     formCtx?.setValue(name, value);
     if (!changeAction?.endpoint) return;
-    if (changeAction.target_id && hasInvalidFields(changeAction.target_id)) return;
+    if (changeAction.target_id && hasInvalidFields(changeAction.target_id))
+      return;
     const data = changeAction.target_id
       ? collectFormData(changeAction.target_id)
       : { [name]: value };
@@ -1555,6 +1645,7 @@ git commit -m "feat: add publish, visible_when, and submit block to RadioGroup"
 `Select` already manages local state and dispatches change actions with URL placeholder substitution. Augment it without disrupting that logic.
 
 **Files:**
+
 - Modify: `components/base/Select.tsx`
 - Test: `tests/select-form-integration.test.tsx`
 
@@ -1642,7 +1733,9 @@ describe("Select + FormStateContext", () => {
         />
       </FormStateProvider>,
     );
-    expect(container.querySelector('input[name="external_ticker"]')).not.toBeNull();
+    expect(
+      container.querySelector('input[name="external_ticker"]'),
+    ).not.toBeNull();
     const clearBtn = container.querySelector(
       'button[aria-label="Clear selection"]',
     ) as HTMLButtonElement;
@@ -1698,7 +1791,8 @@ function handleChange(next: string) {
   if (!changeAction?.endpoint) return;
   const placeholders = { value: next };
   const endpoint = substitutePlaceholders(changeAction.endpoint, placeholders);
-  if (changeAction.target_id && hasInvalidFields(changeAction.target_id)) return;
+  if (changeAction.target_id && hasInvalidFields(changeAction.target_id))
+    return;
 
   switch (changeAction.type) {
     case "reload":
@@ -1743,6 +1837,7 @@ git commit -m "feat: add publish, visible_when, and submit block to Select"
 Document the three new capabilities in `spec/sdui-base-components.md`.
 
 **Files:**
+
 - Modify: `spec/sdui-base-components.md`
 
 - [ ] **Step 1: Add `pattern` and `auto_uppercase` rows to the `input` prop table**
@@ -1833,6 +1928,7 @@ Using the middleend's asset create/edit/delete modals, verify the three features
 - [ ] **Step 1: Free ports and start the dev server**
 
 Run:
+
 ```bash
 lsof -ti:3000 | xargs kill -9 2>/dev/null; lsof -ti:3001 | xargs kill -9 2>/dev/null
 ./cli run
