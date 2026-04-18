@@ -4,6 +4,7 @@ import type { SDUIComponent } from "@/lib/types/sdui";
 import { useRouter } from "next/navigation";
 import { getIcon } from "@/lib/icon-registry";
 import { stripScreens } from "@/lib/strip-screens";
+import { substitutePlaceholders } from "@/lib/url-placeholders";
 import { useSidebar } from "@/components/sidebar-provider";
 
 export function NavItemComponent({ component }: { component: SDUIComponent }) {
@@ -19,7 +20,8 @@ export function NavItemComponent({ component }: { component: SDUIComponent }) {
     if (!action) return;
 
     if (action.type === "navigate" && action.url) {
-      router.push(stripScreens(action.url));
+      const url = substitutePlaceholders(action.url, {});
+      router.push(stripScreens(url));
     }
   };
 

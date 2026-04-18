@@ -27,21 +27,35 @@ Actions are in the `actions` array on any `SDUIComponent`. Button uses the first
 
 ## 2. Action Types
 
-All action types handled by `ButtonComponent`:
+Action types handled by `ButtonComponent` (all of the below). `IconToggleComponent` handles a subset — the client-only toggles (`toggle_theme`, `toggle_sensitive`, `toggle_sidebar`) plus any action with an `endpoint` for server round-trips.
 
-| Type            | Behavior                                                                                                       | Required Fields                              |
-| --------------- | -------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
-| `navigate`      | Client-side navigation via `router.push(url)`. Opens new tab if `target === "blank"`.                          | `url`                                        |
-| `navigate_back` | Browser back via `router.back()`.                                                                              | (none)                                       |
-| `submit`        | Collects form data from `target_id` container, sends to middleend via `/api/action` proxy, processes response. | `endpoint`, optionally `target_id`, `method` |
-| `reload`        | Sends GET to middleend endpoint via `/api/action`, processes response.                                         | `endpoint`                                   |
-| `refresh`       | Triggers `router.refresh()` to re-render server components.                                                    | (none)                                       |
-| `open_url`      | Opens URL in a new tab via `window.open`.                                                                      | `url`                                        |
-| `dismiss`       | No-op in current implementation. Reserved for modal dismiss.                                                   | (none)                                       |
-| `logout`        | POSTs to `/api/auth/logout`, then navigates to `/login`.                                                       | (none)                                       |
-| `toggle_theme`  | Toggles light/dark mode. Client-side only, no round-trip.                                                      | (none)                                       |
+| Type               | Behavior                                                                                                       | Required Fields                              |
+| ------------------ | -------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| `navigate`         | Client-side navigation via `router.push(url)`. Opens new tab if `target === "blank"`.                          | `url`                                        |
+| `navigate_back`    | Browser back via `router.back()`.                                                                              | (none)                                       |
+| `submit`           | Collects form data from `target_id` container, sends to middleend via `/api/action` proxy, processes response. | `endpoint`, optionally `target_id`, `method` |
+| `reload`           | Sends GET to middleend endpoint via `/api/action`, processes response.                                         | `endpoint`                                   |
+| `refresh`          | Triggers `router.refresh()` to re-render server components.                                                    | (none)                                       |
+| `open_url`         | Opens URL in a new tab via `window.open`.                                                                      | `url`                                        |
+| `dismiss`          | No-op in current implementation. Reserved for modal dismiss.                                                   | (none)                                       |
+| `logout`           | POSTs to `/api/auth/logout`, then navigates to `/login`.                                                       | (none)                                       |
+| `toggle_theme`    | Toggles light/dark mode. Client-side only, no round-trip.                                                       | (none)                                       |
+| `toggle_sensitive` | Toggles the global sensitive-data mask (hides amounts/values). Client-side only.                              | (none)                                       |
+| `toggle_sidebar`   | Toggles the sidebar's collapsed/expanded state (persisted in the `sidebar-collapsed` cookie, server-readable). Client-side only. | (none)                                       |
 
 Custom action types (project-specific, not part of the base set) are documented in `sdui-custom-components.md §4`.
+
+---
+
+## 2a. URL Placeholders
+
+Any action with a `url` or `endpoint` field may contain placeholders of the form `{name}`. When the action is dispatched, the frontend substitutes each placeholder with a named value provided by the component (or form) that triggered the action.
+
+The set of names a component exposes is defined in each component's spec (see [sdui-base-components.md](sdui-base-components.md)). For example, `select` exposes `value` (the `value` of the currently selected option), so `endpoint: "/api/list?asset_type={value}"` on a select becomes `/api/list?asset_type=STOCK` when the option with `value:"STOCK"` is chosen.
+
+The substituted value is URL-encoded by the frontend before being spliced into the string. Placeholders whose name is not exposed by the triggering component are a middleend authoring error — the spec does not define a behavior for them; the current frontend implementation leaves them in place (`/foo/{unknown}` stays literal), so a misconfigured action will produce a visibly wrong URL rather than crashing.
+
+**Implementation:** the helper `lib/url-placeholders.ts#substitutePlaceholders(template, values)` is invoked at every call site that touches `action.url` or `action.endpoint` (Button, NavItem, ListItem, TableRow, Screen, Error, IconToggle, Select). Components that do not expose any values pass `{}` so the helper acts as a pass-through; only `select` provides actual values today.
 
 ---
 

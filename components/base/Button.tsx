@@ -11,6 +11,7 @@ import { useSensitive } from "@/components/sensitive-provider";
 import { useSidebar } from "@/components/sidebar-provider";
 import { getIcon } from "@/lib/icon-registry";
 import { stripScreens } from "@/lib/strip-screens";
+import { substitutePlaceholders } from "@/lib/url-placeholders";
 
 export function ButtonComponent({ component }: { component: SDUIComponent }) {
   const router = useRouter();
@@ -34,13 +35,16 @@ export function ButtonComponent({ component }: { component: SDUIComponent }) {
     const action = component.actions?.[0];
     if (!action) return;
 
+    const placeholders: Record<string, string> = {};
+
     switch (action.type) {
       case "navigate":
         if (action.url) {
+          const url = substitutePlaceholders(action.url, placeholders);
           if (action.target === "blank") {
-            window.open(action.url, "_blank");
+            window.open(url, "_blank");
           } else {
-            router.push(stripScreens(action.url));
+            router.push(stripScreens(url));
           }
         }
         break;
@@ -52,24 +56,30 @@ export function ButtonComponent({ component }: { component: SDUIComponent }) {
           const data = action.target_id
             ? collectFormData(action.target_id)
             : {};
-          await dispatch(action.endpoint, action.method ?? "POST", data, {
+          const endpoint = substitutePlaceholders(action.endpoint, placeholders);
+          await dispatch(endpoint, action.method ?? "POST", data, {
             loading: action.loading,
             targetId: action.target_id,
           });
         }
         break;
       case "reload":
-        if (action.endpoint)
-          await dispatch(action.endpoint, "GET", undefined, {
+        if (action.endpoint) {
+          const endpoint = substitutePlaceholders(action.endpoint, placeholders);
+          await dispatch(endpoint, "GET", undefined, {
             loading: action.loading,
             targetId: action.target_id,
           });
+        }
         break;
       case "refresh":
         router.refresh();
         break;
       case "open_url":
-        if (action.url) window.open(action.url, "_blank");
+        if (action.url) {
+          const url = substitutePlaceholders(action.url, placeholders);
+          window.open(url, "_blank");
+        }
         break;
       case "dismiss":
         break;
@@ -113,13 +123,25 @@ export function ButtonComponent({ component }: { component: SDUIComponent }) {
     md: "text-base px-4 py-2",
     lg: "text-lg px-5 py-3",
   };
-  const sizeClass = sizeStyles[btnSize] ?? sizeStyles.md;
+  const iconOnlySizeStyles: Record<string, string> = {
+    xs: "text-xs p-1",
+    sm: "text-sm p-1.5",
+    md: "text-base p-2",
+    lg: "text-lg p-2.5",
+  };
+  const iconOnly = !label;
+  const sizeClass = iconOnly
+    ? (iconOnlySizeStyles[btnSize] ?? iconOnlySizeStyles.md)
+    : (sizeStyles[btnSize] ?? sizeStyles.md);
+  const layoutClass = iconOnly
+    ? "inline-flex justify-center"
+    : "flex";
 
   return (
     <button
       onClick={handleClick}
       disabled={isDisabled}
-      className={`${sizeClass} rounded flex items-center gap-2 ${classes}${disabledClass}`}
+      className={`${sizeClass} rounded ${layoutClass} items-center gap-2 ${classes}${disabledClass}`}
     >
       {loading && (
         <span className="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full" />

@@ -5,16 +5,20 @@ import type { SDUIComponent } from "@/lib/types/sdui";
 import { useActionDispatcher } from "@/components/action-dispatcher";
 import { useTheme } from "@/components/theme-provider";
 import { useSensitive } from "@/components/sensitive-provider";
+import { useSidebar } from "@/components/sidebar-provider";
 import { getIcon } from "@/lib/icon-registry";
+import { substitutePlaceholders } from "@/lib/url-placeholders";
 
 const CLIENT_ACTIONS: Record<string, (ctx: ClientActionCtx) => void> = {
   toggle_theme: (ctx) => ctx.toggleTheme(),
   toggle_sensitive: (ctx) => ctx.toggleSensitive(),
+  toggle_sidebar: (ctx) => ctx.toggleSidebar(),
 };
 
 type ClientActionCtx = {
   toggleTheme: () => void;
   toggleSensitive: () => void;
+  toggleSidebar: () => void;
 };
 
 export function IconToggleComponent({
@@ -34,6 +38,7 @@ export function IconToggleComponent({
   const dispatch = useActionDispatcher();
   const { toggle: toggleTheme } = useTheme();
   const { toggleSensitive } = useSensitive();
+  const { toggleSidebar } = useSidebar();
 
   const icon = active ? iconActive : iconInactive;
   const tooltip = active ? tooltipActive : tooltipInactive;
@@ -47,7 +52,7 @@ export function IconToggleComponent({
     const clientHandler = CLIENT_ACTIONS[action.type];
     if (clientHandler) {
       setActive(nextActive);
-      clientHandler({ toggleTheme, toggleSensitive });
+      clientHandler({ toggleTheme, toggleSensitive, toggleSidebar });
       return;
     }
 
@@ -56,7 +61,8 @@ export function IconToggleComponent({
     setActive(nextActive);
 
     try {
-      await dispatch(action.endpoint, action.method ?? "GET", undefined, {
+      const endpoint = substitutePlaceholders(action.endpoint, {});
+      await dispatch(endpoint, action.method ?? "GET", undefined, {
         loading: action.loading,
         targetId: action.target_id,
       });
@@ -72,11 +78,7 @@ export function IconToggleComponent({
       type="button"
       onClick={handleClick}
       title={tooltip}
-      className={`inline-flex items-center justify-center rounded p-1.5 transition-colors ${
-        active
-          ? "text-accent-primary"
-          : "text-content-muted hover:text-content-primary"
-      }`}
+      className="inline-flex items-center justify-center rounded p-1.5 text-content-primary transition-colors"
     >
       <Icon className="w-4 h-4" />
     </button>

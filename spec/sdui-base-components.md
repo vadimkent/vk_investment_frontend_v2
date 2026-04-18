@@ -131,7 +131,7 @@ Bordered container with shadow.
 
 - **React**: `CardComponent` -- `components/base/Card.tsx`
 - **"use client"**: No
-- **Renders**: `div.border.rounded-lg.p-4` with shadow class. Uses `containerProps`.
+- **Renders**: `div.bg-surface-card.border.border-border.rounded-lg.p-4` with shadow class. Uses `containerProps`. The `bg-surface-card` token equals the body background in light mode and is one elevation step lighter in dark mode (gives the card a subtle "lifted" appearance against the dark background).
 
 ### list
 
@@ -245,7 +245,7 @@ Primary interactive element. Handles all action types.
 
 - **React**: `ButtonComponent` -- `components/base/Button.tsx`
 - **"use client"**: Yes
-- **Renders**: `<button>` with variant/style Tailwind classes. See `sdui-actions.md` for action handling.
+- **Renders**: `<button>` with variant/style Tailwind classes. When `label` is absent (icon-only mode), the button switches to `inline-flex justify-center` with symmetric padding (`p-1` to `p-2.5` by size) so a single icon centers in a square footprint — matches the visual rhythm of `icon_toggle` when both live in the same nav row. With a `label`, layout is `flex` with asymmetric padding (`px-4 py-2` for `md`). See `sdui-actions.md` for action handling.
 
 ### icon_toggle
 
@@ -267,8 +267,9 @@ Both actions use `trigger: "click"`. The frontend selects based on the current v
 | `tooltip_active`   | string | no       | Tooltip text when active.                           |
 
 - **React**: `IconToggleComponent` -- `components/base/IconToggle.tsx`
-- **"use client"**: Yes (uses `useState` for optimistic flip, `useActionDispatcher` for server action)
-- **Renders**: `<button>` with icon from `lib/icon-registry.ts`. Active state shows `text-accent-primary`; inactive shows `text-content-muted` with `hover:text-content-primary`. Optimistic: flips immediately on click, rolls back if the dispatch throws.
+- **"use client"**: Yes (uses `useState` for optimistic flip, `useActionDispatcher` for server action, plus `useTheme` / `useSensitive` / `useSidebar` for client-only actions)
+- **Renders**: `<button>` with icon from `lib/icon-registry.ts`. Both states use `text-content-primary` (white in dark, near-black in light) — visual distinction between active/inactive comes from the icon swap (`icon_active` vs `icon_inactive`), not color. Optimistic: flips immediately on click; for server-bound actions, rolls back if the dispatch throws.
+- **Client-side actions supported**: `toggle_theme`, `toggle_sensitive`, `toggle_sidebar`. These run synchronously without an endpoint round-trip. Any other action type requires an `endpoint` and falls through the dispatcher.
 
 ### input
 
@@ -306,21 +307,27 @@ Form container. Groups inputs for data collection. Not an HTML `<form>` -- uses 
 
 ### select
 
-Dropdown select field.
+Dropdown select field. Built on Radix UI's Select primitive (`radix-ui` package) for a fully styleable popover, keyboard navigation, ARIA listbox semantics, and portal positioning. The visible UI is custom — there is no native `<select>` rendered.
 
-| Prop          | Type                                 | Required | Description        |
-| ------------- | ------------------------------------ | -------- | ------------------ |
-| name          | string                               | yes      | Form field name    |
-| label         | string                               | no       | Label text         |
-| placeholder   | string                               | no       | Empty option text  |
-| options       | `{ value: string, label: string }[]` | no       | Select options     |
-| default_value | string                               | no       | Pre-selected value |
-| required      | boolean                              | no       | Required indicator |
-| disabled      | boolean                              | no       | Disable select     |
+| Prop          | Type                                 | Required | Description                                                                                                                                                                                                                                  |
+| ------------- | ------------------------------------ | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| name          | string                               | yes      | Form field name (used by the hidden input that participates in form collection).                                                                                                                                                             |
+| label         | string                               | no       | Label text                                                                                                                                                                                                                                   |
+| placeholder   | string                               | no       | Empty-state text shown when no value is selected. If absent, an option with `value: ""` (if any) is treated as the placeholder slot — its label becomes the placeholder text and it is not rendered as a selectable item.                    |
+| options       | `{ value: string, label: string }[]` | no       | Select options. Items with `value: ""` are not allowed by Radix as selectable items (it reserves empty string for "no selection"); they are filtered out at render time. See `placeholder` for how `{value: "", label: "..."}` is handled.   |
+| default_value | string                               | no       | Pre-selected value                                                                                                                                                                                                                           |
+| required      | boolean                              | no       | Required indicator                                                                                                                                                                                                                           |
+| disabled      | boolean                              | no       | Disable select                                                                                                                                                                                                                               |
 
 - **React**: `SelectComponent` -- `components/base/Select.tsx`
-- **"use client"**: Yes
-- **Renders**: `<select>` with `data-sdui-id`.
+- **"use client"**: Yes (controlled via `useState`, dispatches `change` action on value change)
+- **Renders**: A wrapper `div[data-sdui-id]` containing a hidden `<input name=... value=...>` (so `collectFormData` picks the value up like any other form field) plus Radix's `Select.Root` → `Trigger` (with `bg-transparent`, `border-border-input`, chevron-down icon) → `Portal` → `Content` (`bg-surface-card`, bordered, shadowed popover) → `Viewport` of `Item`s. Each item shows a `Check` icon on the right when selected. Scroll up/down buttons appear when the list overflows.
+- **Placeholder source:** when a `change` action is dispatched, `select` exposes `value` — the `value` of the currently selected option — for URL placeholder substitution (see [sdui-actions.md § URL Placeholders](sdui-actions.md)).
+- **Action dispatch:** `select` switches on the `change` action's `type`:
+  - `type: "reload"` → dispatches as `GET` (per the `reload` contract; `method` is ignored), no request body. The selected value reaches the middleend via `{value}` substitution in the `endpoint`.
+  - `type: "submit"` → dispatches with `method` (default `POST`). Request body is `{ ...collectFormData(target_id), [name]: value }` — the form's collected fields with the new selection merged in (the merge is required because React state hasn't yet flushed to the hidden `<input>`).
+  - Other action types are not handled on `change`.
+- **Clear button:** when a value is selected and the field is not disabled, a small "X" icon button appears as a sibling **to the right of the trigger** (outside the trigger box, not overlaid on it — same layout as v1's `asset-filter` filter UX). Clicking it sets the value to `""` and fires the `change` action with `value=""` — the middleend decides what an empty value means (typically: clear the filter, no selection). The button is a real `<button>` separate from the trigger, so opening the dropdown and clearing are independent gestures. `required` is not enforced at this layer; if the field is required, the form's submit-time validation handles it.
 
 ### checkbox
 

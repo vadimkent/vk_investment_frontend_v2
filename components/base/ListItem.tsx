@@ -5,6 +5,7 @@ import { ComponentRenderer } from "@/components/renderer";
 import { containerProps } from "@/lib/sdui-utils";
 import { useRouter } from "next/navigation";
 import { stripScreens } from "@/lib/strip-screens";
+import { substitutePlaceholders } from "@/lib/url-placeholders";
 
 export function ListItemComponent({ component }: { component: SDUIComponent }) {
   const router = useRouter();
@@ -25,10 +26,11 @@ export function ListItemComponent({ component }: { component: SDUIComponent }) {
     if (!hasActions) return;
     const action = component.actions![0];
     if (action.type === "navigate" && action.url) {
+      const url = substitutePlaceholders(action.url, {});
       if (action.target === "blank") {
-        window.open(action.url, "_blank");
+        window.open(url, "_blank");
       } else {
-        router.push(stripScreens(action.url));
+        router.push(stripScreens(url));
       }
     }
   }

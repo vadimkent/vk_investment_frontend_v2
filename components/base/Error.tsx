@@ -2,6 +2,7 @@
 
 import type { SDUIComponent } from "@/lib/types/sdui";
 import { useRouter } from "next/navigation";
+import { substitutePlaceholders } from "@/lib/url-placeholders";
 export function ErrorComponent({ component }: { component: SDUIComponent }) {
   const router = useRouter();
   const hasRetry = component.props.retry_action === true;
@@ -11,10 +12,11 @@ export function ErrorComponent({ component }: { component: SDUIComponent }) {
     if (!action) return;
 
     if (action.type === "reload" && action.endpoint) {
+      const endpoint = substitutePlaceholders(action.endpoint, {});
       await fetch("/api/action", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ endpoint: action.endpoint, method: "GET" }),
+        body: JSON.stringify({ endpoint, method: "GET" }),
       });
       router.refresh();
     } else if (action.type === "refresh") {

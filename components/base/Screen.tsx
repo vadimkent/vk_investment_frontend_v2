@@ -5,6 +5,7 @@ import type { SDUIComponent } from "@/lib/types/sdui";
 import { ComponentRenderer } from "@/components/renderer";
 import { useRouter } from "next/navigation";
 import { stripScreens } from "@/lib/strip-screens";
+import { substitutePlaceholders } from "@/lib/url-placeholders";
 import { useSidebar } from "@/components/sidebar-provider";
 
 const NAV_SLOT_TYPES = new Set([
@@ -54,7 +55,7 @@ function SidebarLayout({ component }: { component: SDUIComponent }) {
         gridTemplateColumns: collapsed ? "64px 1fr" : "240px 1fr",
       }}
     >
-      <div className="flex flex-col border-r border-border bg-surface-primary h-screen sticky top-0 overflow-y-auto">
+      <div className="flex flex-col border-r border-border bg-surface-sidebar h-screen sticky top-0 overflow-y-auto">
         {navChildren.map((child) => (
           <ComponentRenderer key={child.id} component={child} />
         ))}
@@ -153,14 +154,14 @@ function DefaultLayout({ component }: { component: SDUIComponent }) {
     if (action && action.type === "navigate_back") {
       router.back();
     } else if (action && action.type === "navigate" && action.url) {
-      router.push(stripScreens(action.url));
+      router.push(stripScreens(substitutePlaceholders(action.url, {})));
     } else {
       router.back();
     }
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="flex-1 min-h-0 flex flex-col">
       {hasHeader && (
         <div className="p-4">
           <div className="flex items-center gap-3">
