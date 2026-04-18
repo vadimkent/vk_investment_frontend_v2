@@ -34,7 +34,6 @@ function readDefault(node: SDUIComponent): unknown {
       return node.props.checked === true;
     case "input":
     case "textarea":
-      return (node.props.default_value as string | undefined) ?? "";
     case "select":
     case "radio_group":
       return (node.props.default_value as string | undefined) ?? "";
