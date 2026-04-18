@@ -83,7 +83,7 @@ Example — reload with section loading:
 }
 ```
 
-While the request is in flight, the OverrideBoundary for `id="live-data-section"` renders a spinner overlay on top of the existing content. When the response arrives (typically `action: "replace"` with a new tree), the overlay disappears and the new content is shown.
+While the request is in flight, the OverrideBoundary for `id="live-data-section"` unmounts its children and renders only a centered spinner. When the response arrives (typically `action: "replace"` with a new tree), the spinner clears and the new tree mounts fresh — components in the subtree never carry client state across the replace.
 
 Client-side-only actions (`toggle_theme`, `toggle_sensitive`, `navigate`, `refresh`, etc.) ignore `loading` — they are synchronous or handled by the router.
 
