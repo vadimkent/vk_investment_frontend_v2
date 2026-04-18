@@ -44,7 +44,7 @@ export function TextareaComponent({ component }: { component: SDUIComponent }) {
         required={required}
         disabled={disabled}
         onInput={(e) => formCtx?.setValue(name, e.currentTarget.value)}
-        className={`border border-border-input rounded px-3 py-2 w-full${disabledClass}`}
+        className={`bg-transparent text-content-primary placeholder:text-content-muted border border-border-input rounded px-3 py-2 w-full${disabledClass}`}
         data-sdui-id={component.id}
       />
     </div>
