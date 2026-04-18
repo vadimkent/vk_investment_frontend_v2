@@ -18,13 +18,32 @@ export async function POST(request: NextRequest) {
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${MIDDLEEND_URL}${body.endpoint}`, {
-    method: body.method ?? "POST",
-    headers,
-    body: JSON.stringify(body.data),
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${MIDDLEEND_URL}${body.endpoint}`, {
+      method: body.method ?? "POST",
+      headers,
+      body: JSON.stringify(body.data),
+    });
+  } catch {
+    return NextResponse.json(
+      { action: "none", error: "upstream_unreachable" },
+      { status: 502 },
+    );
+  }
 
-  const data = await response.json();
+  let data: Record<string, unknown> & {
+    auth?: { token?: string };
+    auth_changed?: boolean;
+  };
+  try {
+    data = await response.json();
+  } catch {
+    return NextResponse.json(
+      { action: "none", error: "upstream_invalid_response" },
+      { status: 502 },
+    );
+  }
 
   if (response.status === 401) {
     return NextResponse.json(data, { status: 401 });

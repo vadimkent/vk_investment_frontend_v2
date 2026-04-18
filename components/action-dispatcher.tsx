@@ -3,6 +3,7 @@
 import { useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useOverrideMap } from "@/components/override-map-context";
+import { useSnackbar } from "@/components/snackbar-provider";
 
 type ActionResponse = {
   action: string;
@@ -10,6 +11,7 @@ type ActionResponse = {
   tree?: import("@/lib/types/sdui").SDUIComponent;
   redirect?: string;
   auth_changed?: boolean;
+  error?: string;
 };
 
 type DispatchOptions = {
@@ -44,6 +46,7 @@ export function collectFormData(targetId: string): Record<string, unknown> {
 export function useActionDispatcher() {
   const router = useRouter();
   const { setOverride, setLoading, clearLoading } = useOverrideMap();
+  const { show } = useSnackbar();
 
   return useCallback(
     async (
@@ -60,16 +63,33 @@ export function useActionDispatcher() {
       }
 
       try {
-        const response = await fetch("/api/action", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ endpoint, method, data }),
-        });
-        const body: ActionResponse = await response.json();
+        let response: Response;
+        try {
+          response = await fetch("/api/action", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ endpoint, method, data }),
+          });
+        } catch {
+          show("Algo falló, reintentá", "error");
+          return { action: "none" };
+        }
+
+        let body: ActionResponse;
+        try {
+          body = await response.json();
+        } catch {
+          show("Algo falló, reintentá", "error");
+          return { action: "none" };
+        }
 
         if (response.status === 401 && body.redirect) {
           router.push(stripScreens(body.redirect));
           return { action: "none" };
+        }
+
+        if (body.error || (!response.ok && response.status !== 401)) {
+          show("Algo falló, reintentá", "error");
         }
 
         switch (body.action) {
@@ -99,6 +119,6 @@ export function useActionDispatcher() {
         }
       }
     },
-    [router, setOverride, setLoading, clearLoading],
+    [router, setOverride, setLoading, clearLoading, show],
   );
 }
