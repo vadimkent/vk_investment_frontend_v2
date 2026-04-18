@@ -7,9 +7,8 @@ describe("sidebar-provider", () => {
 
   it("defaults to expanded when initialCollapsed is omitted", async () => {
     const { renderHook } = await import("@testing-library/react");
-    const { SidebarProvider, useSidebar } = await import(
-      "@/components/sidebar-provider"
-    );
+    const { SidebarProvider, useSidebar } =
+      await import("@/components/sidebar-provider");
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <SidebarProvider>{children}</SidebarProvider>
     );
@@ -19,9 +18,8 @@ describe("sidebar-provider", () => {
 
   it("honors initialCollapsed prop", async () => {
     const { renderHook } = await import("@testing-library/react");
-    const { SidebarProvider, useSidebar } = await import(
-      "@/components/sidebar-provider"
-    );
+    const { SidebarProvider, useSidebar } =
+      await import("@/components/sidebar-provider");
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <SidebarProvider initialCollapsed={true}>{children}</SidebarProvider>
     );
@@ -31,9 +29,8 @@ describe("sidebar-provider", () => {
 
   it("toggleSidebar flips state and persists to cookie", async () => {
     const { renderHook, act } = await import("@testing-library/react");
-    const { SidebarProvider, useSidebar } = await import(
-      "@/components/sidebar-provider"
-    );
+    const { SidebarProvider, useSidebar } =
+      await import("@/components/sidebar-provider");
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <SidebarProvider>{children}</SidebarProvider>
     );
