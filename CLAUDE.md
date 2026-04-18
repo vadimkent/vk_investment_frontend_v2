@@ -27,4 +27,10 @@ workflow-version: v0.1.0
 - `components/custom/` — Project-specific SDUI components
 - `lib/middleend.ts` — Server-side middleend API client
 - `lib/types/` — Generated API types
-- `spec/` — Project specification
+- `spec/` — Project specification (canonical, SDD source of truth)
+
+## Specs
+
+The app's specs live in `spec/`. These are the source of truth for SDD and must stay in sync with code changes.
+
+`docs/superpowers/specs/` and `docs/superpowers/plans/` are **plugin artifacts** (Claude superpowers planning), not app specs. Do not treat them as authoritative — when reflecting changes back to specs, edit `spec/*.md`.
