@@ -2,13 +2,14 @@ import { describe, it, expect, beforeEach } from "vitest";
 
 describe("sidebar-provider", () => {
   beforeEach(() => {
-    localStorage.clear();
+    document.cookie = "sidebar-collapsed=; max-age=0; path=/";
   });
 
-  it("defaults to expanded when localStorage is empty", async () => {
+  it("defaults to expanded when initialCollapsed is omitted", async () => {
     const { renderHook } = await import("@testing-library/react");
-    const { SidebarProvider, useSidebar } =
-      await import("@/components/sidebar-provider");
+    const { SidebarProvider, useSidebar } = await import(
+      "@/components/sidebar-provider"
+    );
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <SidebarProvider>{children}</SidebarProvider>
     );
@@ -16,22 +17,23 @@ describe("sidebar-provider", () => {
     expect(result.current.collapsed).toBe(false);
   });
 
-  it("reads collapsed state from localStorage", async () => {
-    localStorage.setItem("sidebar-collapsed", "true");
+  it("honors initialCollapsed prop", async () => {
     const { renderHook } = await import("@testing-library/react");
-    const { SidebarProvider, useSidebar } =
-      await import("@/components/sidebar-provider");
+    const { SidebarProvider, useSidebar } = await import(
+      "@/components/sidebar-provider"
+    );
     const wrapper = ({ children }: { children: React.ReactNode }) => (
-      <SidebarProvider>{children}</SidebarProvider>
+      <SidebarProvider initialCollapsed={true}>{children}</SidebarProvider>
     );
     const { result } = renderHook(() => useSidebar(), { wrapper });
     expect(result.current.collapsed).toBe(true);
   });
 
-  it("toggleSidebar flips state and persists", async () => {
+  it("toggleSidebar flips state and persists to cookie", async () => {
     const { renderHook, act } = await import("@testing-library/react");
-    const { SidebarProvider, useSidebar } =
-      await import("@/components/sidebar-provider");
+    const { SidebarProvider, useSidebar } = await import(
+      "@/components/sidebar-provider"
+    );
     const wrapper = ({ children }: { children: React.ReactNode }) => (
       <SidebarProvider>{children}</SidebarProvider>
     );
@@ -39,9 +41,9 @@ describe("sidebar-provider", () => {
     expect(result.current.collapsed).toBe(false);
     act(() => result.current.toggleSidebar());
     expect(result.current.collapsed).toBe(true);
-    expect(localStorage.getItem("sidebar-collapsed")).toBe("true");
+    expect(document.cookie).toContain("sidebar-collapsed=true");
     act(() => result.current.toggleSidebar());
     expect(result.current.collapsed).toBe(false);
-    expect(localStorage.getItem("sidebar-collapsed")).toBe("false");
+    expect(document.cookie).toContain("sidebar-collapsed=false");
   });
 });

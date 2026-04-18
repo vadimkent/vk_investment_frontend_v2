@@ -12,7 +12,6 @@ describe("NavItemComponent collapsed mode", () => {
 
   beforeEach(() => {
     vi.resetModules();
-    localStorage.clear();
   });
 
   it("shows label when sidebar is expanded", async () => {
@@ -37,7 +36,6 @@ describe("NavItemComponent collapsed mode", () => {
   });
 
   it("hides label when sidebar is collapsed", async () => {
-    localStorage.setItem("sidebar-collapsed", "true");
     const { render } = await import("@testing-library/react");
     const { SidebarProvider } = await import("@/components/sidebar-provider");
     const { NavItemComponent } = await import("@/components/base/NavItem");
@@ -50,7 +48,7 @@ describe("NavItemComponent collapsed mode", () => {
     };
 
     const { queryByText } = render(
-      <SidebarProvider>
+      <SidebarProvider initialCollapsed={true}>
         <NavItemComponent component={component} />
       </SidebarProvider>,
     );
@@ -59,7 +57,6 @@ describe("NavItemComponent collapsed mode", () => {
   });
 
   it("shows tooltip with label when collapsed", async () => {
-    localStorage.setItem("sidebar-collapsed", "true");
     const { render } = await import("@testing-library/react");
     const { SidebarProvider } = await import("@/components/sidebar-provider");
     const { NavItemComponent } = await import("@/components/base/NavItem");
@@ -72,7 +69,7 @@ describe("NavItemComponent collapsed mode", () => {
     };
 
     const { container } = render(
-      <SidebarProvider>
+      <SidebarProvider initialCollapsed={true}>
         <NavItemComponent component={component} />
       </SidebarProvider>,
     );
@@ -82,7 +79,6 @@ describe("NavItemComponent collapsed mode", () => {
   });
 
   it("centers icon when collapsed", async () => {
-    localStorage.setItem("sidebar-collapsed", "true");
     const { render } = await import("@testing-library/react");
     const { SidebarProvider } = await import("@/components/sidebar-provider");
     const { NavItemComponent } = await import("@/components/base/NavItem");
@@ -95,7 +91,7 @@ describe("NavItemComponent collapsed mode", () => {
     };
 
     const { container } = render(
-      <SidebarProvider>
+      <SidebarProvider initialCollapsed={true}>
         <NavItemComponent component={component} />
       </SidebarProvider>,
     );

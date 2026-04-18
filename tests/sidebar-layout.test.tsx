@@ -8,7 +8,6 @@ describe("SidebarLayout", () => {
 
   beforeEach(() => {
     vi.resetModules();
-    localStorage.clear();
   });
 
   it("renders with 240px grid when expanded", async () => {
@@ -37,7 +36,6 @@ describe("SidebarLayout", () => {
   });
 
   it("renders with 64px grid when collapsed", async () => {
-    localStorage.setItem("sidebar-collapsed", "true");
     const { render } = await import("@testing-library/react");
     const { SidebarProvider } = await import("@/components/sidebar-provider");
     const { ScreenComponent } = await import("@/components/base/Screen");
@@ -53,7 +51,7 @@ describe("SidebarLayout", () => {
     };
 
     const { container } = render(
-      <SidebarProvider>
+      <SidebarProvider initialCollapsed={true}>
         <ScreenComponent component={component} />
       </SidebarProvider>,
     );
@@ -63,7 +61,6 @@ describe("SidebarLayout", () => {
   });
 
   it("hides children with sidebar_visibility='expanded' when collapsed", async () => {
-    localStorage.setItem("sidebar-collapsed", "true");
     const { render } = await import("@testing-library/react");
     const { SidebarProvider } = await import("@/components/sidebar-provider");
     const { ScreenComponent } = await import("@/components/base/Screen");
@@ -95,7 +92,7 @@ describe("SidebarLayout", () => {
     };
 
     const { queryByText } = render(
-      <SidebarProvider>
+      <SidebarProvider initialCollapsed={true}>
         <ScreenComponent component={component} />
       </SidebarProvider>,
     );
