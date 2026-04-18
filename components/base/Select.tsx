@@ -6,9 +6,16 @@ import { Select as SelectPrimitive } from "radix-ui";
 import type { SDUIComponent } from "@/lib/types/sdui";
 import {
   collectFormData,
+  hasInvalidFields,
   useActionDispatcher,
 } from "@/components/action-dispatcher";
 import { substitutePlaceholders } from "@/lib/url-placeholders";
+import {
+  evalVisibleWhen,
+  useFieldValue,
+  useFormState,
+  type VisibleWhen,
+} from "@/components/form-state-context";
 
 interface Option {
   value: string;
@@ -26,20 +33,27 @@ export function SelectComponent({ component }: { component: SDUIComponent }) {
   const defaultValue = component.props.default_value as string | undefined;
   const required = component.props.required === true;
   const disabled = component.props.disabled === true;
+  const vw = component.props.visible_when as VisibleWhen | undefined;
 
+  const formCtx = useFormState();
+  const depValue = useFieldValue(vw?.field ?? "");
   const [value, setValue] = useState<string>(defaultValue ?? "");
-
   const dispatch = useActionDispatcher();
   const changeAction = component.actions?.find((a) => a.trigger === "change");
 
+  if (vw && formCtx && !evalVisibleWhen(vw, depValue)) return null;
+
   function handleChange(next: string) {
     setValue(next);
+    formCtx?.setValue(name, next);
     if (!changeAction?.endpoint) return;
     const placeholders = { value: next };
     const endpoint = substitutePlaceholders(
       changeAction.endpoint,
       placeholders,
     );
+    if (changeAction.target_id && hasInvalidFields(changeAction.target_id))
+      return;
 
     switch (changeAction.type) {
       case "reload":
