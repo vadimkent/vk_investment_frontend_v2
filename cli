@@ -6,7 +6,7 @@ shift 2>/dev/null || true
 
 case "$COMMAND" in
   run)
-    pnpm dev "$@"
+    pnpm dev --turbopack "$@"
     ;;
   build)
     pnpm build "$@"

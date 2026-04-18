@@ -10,6 +10,8 @@ const config: Config = {
           primary: "rgb(var(--bg-primary) / <alpha-value>)",
           secondary: "rgb(var(--bg-secondary) / <alpha-value>)",
           muted: "rgb(var(--bg-muted) / <alpha-value>)",
+          card: "rgb(var(--bg-card) / <alpha-value>)",
+          sidebar: "rgb(var(--bg-sidebar) / <alpha-value>)",
         },
         content: {
           primary: "rgb(var(--text-primary) / <alpha-value>)",

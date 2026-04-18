@@ -18,7 +18,7 @@ export function CardComponent({ component }: { component: SDUIComponent }) {
     ? (elevationStyles[elevation] ?? "shadow-sm")
     : "shadow-sm";
   const classes = [
-    "border border-border rounded-lg p-4",
+    "bg-surface-card border border-border rounded-lg p-4",
     shadowClass,
     shared.className,
   ]
