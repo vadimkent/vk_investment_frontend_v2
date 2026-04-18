@@ -3,8 +3,15 @@
 import type { SDUIComponent } from "@/lib/types/sdui";
 import {
   collectFormData,
+  hasInvalidFields,
   useActionDispatcher,
 } from "@/components/action-dispatcher";
+import {
+  evalVisibleWhen,
+  useFieldValue,
+  useFormState,
+  type VisibleWhen,
+} from "@/components/form-state-context";
 
 interface Option {
   value: string;
@@ -22,12 +29,21 @@ export function RadioGroupComponent({
   const defaultValue = component.props.default_value as string | undefined;
   const required = component.props.required === true;
   const disabled = component.props.disabled === true;
+  const vw = component.props.visible_when as VisibleWhen | undefined;
+
+  const formCtx = useFormState();
+  const depValue = useFieldValue(vw?.field ?? "");
 
   const dispatch = useActionDispatcher();
   const changeAction = component.actions?.find((a) => a.trigger === "change");
 
+  if (vw && formCtx && !evalVisibleWhen(vw, depValue)) return null;
+
   function handleChange(value: string) {
+    formCtx?.setValue(name, value);
     if (!changeAction?.endpoint) return;
+    if (changeAction.target_id && hasInvalidFields(changeAction.target_id))
+      return;
     const data = changeAction.target_id
       ? collectFormData(changeAction.target_id)
       : { [name]: value };
