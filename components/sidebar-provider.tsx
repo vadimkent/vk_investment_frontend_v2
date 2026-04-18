@@ -19,14 +19,20 @@ const SidebarContext = createContext<SidebarContextValue>({
   toggleSidebar: () => {},
 });
 
-export function SidebarProvider({ children }: { children: ReactNode }) {
-  const [collapsed, setCollapsed] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return localStorage.getItem("sidebar-collapsed") === "true";
-  });
+const COOKIE_NAME = "sidebar-collapsed";
+const COOKIE_MAX_AGE = 60 * 60 * 24 * 365; // 1 year
+
+export function SidebarProvider({
+  children,
+  initialCollapsed = false,
+}: {
+  children: ReactNode;
+  initialCollapsed?: boolean;
+}) {
+  const [collapsed, setCollapsed] = useState(initialCollapsed);
 
   useEffect(() => {
-    localStorage.setItem("sidebar-collapsed", String(collapsed));
+    document.cookie = `${COOKIE_NAME}=${collapsed}; path=/; max-age=${COOKIE_MAX_AGE}; samesite=lax`;
   }, [collapsed]);
 
   const toggleSidebar = useCallback(() => {

@@ -74,15 +74,29 @@ This avoids mutating the SDUI tree. The shell is rendered as-is, and whenever `C
 
 The middleend returns a shell as a `screen` component with `nav_type` in props and nav slot children (`nav_header`, `nav_main`, `nav_footer`, `bottombar`, `content_slot`) as flat direct children. The **frontend reads `nav_type`** and arranges the slots into the corresponding layout (per the workflow spec `07-sdui.md §7.3`).
 
-| `nav_type`      | Layout                                                                                                      |
-| --------------- | ----------------------------------------------------------------------------------------------------------- |
-| `sidebar`       | Grid `240px 1fr`. Left: nav_header + nav_main + nav_footer in a sticky sidebar. Right: content_slot.        |
-| `bottombar`     | Flex column. Optional nav_header at top, content_slot middle, bottombar fixed at bottom.                    |
-| `header_footer` | Flex column. nav_header + nav_main at top (bordered), content_slot middle, nav_footer at bottom (bordered). |
-| `header_only`   | Flex column. nav_header + nav_main at top (bordered), content_slot below.                                   |
-| (absent)        | Standard page. No nav chrome. Used for login, onboarding, standalone screens.                               |
+| `nav_type`      | Layout                                                                                                                                                                                                                                                          |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sidebar`       | Grid with collapsible left column: `240px 1fr` when expanded, `64px 1fr` when collapsed (animated via `transition-[grid-template-columns]`). Left: nav_header + nav_main + nav_footer in a sticky sidebar with `bg-surface-sidebar`. Right: content_slot.       |
+| `bottombar`     | Flex column. Optional nav_header at top, content_slot middle, bottombar fixed at bottom.                                                                                                                                                                        |
+| `header_footer` | Flex column. nav_header + nav_main at top (bordered), content_slot middle, nav_footer at bottom (bordered).                                                                                                                                                     |
+| `header_only`   | Flex column. nav_header + nav_main at top (bordered), content_slot below.                                                                                                                                                                                       |
+| (absent)        | Standard page. No nav chrome. Used for login, onboarding, standalone screens.                                                                                                                                                                                   |
 
 The middleend controls **which slots** appear and **what's inside them**. The frontend controls **where they go** based on `nav_type`.
+
+### Sidebar collapse
+
+The `sidebar` layout supports a collapsed state, toggled by the client-side `toggle_sidebar` action and persisted in a cookie named `sidebar-collapsed` (1-year max-age, `path=/`, `samesite=lax`). The cookie is read on the server in `app/layout.tsx` via Next's `cookies()` API and passed to `SidebarProvider` as `initialCollapsed`, so the server's first render already matches the user's persisted preference and there is no hydration mismatch on hard reloads. The `SidebarProvider` context (mounted in the root layout) writes the cookie on every state change and exposes `collapsed` so any component can read it.
+
+To control which children render in each state, any nav child can declare `sidebar_visibility` in its props:
+
+| Value       | Renders when collapsed | Renders when expanded |
+| ----------- | ---------------------- | --------------------- |
+| `always` (default) | yes              | yes                   |
+| `collapsed` | yes                    | no                    |
+| `expanded`  | no                     | yes                   |
+
+The filter recurses into `children` so groups of items can be marked en masse. Useful for hiding labels in collapsed mode or showing alternative compact representations.
 
 ---
 
