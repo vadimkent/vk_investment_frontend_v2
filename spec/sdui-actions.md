@@ -63,11 +63,11 @@ The substituted value is URL-encoded by the frontend before being spliced into t
 
 Any action that hits the middleend (`submit`, `reload`) can declare a `loading` field to show a visual indicator while the request is in flight:
 
-| Value       | Behavior                                                                                       |
-| ----------- | ---------------------------------------------------------------------------------------------- |
-| `"section"` | Renders a semi-transparent overlay with spinner on the subtree whose `id` matches `target_id`. |
-| `"full"`    | Renders a fullscreen overlay (`z-50`) with spinner over the entire viewport.                   |
-| (absent)    | No loading indicator. The action completes silently (current default behavior).                |
+| Value       | Behavior                                                                                                                                                                                                                             |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `"section"` | Unmounts the subtree whose `id` matches `target_id` and renders a centered spinner in its place until the response arrives. Previous content is not shown, so a subsequent `replace` mounts the new tree from scratch (fresh state). |
+| `"full"`    | Renders a fullscreen overlay (`z-50`) with spinner over the entire viewport.                                                                                                                                                         |
+| (absent)    | No loading indicator. The action completes silently (current default behavior).                                                                                                                                                      |
 
 The middleend decides **when** to show loading and **what scope** — the frontend only implements the visual. Loading clears automatically when the action response arrives (in a `finally` block, so errors don't leave stale overlays).
 
