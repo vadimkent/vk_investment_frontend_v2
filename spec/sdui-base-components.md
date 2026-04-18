@@ -275,18 +275,19 @@ Both actions use `trigger: "click"`. The frontend selects based on the current v
 
 Text input field with label.
 
-| Prop           | Type    | Required | Description                                                                                                                                                                                                                                                                                                                                                                                                     |
-| -------------- | ------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| name           | string  | yes      | Form field name                                                                                                                                                                                                                                                                                                                                                                                                 |
-| input_type     | string  | no       | HTML input type (default `"text"`)                                                                                                                                                                                                                                                                                                                                                                              |
-| label          | string  | no       | Label text                                                                                                                                                                                                                                                                                                                                                                                                      |
-| placeholder    | string  | no       | Placeholder text                                                                                                                                                                                                                                                                                                                                                                                                |
-| default_value  | string  | no       | Pre-filled value                                                                                                                                                                                                                                                                                                                                                                                                |
-| max_length     | number  | no       | Max character count                                                                                                                                                                                                                                                                                                                                                                                             |
-| required       | boolean | no       | Required indicator                                                                                                                                                                                                                                                                                                                                                                                              |
-| disabled       | boolean | no       | Disable input                                                                                                                                                                                                                                                                                                                                                                                                   |
-| pattern        | string  | no       | Regex (ECMAScript) for on-change and on-blur validation. When the value fails the regex (and is non-empty), the input is marked invalid (`data-sdui-invalid="true"`, red border, `aria-invalid`), and form submits through a `Button`, `Select`, `Checkbox`, or `RadioGroup` with `target_id` pointing to the enclosing form are blocked until the invalid state is cleared. Invalid regex is silently ignored. |
-| auto_uppercase | boolean | no       | If true, the frontend transforms the typed value to uppercase on every input event. Combines with `pattern`: the transform runs before validation, so `auto_uppercase: true` + `pattern: "^[A-Z]+$"` accepts lowercase typing.                                                                                                                                                                                  |
+| Prop           | Type        | Required | Description                                                                                                                                                                                                                                                                                                                                                                                                     |
+| -------------- | ----------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| name           | string      | yes      | Form field name                                                                                                                                                                                                                                                                                                                                                                                                 |
+| input_type     | string      | no       | HTML input type (default `"text"`)                                                                                                                                                                                                                                                                                                                                                                              |
+| label          | string      | no       | Label text                                                                                                                                                                                                                                                                                                                                                                                                      |
+| placeholder    | string      | no       | Placeholder text                                                                                                                                                                                                                                                                                                                                                                                                |
+| default_value  | string      | no       | Pre-filled value                                                                                                                                                                                                                                                                                                                                                                                                |
+| max_length     | number      | no       | Max character count                                                                                                                                                                                                                                                                                                                                                                                             |
+| required       | boolean     | no       | Required indicator                                                                                                                                                                                                                                                                                                                                                                                              |
+| disabled       | boolean     | no       | Disable input                                                                                                                                                                                                                                                                                                                                                                                                   |
+| pattern        | string      | no       | Regex (ECMAScript) for on-change and on-blur validation. When the value fails the regex (and is non-empty), the input is marked invalid (`data-sdui-invalid="true"`, red border, `aria-invalid`), and form submits through a `Button`, `Select`, `Checkbox`, or `RadioGroup` with `target_id` pointing to the enclosing form are blocked until the invalid state is cleared. Invalid regex is silently ignored. |
+| auto_uppercase | boolean     | no       | If true, the frontend transforms the typed value to uppercase on every input event. Combines with `pattern`: the transform runs before validation, so `auto_uppercase: true` + `pattern: "^[A-Z]+$"` accepts lowercase typing.                                                                                                                                                                                  |
+| visible_when   | VisibleWhen | no       | Conditional visibility — see [Form component visibility: `visible_when`](#form-component-visibility-visible_when).                                                                                                                                                                                                                                                                                              |
 
 - **React**: `InputComponent` -- `components/base/Input.tsx`
 - **"use client"**: Yes
@@ -320,6 +321,7 @@ Dropdown select field. Built on Radix UI's Select primitive (`radix-ui` package)
 | default_value | string                               | no       | Pre-selected value                                                                                                                                                                                                                         |
 | required      | boolean                              | no       | Required indicator                                                                                                                                                                                                                         |
 | disabled      | boolean                              | no       | Disable select                                                                                                                                                                                                                             |
+| visible_when  | VisibleWhen                          | no       | Conditional visibility — see [Form component visibility: `visible_when`](#form-component-visibility-visible_when).                                                                                                                         |
 
 - **React**: `SelectComponent` -- `components/base/Select.tsx`
 - **"use client"**: Yes (controlled via `useState`, dispatches `change` action on value change)
@@ -335,12 +337,13 @@ Dropdown select field. Built on Radix UI's Select primitive (`radix-ui` package)
 
 Checkbox with label.
 
-| Prop     | Type    | Required | Description           |
-| -------- | ------- | -------- | --------------------- |
-| name     | string  | yes      | Form field name       |
-| label    | string  | yes      | Label text            |
-| checked  | boolean | no       | Default checked state |
-| disabled | boolean | no       | Disable checkbox      |
+| Prop         | Type        | Required | Description                                                                                                        |
+| ------------ | ----------- | -------- | ------------------------------------------------------------------------------------------------------------------ |
+| name         | string      | yes      | Form field name                                                                                                    |
+| label        | string      | yes      | Label text                                                                                                         |
+| checked      | boolean     | no       | Default checked state                                                                                              |
+| disabled     | boolean     | no       | Disable checkbox                                                                                                   |
+| visible_when | VisibleWhen | no       | Conditional visibility — see [Form component visibility: `visible_when`](#form-component-visibility-visible_when). |
 
 - **React**: `CheckboxComponent` -- `components/base/Checkbox.tsx`
 - **"use client"**: Yes
@@ -365,16 +368,17 @@ Toggle switch with hidden input for form submission.
 
 Multi-line text input.
 
-| Prop          | Type    | Required | Description              |
-| ------------- | ------- | -------- | ------------------------ |
-| name          | string  | yes      | Form field name          |
-| label         | string  | no       | Label text               |
-| placeholder   | string  | no       | Placeholder text         |
-| default_value | string  | no       | Pre-filled value         |
-| rows          | number  | no       | Visible rows (default 3) |
-| max_length    | number  | no       | Max character count      |
-| required      | boolean | no       | Required indicator       |
-| disabled      | boolean | no       | Disable textarea         |
+| Prop          | Type        | Required | Description                                                                                                        |
+| ------------- | ----------- | -------- | ------------------------------------------------------------------------------------------------------------------ |
+| name          | string      | yes      | Form field name                                                                                                    |
+| label         | string      | no       | Label text                                                                                                         |
+| placeholder   | string      | no       | Placeholder text                                                                                                   |
+| default_value | string      | no       | Pre-filled value                                                                                                   |
+| rows          | number      | no       | Visible rows (default 3)                                                                                           |
+| max_length    | number      | no       | Max character count                                                                                                |
+| required      | boolean     | no       | Required indicator                                                                                                 |
+| disabled      | boolean     | no       | Disable textarea                                                                                                   |
+| visible_when  | VisibleWhen | no       | Conditional visibility — see [Form component visibility: `visible_when`](#form-component-visibility-visible_when). |
 
 - **React**: `TextareaComponent` -- `components/base/Textarea.tsx`
 - **"use client"**: Yes
@@ -384,14 +388,15 @@ Multi-line text input.
 
 Radio button group.
 
-| Prop          | Type                                 | Required | Description                                |
-| ------------- | ------------------------------------ | -------- | ------------------------------------------ |
-| name          | string                               | yes      | Form field name (shared across all radios) |
-| label         | string                               | no       | Group legend                               |
-| options       | `{ value: string, label: string }[]` | no       | Radio options                              |
-| default_value | string                               | no       | Pre-selected value                         |
-| required      | boolean                              | no       | Required indicator                         |
-| disabled      | boolean                              | no       | Disable all options                        |
+| Prop          | Type                                 | Required | Description                                                                                                        |
+| ------------- | ------------------------------------ | -------- | ------------------------------------------------------------------------------------------------------------------ |
+| name          | string                               | yes      | Form field name (shared across all radios)                                                                         |
+| label         | string                               | no       | Group legend                                                                                                       |
+| options       | `{ value: string, label: string }[]` | no       | Radio options                                                                                                      |
+| default_value | string                               | no       | Pre-selected value                                                                                                 |
+| required      | boolean                              | no       | Required indicator                                                                                                 |
+| disabled      | boolean                              | no       | Disable all options                                                                                                |
+| visible_when  | VisibleWhen                          | no       | Conditional visibility — see [Form component visibility: `visible_when`](#form-component-visibility-visible_when). |
 
 - **React**: `RadioGroupComponent` -- `components/base/RadioGroup.tsx`
 - **"use client"**: Yes
