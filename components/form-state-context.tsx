@@ -6,6 +6,7 @@ import {
   useContext,
   useMemo,
   useRef,
+  useState,
   useSyncExternalStore,
   type ReactNode,
 } from "react";
@@ -20,6 +21,8 @@ export interface FormStateContextValue {
   getValue: (name: string) => unknown;
   setValue: (name: string, value: unknown) => void;
   subscribe: (name: string, cb: () => void) => () => void;
+  revealErrors: boolean;
+  triggerRevealErrors: () => void;
 }
 
 const FormStateContext = createContext<FormStateContextValue | null>(null);
@@ -71,6 +74,9 @@ export function FormStateProvider({
     listenersRef.current = new Map();
   }
 
+  const [revealErrors, setRevealErrors] = useState(false);
+  const triggerRevealErrors = useCallback(() => setRevealErrors(true), []);
+
   const ctx = useMemo<FormStateContextValue>(() => {
     const values = valuesRef.current!;
     const listeners = listenersRef.current!;
@@ -94,8 +100,10 @@ export function FormStateProvider({
           set!.delete(cb);
         };
       },
+      revealErrors,
+      triggerRevealErrors,
     };
-  }, []);
+  }, [revealErrors, triggerRevealErrors]);
 
   return (
     <FormStateContext.Provider value={ctx}>

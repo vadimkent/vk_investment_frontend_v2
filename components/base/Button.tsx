@@ -11,6 +11,7 @@ import { useTheme } from "@/components/theme-provider";
 import { useSensitive } from "@/components/sensitive-provider";
 import { useSidebar } from "@/components/sidebar-provider";
 import { useModal } from "@/components/modal-context";
+import { useFormState } from "@/components/form-state-context";
 import { getIcon } from "@/lib/icon-registry";
 import { stripScreens } from "@/lib/strip-screens";
 import { substitutePlaceholders } from "@/lib/url-placeholders";
@@ -22,6 +23,7 @@ export function ButtonComponent({ component }: { component: SDUIComponent }) {
   const { toggleSensitive } = useSensitive();
   const { toggleSidebar } = useSidebar();
   const modal = useModal();
+  const formCtx = useFormState();
 
   const label = component.props.label as string | undefined;
   const imageSrc = component.props.image_src as string | undefined;
@@ -57,6 +59,7 @@ export function ButtonComponent({ component }: { component: SDUIComponent }) {
       case "submit":
         if (action.endpoint) {
           if (action.target_id && hasInvalidFields(action.target_id)) {
+            formCtx?.triggerRevealErrors();
             const container = document.querySelector(
               `[data-sdui-id="${action.target_id}"]`,
             );

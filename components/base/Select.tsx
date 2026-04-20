@@ -100,9 +100,16 @@ export function SelectComponent({ component }: { component: SDUIComponent }) {
       >
         <div className="flex items-center gap-1">
           <SelectPrimitive.Trigger
-            className={`flex flex-1 min-w-0 items-center justify-between gap-2 rounded border border-border-input bg-transparent px-3 py-2 text-sm text-content-primary outline-none transition-colors focus-visible:ring-2 focus-visible:ring-accent-primary/40 data-[placeholder]:text-content-muted ${
-              disabled ? "opacity-50 cursor-not-allowed bg-surface-muted" : ""
-            }`}
+            aria-invalid={
+              formCtx?.revealErrors && required && value === ""
+                ? true
+                : undefined
+            }
+            className={`flex flex-1 min-w-0 items-center justify-between gap-2 rounded border bg-transparent px-3 py-2 text-sm text-content-primary outline-none transition-colors focus-visible:ring-2 data-[placeholder]:text-content-muted ${
+              formCtx?.revealErrors && required && value === ""
+                ? "border-status-error focus-visible:ring-status-error/40"
+                : "border-border-input focus-visible:ring-accent-primary/40"
+            } ${disabled ? "opacity-50 cursor-not-allowed bg-surface-muted" : ""}`}
           >
             <SelectPrimitive.Value placeholder={placeholder} />
             <SelectPrimitive.Icon asChild>
