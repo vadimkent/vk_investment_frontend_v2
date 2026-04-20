@@ -45,7 +45,15 @@ export function collectFormData(targetId: string): Record<string, unknown> {
 
 export function hasInvalidFields(targetId: string): boolean {
   const container = document.querySelector(`[data-sdui-id="${targetId}"]`);
-  return !!container?.querySelector('[data-sdui-invalid="true"]');
+  if (!container) return false;
+  if (container.querySelector('[data-sdui-invalid="true"]')) return true;
+  const nativeFields = container.querySelectorAll<
+    HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+  >("input[name]:not([type='hidden']), textarea[name], select[name]");
+  for (const f of nativeFields) {
+    if (!f.validity.valid) return true;
+  }
+  return false;
 }
 
 export function useActionDispatcher() {

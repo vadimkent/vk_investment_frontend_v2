@@ -47,10 +47,10 @@ export function InputComponent({ component }: { component: SDUIComponent }) {
       const upper = el.value.toUpperCase();
       if (el.value !== upper) el.value = upper;
     }
-    if (regex) {
-      const v = el.value;
-      setInvalid(v !== "" && !regex.test(v));
-    }
+    let nextInvalid = false;
+    if (regex && el.value !== "" && !regex.test(el.value)) nextInvalid = true;
+    if (!el.validity.valid) nextInvalid = true;
+    setInvalid(nextInvalid);
     formCtx?.setValue(name, el.value);
   }
 

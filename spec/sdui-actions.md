@@ -91,6 +91,8 @@ Client-side-only actions (`toggle_theme`, `toggle_sensitive`, `navigate`, `refre
 
 ## 3. Form Data Collection
 
+Before collecting data, the dispatcher calls `hasInvalidFields(target_id)` (same module). It returns `true` if any descendant of the target container has `data-sdui-invalid="true"` (set by components like `input` with a failing `pattern`, or `select`'s hidden input when `required` and empty), OR if any non-hidden `input[name]` / `textarea[name]` / `select[name]` descendant fails HTML5 native validity (`required` empty, `input_type="email"` malformed, range mismatch, etc.). A truthy result aborts the dispatch and focuses the first offending field. The user retries after fixing.
+
 When a `submit` action has a `target_id`, `collectFormData` (in `components/action-dispatcher.tsx`) queries the DOM:
 
 ```typescript

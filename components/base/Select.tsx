@@ -86,7 +86,12 @@ export function SelectComponent({ component }: { component: SDUIComponent }) {
           {required && <span className="text-status-error ml-0.5">*</span>}
         </label>
       )}
-      <input type="hidden" name={name} value={value} />
+      <input
+        type="hidden"
+        name={name}
+        value={value}
+        data-sdui-invalid={required && value === "" ? "true" : undefined}
+      />
       <SelectPrimitive.Root
         value={value}
         onValueChange={handleChange}

@@ -31,4 +31,40 @@ describe("hasInvalidFields", () => {
     mountContainer("form-x", true);
     expect(hasInvalidFields("form-x")).toBe(true);
   });
+
+  it("returns true when a required named input is empty (native validity)", () => {
+    const div = document.createElement("div");
+    div.setAttribute("data-sdui-id", "form-x");
+    const input = document.createElement("input");
+    input.setAttribute("name", "ticker");
+    input.required = true;
+    div.appendChild(input);
+    document.body.appendChild(div);
+    expect(hasInvalidFields("form-x")).toBe(true);
+  });
+
+  it("returns true when an email input has a bad value (native validity)", () => {
+    const div = document.createElement("div");
+    div.setAttribute("data-sdui-id", "form-x");
+    const input = document.createElement("input");
+    input.setAttribute("name", "email");
+    input.type = "email";
+    input.value = "not-an-email";
+    div.appendChild(input);
+    document.body.appendChild(div);
+    expect(hasInvalidFields("form-x")).toBe(true);
+  });
+
+  it("ignores hidden inputs when scanning native validity", () => {
+    const div = document.createElement("div");
+    div.setAttribute("data-sdui-id", "form-x");
+    const hidden = document.createElement("input");
+    hidden.setAttribute("name", "provider");
+    hidden.type = "hidden";
+    hidden.required = true;
+    hidden.value = "";
+    div.appendChild(hidden);
+    document.body.appendChild(div);
+    expect(hasInvalidFields("form-x")).toBe(false);
+  });
 });
