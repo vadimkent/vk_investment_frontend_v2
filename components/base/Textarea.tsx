@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import type { SDUIComponent } from "@/lib/types/sdui";
 import {
   evalVisibleWhen,
@@ -21,11 +22,21 @@ export function TextareaComponent({ component }: { component: SDUIComponent }) {
 
   const formCtx = useFormState();
   const depValue = useFieldValue(vw?.field ?? "");
+  const [invalid, setInvalid] = useState(false);
+
   if (vw && formCtx && !evalVisibleWhen(vw, depValue)) return null;
+
+  function runChecks(el: HTMLTextAreaElement) {
+    setInvalid(!el.validity.valid);
+    formCtx?.setValue(name, el.value);
+  }
 
   const disabledClass = disabled
     ? " opacity-50 cursor-not-allowed bg-surface-muted"
     : "";
+  const borderClass = invalid
+    ? "border-status-error focus-visible:ring-status-error/40"
+    : "border-border-input";
 
   return (
     <div>
@@ -43,8 +54,11 @@ export function TextareaComponent({ component }: { component: SDUIComponent }) {
         maxLength={maxLength}
         required={required}
         disabled={disabled}
-        onInput={(e) => formCtx?.setValue(name, e.currentTarget.value)}
-        className={`bg-transparent text-content-primary placeholder:text-content-muted border border-border-input rounded px-3 py-2 w-full${disabledClass}`}
+        aria-invalid={invalid || undefined}
+        data-sdui-invalid={invalid ? "true" : undefined}
+        onInput={(e) => runChecks(e.currentTarget)}
+        onBlur={(e) => runChecks(e.currentTarget)}
+        className={`bg-transparent text-content-primary placeholder:text-content-muted border ${borderClass} rounded px-3 py-2 w-full${disabledClass}`}
         data-sdui-id={component.id}
       />
     </div>

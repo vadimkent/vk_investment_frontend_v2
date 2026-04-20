@@ -60,9 +60,25 @@ export function ButtonComponent({ component }: { component: SDUIComponent }) {
             const container = document.querySelector(
               `[data-sdui-id="${action.target_id}"]`,
             );
-            container
-              ?.querySelector<HTMLElement>('[data-sdui-invalid="true"]')
-              ?.focus();
+            if (container) {
+              const fields = container.querySelectorAll<
+                HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+              >(
+                "input[name]:not([type='hidden']), textarea[name], select[name]",
+              );
+              for (const f of fields) {
+                f.dispatchEvent(new Event("input", { bubbles: true }));
+                f.dispatchEvent(new Event("blur", { bubbles: true }));
+              }
+              const firstInvalid =
+                container.querySelector<HTMLElement>(
+                  '[data-sdui-invalid="true"]',
+                ) ??
+                container.querySelector<HTMLElement>(
+                  "input[name]:not([type='hidden']):invalid, textarea[name]:invalid, select[name]:invalid",
+                );
+              firstInvalid?.focus();
+            }
             break;
           }
           const data = action.target_id
