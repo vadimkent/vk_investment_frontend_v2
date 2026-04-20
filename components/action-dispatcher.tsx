@@ -97,7 +97,7 @@ export function useActionDispatcher() {
         }
 
         if (response.status === 401 && body.redirect) {
-          router.push(stripScreens(body.redirect));
+          window.location.href = stripScreens(body.redirect);
           return { action: "none" };
         }
 
