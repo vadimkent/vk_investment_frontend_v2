@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import type { SDUIComponent } from "@/lib/types/sdui";
 
 const MIDDLEEND_URL = process.env.MIDDLEEND_URL ?? "http://localhost:8081";
@@ -34,6 +34,9 @@ async function fetchSDUI(
       "",
     );
     redirect(loginPath);
+  }
+  if (response.status === 404) {
+    notFound();
   }
   if (!response.ok) {
     throw new Error(`Failed to fetch ${path}: ${response.status}`);
