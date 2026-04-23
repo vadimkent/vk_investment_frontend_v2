@@ -186,7 +186,7 @@ A row inside a `table`. Uses CSS subgrid so every row shares the same column tra
 
 Each child of `table_row` is rendered into a cell (`div[role="cell"]`) and aligned according to the column's `align`. Use `text`, `badge`, `image`, or any component as a cell; the scaffold does not constrain cell content.
 
-**Toggle and state.** When expandable, click on any cell of the main row toggles the panel. The chevron rotates between `ChevronDown` (collapsed) and `ChevronUp` (expanded). State is local to the frontend, keyed implicitly by the row's React `key` (the SDUI `id`). Multiple rows in the same table can be expanded simultaneously. State is lost on any `replace` that rebuilds the row's subtree (filter change, pagination, mutation refresh) and is not persisted across page loads. No round-trip on expand — `details` is already in the DOM.
+**Toggle and state.** When expandable, click on any cell of the main row toggles the panel. The chevron rotates between `ChevronDown` (collapsed) and `ChevronUp` (expanded). State is local to the frontend, keyed implicitly by the row's React `key` (the SDUI `id`). Multiple rows in the same table can be expanded simultaneously. State is lost on any `replace` that rebuilds the row's subtree (filter change, pagination, mutation refresh) and is not persisted across page loads. No round-trip on expand — `details` is pre-emitted in the payload and mounted instantly without a network request.
 
 **Interaction with `actions`.** When `expandable` is active (i.e. `expandable: true` and `details` non-empty), it takes precedence over `actions` — clicks toggle the panel and do not fire navigation. Backends should not combine the two on the same row.
 
