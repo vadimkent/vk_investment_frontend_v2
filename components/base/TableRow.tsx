@@ -15,7 +15,7 @@ const alignClass: Record<string, string> = {
 
 export function TableRowComponent({ component }: { component: SDUIComponent }) {
   const router = useRouter();
-  const { columns } = useTableColumns();
+  const { columns, hasChevronColumn } = useTableColumns();
   const hasActions = component.actions && component.actions.length > 0;
 
   function handleClick() {
@@ -50,6 +50,7 @@ export function TableRowComponent({ component }: { component: SDUIComponent }) {
       onClick={hasActions ? handleClick : undefined}
       tabIndex={hasActions ? 0 : undefined}
     >
+      {hasChevronColumn && <div aria-hidden="true" />}
       {component.children?.map((child, i) => {
         const align = columns[i]?.align ?? "left";
         return (

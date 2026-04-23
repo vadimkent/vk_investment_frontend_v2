@@ -91,3 +91,31 @@ describe("Table — chevron column auto-add", () => {
     expect(headers[0].textContent).toBe("");
   });
 });
+
+describe("TableRow — chevron placeholder cell", () => {
+  it("renders an empty placeholder cell for non-expandable rows when table has chevron column", () => {
+    const expandableRow = row(
+      "r1",
+      [textCell("c1", "x"), textCell("c2", "y")],
+      {
+        props: {
+          expandable: true,
+          details: [textCell("d1", "panel content")],
+        },
+      },
+    );
+    const plainRow = row("r2", [textCell("c3", "p"), textCell("c4", "q")]);
+    const { container } = render(
+      <TableComponent component={table([expandableRow, plainRow])} />,
+    );
+    // Find the plain row (id ends with r2). It should have one chevron-cell + 2 data cells = 3 total grid items.
+    const rows = container.querySelectorAll('[role="row"]');
+    // rows[0] = header, rows[1] = expandableRow, rows[2] = plainRow
+    const plainRowEl = rows[2];
+    // chevron cell uses role="presentation" so query its direct children differently:
+    const directChildren = plainRowEl.children;
+    expect(directChildren.length).toBe(3);
+    // First child is the chevron placeholder — has aria-hidden
+    expect(directChildren[0].getAttribute("aria-hidden")).toBe("true");
+  });
+});
