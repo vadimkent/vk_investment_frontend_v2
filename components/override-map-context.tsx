@@ -14,6 +14,7 @@ import type { SDUIComponent } from "@/lib/types/sdui";
 type OverrideMapContext = {
   getOverride: (id: string) => SDUIComponent | undefined;
   setOverride: (id: string, tree: SDUIComponent) => void;
+  clearOverride: (id: string) => void;
   clearOverrides: () => void;
   isLoading: (id: string) => boolean;
   isFullLoading: boolean;
@@ -24,6 +25,7 @@ type OverrideMapContext = {
 const Ctx = createContext<OverrideMapContext>({
   getOverride: () => undefined,
   setOverride: () => {},
+  clearOverride: () => {},
   clearOverrides: () => {},
   isLoading: () => false,
   isFullLoading: false,
@@ -60,6 +62,16 @@ export function OverrideMapProvider({ children }: { children: ReactNode }) {
       }),
     [],
   );
+  const clearOverride = useCallback(
+    (id: string) =>
+      setOverrides((prev) => {
+        if (!(id in prev)) return prev;
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      }),
+    [],
+  );
   const clearOverrides = useCallback(() => setOverrides({}), []);
 
   const isLoading = useCallback(
@@ -89,6 +101,7 @@ export function OverrideMapProvider({ children }: { children: ReactNode }) {
       value={{
         getOverride,
         setOverride,
+        clearOverride,
         clearOverrides,
         isLoading,
         isFullLoading: fullLoading,
