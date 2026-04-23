@@ -11,13 +11,24 @@ const alignClass: Record<string, string> = {
   right: "justify-end text-right",
 };
 
+function rowIsExpandable(child: SDUIComponent): boolean {
+  if (child.type !== "table_row") return false;
+  if (child.props?.expandable !== true) return false;
+  const details = child.props?.details;
+  return Array.isArray(details) && details.length > 0;
+}
+
 export function TableComponent({ component }: { component: SDUIComponent }) {
   const columns = (component.props.columns as TableColumn[] | undefined) ?? [];
-  const widths =
+  const children = component.children ?? [];
+  const hasChevronColumn = children.some(rowIsExpandable);
+
+  const baseWidths =
     columns.length > 0 ? columns.map((c) => c.width ?? "1fr").join(" ") : "1fr";
+  const widths = hasChevronColumn ? `24px ${baseWidths}` : baseWidths;
 
   return (
-    <TableColumnsProvider columns={columns} hasChevronColumn={false}>
+    <TableColumnsProvider columns={columns} hasChevronColumn={hasChevronColumn}>
       <div
         role="table"
         style={{ display: "grid", gridTemplateColumns: widths }}
@@ -31,6 +42,9 @@ export function TableComponent({ component }: { component: SDUIComponent }) {
           }}
           className="border-b border-border bg-surface-secondary font-medium text-sm text-content-secondary"
         >
+          {hasChevronColumn && (
+            <div role="columnheader" aria-hidden="true" />
+          )}
           {columns.map((col) => (
             <div
               key={col.id}
@@ -42,7 +56,7 @@ export function TableComponent({ component }: { component: SDUIComponent }) {
             </div>
           ))}
         </div>
-        {component.children?.map((child) => (
+        {children.map((child) => (
           <ComponentRenderer key={child.id} component={child} />
         ))}
       </div>
