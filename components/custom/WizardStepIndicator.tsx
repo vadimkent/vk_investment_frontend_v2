@@ -1,5 +1,3 @@
-"use client";
-
 import type { WizardStep } from "@/components/custom/Wizard";
 
 export function WizardStepIndicator({
