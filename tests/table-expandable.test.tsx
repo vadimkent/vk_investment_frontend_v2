@@ -246,7 +246,7 @@ describe("TableRow — silent fallback for invalid expandable", () => {
         },
       },
     );
-    const { container, queryByText } = render(
+    const { container } = render(
       <TableComponent component={table([r])} />,
     );
     // No chevron column was added (this is the only row, and it's not really expandable)
@@ -257,7 +257,7 @@ describe("TableRow — silent fallback for invalid expandable", () => {
     // Clicking does nothing visible — no panel appears
     const rows = container.querySelectorAll('[role="row"]');
     fireEvent.click(rows[1] as HTMLElement);
-    expect(queryByText("PANEL")).toBeNull();
+    expect(container.querySelector("[data-table-row-details]")).toBeNull();
   });
 
   it("expandable: true with details: [] is also treated as plain row", () => {
