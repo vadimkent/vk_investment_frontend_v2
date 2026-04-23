@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { SDUIComponent } from "@/lib/types/sdui";
 import { ComponentRenderer } from "@/components/renderer";
 import { FormStateProvider } from "@/components/form-state-context";
@@ -22,15 +22,18 @@ export function WizardComponent({ component }: { component: SDUIComponent }) {
   const initialStepId =
     (component.props.initial_step_id as string | undefined) ?? steps[0]?.id;
 
-  const [activeStepId] = useState<string>(initialStepId);
+  const [activeStepId] = useState<string | undefined>(initialStepId);
 
-  const allChildren: SDUIComponent[] = steps.flatMap((s) => s.children);
-  const initial = collectInitialValues({
-    type: "wizard_root",
-    id: `${wizardId}__root`,
-    props: {},
-    children: allChildren,
-  });
+  const initial = useMemo(() => {
+    const allChildren: SDUIComponent[] = steps.flatMap((s) => s.children);
+    return collectInitialValues({
+      type: "wizard_root",
+      id: `${wizardId}__root`,
+      props: {},
+      children: allChildren,
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wizardId]);
 
   return (
     <FormStateProvider initial={initial}>
