@@ -112,7 +112,7 @@ describe("TableRow — chevron placeholder cell", () => {
     const rows = container.querySelectorAll('[role="row"]');
     // rows[0] = header, rows[1] = expandableRow, rows[2] = plainRow
     const plainRowEl = rows[2];
-    // chevron cell uses role="presentation" so query its direct children differently:
+    // the placeholder div has no role — query direct children of the row element instead
     const directChildren = plainRowEl.children;
     expect(directChildren.length).toBe(3);
     // First child is the chevron placeholder — has aria-hidden
