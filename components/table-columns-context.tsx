@@ -9,17 +9,27 @@ export type TableColumn = {
   align?: "left" | "center" | "right";
 };
 
-const TableColumnsContext = createContext<TableColumn[]>([]);
+export type TableColumnsContextValue = {
+  columns: TableColumn[];
+  hasChevronColumn: boolean;
+};
+
+const TableColumnsContext = createContext<TableColumnsContextValue>({
+  columns: [],
+  hasChevronColumn: false,
+});
 
 export function TableColumnsProvider({
   columns,
+  hasChevronColumn,
   children,
 }: {
   columns: TableColumn[];
+  hasChevronColumn: boolean;
   children: ReactNode;
 }) {
   return (
-    <TableColumnsContext.Provider value={columns}>
+    <TableColumnsContext.Provider value={{ columns, hasChevronColumn }}>
       {children}
     </TableColumnsContext.Provider>
   );

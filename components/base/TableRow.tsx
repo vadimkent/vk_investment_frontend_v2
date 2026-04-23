@@ -15,7 +15,7 @@ const alignClass: Record<string, string> = {
 
 export function TableRowComponent({ component }: { component: SDUIComponent }) {
   const router = useRouter();
-  const columns = useTableColumns();
+  const { columns } = useTableColumns();
   const hasActions = component.actions && component.actions.length > 0;
 
   function handleClick() {

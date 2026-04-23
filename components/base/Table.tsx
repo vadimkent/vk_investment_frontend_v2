@@ -17,7 +17,7 @@ export function TableComponent({ component }: { component: SDUIComponent }) {
     columns.length > 0 ? columns.map((c) => c.width ?? "1fr").join(" ") : "1fr";
 
   return (
-    <TableColumnsProvider columns={columns}>
+    <TableColumnsProvider columns={columns} hasChevronColumn={false}>
       <div
         role="table"
         style={{ display: "grid", gridTemplateColumns: widths }}
