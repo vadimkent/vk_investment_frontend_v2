@@ -119,3 +119,119 @@ describe("TableRow — chevron placeholder cell", () => {
     expect(directChildren[0].getAttribute("aria-hidden")).toBe("true");
   });
 });
+
+import { fireEvent } from "@testing-library/react";
+
+describe("TableRow — expandable behavior", () => {
+  it("renders ChevronDown icon when collapsed", () => {
+    const expandableRow = row(
+      "r1",
+      [textCell("c1", "x"), textCell("c2", "y")],
+      {
+        props: {
+          expandable: true,
+          details: [textCell("d1", "panel content")],
+        },
+      },
+    );
+    const { container } = render(
+      <TableComponent component={table([expandableRow])} />,
+    );
+    // lucide-react renders SVGs with class containing "lucide-chevron-down" / "lucide-chevron-up"
+    expect(container.querySelector(".lucide-chevron-down")).not.toBeNull();
+    expect(container.querySelector(".lucide-chevron-up")).toBeNull();
+  });
+
+  it("clicking the row toggles to expanded — chevron flips to up and panel renders", () => {
+    const expandableRow = row(
+      "r1",
+      [textCell("c1", "x"), textCell("c2", "y")],
+      {
+        props: {
+          expandable: true,
+          details: [textCell("d1", "PANEL")],
+        },
+      },
+    );
+    const { container, getByText, queryByText } = render(
+      <TableComponent component={table([expandableRow])} />,
+    );
+
+    // Initially collapsed: panel content not in DOM
+    expect(queryByText("PANEL")).toBeNull();
+
+    // Click the main row (the one rendering cells, not the header)
+    const rows = container.querySelectorAll('[role="row"]');
+    fireEvent.click(rows[1] as HTMLElement);
+
+    // Now expanded
+    expect(getByText("PANEL")).not.toBeNull();
+    expect(container.querySelector(".lucide-chevron-up")).not.toBeNull();
+    expect(container.querySelector(".lucide-chevron-down")).toBeNull();
+
+    // Click again → collapse
+    fireEvent.click(rows[1] as HTMLElement);
+    expect(queryByText("PANEL")).toBeNull();
+  });
+
+  it("expandable wins over actions — clicking does NOT navigate", async () => {
+    vi.resetModules();
+    const pushSpy = vi.fn();
+    vi.doMock("next/navigation", () => ({
+      useRouter: () => ({ push: pushSpy, back: vi.fn() }),
+    }));
+
+    const { TableComponent: FreshTable } = await import(
+      "@/components/base/Table"
+    );
+    const { render: freshRender } = await import("@testing-library/react");
+    const { fireEvent: freshFire } = await import("@testing-library/react");
+
+    const expandableRow = row(
+      "r1",
+      [textCell("c1", "x"), textCell("c2", "y")],
+      {
+        props: {
+          expandable: true,
+          details: [textCell("d1", "PANEL")],
+        },
+        actions: [{ trigger: "click", type: "navigate", url: "/somewhere" }],
+      },
+    );
+    const { container, getByText } = freshRender(
+      <FreshTable component={table([expandableRow])} />,
+    );
+    const rows = container.querySelectorAll('[role="row"]');
+    freshFire.click(rows[1] as HTMLElement);
+
+    // Panel is shown → toggle ran
+    expect(getByText("PANEL")).not.toBeNull();
+    // Navigation did NOT run
+    expect(pushSpy).not.toHaveBeenCalled();
+  });
+
+  it("renders the details panel as a full-width sibling spanning all columns", () => {
+    const expandableRow = row(
+      "r1",
+      [textCell("c1", "x"), textCell("c2", "y")],
+      {
+        props: {
+          expandable: true,
+          details: [textCell("d1", "PANEL")],
+        },
+      },
+    );
+    const { container } = render(
+      <TableComponent component={table([expandableRow])} />,
+    );
+    const rows = container.querySelectorAll('[role="row"]');
+    fireEvent.click(rows[1] as HTMLElement);
+
+    const panel = container.querySelector(
+      "[data-table-row-details]",
+    ) as HTMLElement;
+    expect(panel).not.toBeNull();
+    expect(panel.style.gridColumn).toBe("1 / -1");
+    expect(panel.textContent).toContain("PANEL");
+  });
+});
