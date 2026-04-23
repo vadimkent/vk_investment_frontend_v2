@@ -233,3 +233,46 @@ describe("TableRow — expandable behavior", () => {
     expect(panel.textContent).toContain("PANEL");
   });
 });
+
+describe("TableRow — silent fallback for invalid expandable", () => {
+  it("expandable: true with no details renders no chevron and no toggle", () => {
+    const r = row(
+      "r1",
+      [textCell("c1", "x"), textCell("c2", "y")],
+      {
+        props: {
+          expandable: true,
+          // no details
+        },
+      },
+    );
+    const { container, queryByText } = render(
+      <TableComponent component={table([r])} />,
+    );
+    // No chevron column was added (this is the only row, and it's not really expandable)
+    const grid = container.querySelector('[role="table"]') as HTMLElement;
+    expect(grid.style.gridTemplateColumns).toBe("100px 1fr");
+    expect(container.querySelector(".lucide-chevron-down")).toBeNull();
+
+    // Clicking does nothing visible — no panel appears
+    const rows = container.querySelectorAll('[role="row"]');
+    fireEvent.click(rows[1] as HTMLElement);
+    expect(queryByText("PANEL")).toBeNull();
+  });
+
+  it("expandable: true with details: [] is also treated as plain row", () => {
+    const r = row(
+      "r1",
+      [textCell("c1", "x"), textCell("c2", "y")],
+      {
+        props: { expandable: true, details: [] },
+      },
+    );
+    const { container } = render(
+      <TableComponent component={table([r])} />,
+    );
+    const grid = container.querySelector('[role="table"]') as HTMLElement;
+    expect(grid.style.gridTemplateColumns).toBe("100px 1fr");
+    expect(container.querySelector(".lucide-chevron-down")).toBeNull();
+  });
+});
