@@ -3,11 +3,16 @@ import { cleanup, fireEvent, render } from "@testing-library/react";
 import type { SDUIComponent } from "@/lib/types/sdui";
 import { TableComponent } from "@/components/base/Table";
 
+const { pushSpy } = vi.hoisted(() => ({ pushSpy: vi.fn() }));
+
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: vi.fn(), back: vi.fn() }),
+  useRouter: () => ({ push: pushSpy, back: vi.fn() }),
 }));
 
-afterEach(() => cleanup());
+afterEach(() => {
+  cleanup();
+  pushSpy.mockClear();
+});
 
 function table(children: SDUIComponent[]): SDUIComponent {
   return {
@@ -174,18 +179,7 @@ describe("TableRow — expandable behavior", () => {
     expect(queryByText("PANEL")).toBeNull();
   });
 
-  it("expandable wins over actions — clicking does NOT navigate", async () => {
-    vi.resetModules();
-    const pushSpy = vi.fn();
-    vi.doMock("next/navigation", () => ({
-      useRouter: () => ({ push: pushSpy, back: vi.fn() }),
-    }));
-
-    const { TableComponent: FreshTable } =
-      await import("@/components/base/Table");
-    const { render: freshRender } = await import("@testing-library/react");
-    const { fireEvent: freshFire } = await import("@testing-library/react");
-
+  it("expandable wins over actions — clicking does NOT navigate", () => {
     const expandableRow = row(
       "r1",
       [textCell("c1", "x"), textCell("c2", "y")],
@@ -197,11 +191,11 @@ describe("TableRow — expandable behavior", () => {
         actions: [{ trigger: "click", type: "navigate", url: "/somewhere" }],
       },
     );
-    const { container, getByText } = freshRender(
-      <FreshTable component={table([expandableRow])} />,
+    const { container, getByText } = render(
+      <TableComponent component={table([expandableRow])} />,
     );
     const rows = container.querySelectorAll('[role="row"]');
-    freshFire.click(rows[1] as HTMLElement);
+    fireEvent.click(rows[1] as HTMLElement);
 
     // Panel is shown → toggle ran
     expect(getByText("PANEL")).not.toBeNull();
