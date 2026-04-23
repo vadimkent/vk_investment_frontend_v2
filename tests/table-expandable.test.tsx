@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach, vi } from "vitest";
-import { cleanup, render } from "@testing-library/react";
+import { cleanup, fireEvent, render } from "@testing-library/react";
 import type { SDUIComponent } from "@/lib/types/sdui";
 import { TableComponent } from "@/components/base/Table";
 
@@ -119,8 +119,6 @@ describe("TableRow — chevron placeholder cell", () => {
     expect(directChildren[0].getAttribute("aria-hidden")).toBe("true");
   });
 });
-
-import { fireEvent } from "@testing-library/react";
 
 describe("TableRow — expandable behavior", () => {
   it("renders ChevronDown icon when collapsed", () => {
