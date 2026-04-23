@@ -48,7 +48,7 @@ function Controls({
 }
 
 describe("OverrideMap.clearOverride", () => {
-  it("removes the override for the given id", async () => {
+  it("removes the override for the given id", () => {
     const { getByTestId } = render(
       <OverrideMapProvider>
         <Controls setId="slot-a" clearId="slot-a" />
