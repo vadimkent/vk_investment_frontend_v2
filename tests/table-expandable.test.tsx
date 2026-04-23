@@ -2,6 +2,11 @@ import { describe, it, expect, afterEach, vi } from "vitest";
 import { cleanup, fireEvent, render } from "@testing-library/react";
 import type { SDUIComponent } from "@/lib/types/sdui";
 import { TableComponent } from "@/components/base/Table";
+import { registerComponent } from "@/components/registry";
+
+registerComponent("test_button", ({ component }) => (
+  <button data-testid={component.id}>{component.props.label as string}</button>
+));
 
 const { pushSpy } = vi.hoisted(() => ({ pushSpy: vi.fn() }));
 
@@ -257,5 +262,73 @@ describe("TableRow — silent fallback for invalid expandable", () => {
     const grid = container.querySelector('[role="table"]') as HTMLElement;
     expect(grid.style.gridTemplateColumns).toBe("100px 1fr");
     expect(container.querySelector(".lucide-chevron-down")).toBeNull();
+  });
+});
+
+describe("TableRow — interactive children take precedence over row click", () => {
+  it("clicking a <button> inside a cell does NOT toggle an expandable row", () => {
+    const expandableRow = row(
+      "r1",
+      [
+        textCell("c1", "x"),
+        { type: "test_button", id: "btn1", props: { label: "Action" } },
+      ],
+      {
+        props: {
+          expandable: true,
+          details: [textCell("d1", "PANEL")],
+        },
+      },
+    );
+    const { container, getByTestId } = render(
+      <TableComponent component={table([expandableRow])} />,
+    );
+    expect(container.querySelector("[data-table-row-details]")).toBeNull();
+
+    fireEvent.click(getByTestId("btn1"));
+
+    expect(container.querySelector("[data-table-row-details]")).toBeNull();
+  });
+
+  it("clicking a non-interactive cell still toggles the expandable row", () => {
+    // Sanity check — proves the bail-out is targeted, not blanket.
+    const expandableRow = row(
+      "r1",
+      [
+        textCell("c1", "x"),
+        { type: "test_button", id: "btn1", props: { label: "Action" } },
+      ],
+      {
+        props: {
+          expandable: true,
+          details: [textCell("d1", "PANEL")],
+        },
+      },
+    );
+    const { container } = render(
+      <TableComponent component={table([expandableRow])} />,
+    );
+    // Click the first text cell (not the button)
+    const cells = container.querySelectorAll('[role="cell"]');
+    fireEvent.click(cells[0] as HTMLElement);
+    expect(container.querySelector("[data-table-row-details]")).not.toBeNull();
+  });
+
+  it("clicking a <button> inside a cell does NOT trigger row navigate action", () => {
+    const navRow = row(
+      "r1",
+      [
+        textCell("c1", "x"),
+        { type: "test_button", id: "btn1", props: { label: "Action" } },
+      ],
+      {
+        actions: [{ trigger: "click", type: "navigate", url: "/somewhere" }],
+      },
+    );
+    const { getByTestId } = render(
+      <TableComponent component={table([navRow])} />,
+    );
+    fireEvent.click(getByTestId("btn1"));
+    expect(pushSpy).not.toHaveBeenCalled();
   });
 });

@@ -192,6 +192,8 @@ Each child of `table_row` is rendered into a cell (`div[role="cell"]`) and align
 
 **Panel rendering.** The details panel is emitted as a sibling grid item with `gridColumn: "1 / -1"`, breaking the subgrid and spanning all columns including the chevron column. Its content is arbitrary components (typically another `table`, a `column`, etc.).
 
+**Interactive children take precedence.** If a cell contains a `button`, `a`, form input, or any element with `role="button"`, clicks on that element run the element's own handler and do **not** toggle the row or fire the row's `actions`. Detected via `event.target.closest('button, a, input, select, textarea, [role="button"]')`. Cells with only passive content (e.g. `text`, `badge`) continue to toggle/navigate on click as usual.
+
 - **React**: `TableRowComponent` -- `components/base/TableRow.tsx`
 - **"use client"**: Yes (uses `useRouter` for click navigation, `useTableColumns` for per-cell alignment and chevron column awareness, and `useState` for expand/collapse state)
 - **Renders**: `div[role="row"]` as a subgrid that spans all columns, optionally followed by a sibling panel `div[data-table-row-details][role="presentation"]` when expanded. Cells are wrapped in `div[role="cell"]` with `px-4 py-3` padding and alignment classes. When the table has a chevron column, every row also renders a leading 24px cell (chevron icon when expandable, empty placeholder otherwise). Adds `cursor-pointer hover:bg-surface-secondary` when the row is expandable or has actions.

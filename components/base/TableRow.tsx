@@ -1,5 +1,6 @@
 "use client";
 
+import type React from "react";
 import { useState } from "react";
 import type { SDUIComponent } from "@/lib/types/sdui";
 import { ComponentRenderer } from "@/components/renderer";
@@ -31,7 +32,13 @@ export function TableRowComponent({ component }: { component: SDUIComponent }) {
 
   const [expanded, setExpanded] = useState(false);
 
-  function handleClick() {
+  function handleClick(e: React.MouseEvent<HTMLDivElement>) {
+    // Interactive descendants (buttons, links, form fields) take precedence:
+    // their own click handler runs and the row click is suppressed.
+    const target = e.target as HTMLElement;
+    if (target.closest('button, a, input, select, textarea, [role="button"]')) {
+      return;
+    }
     if (isExpandable) {
       setExpanded((prev) => !prev);
       return;
