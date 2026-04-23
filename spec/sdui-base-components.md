@@ -169,23 +169,32 @@ Tabular data with aligned columns across header and rows. The table owns column 
 
 Children must be `table_row` components. Each row's children are placed into the columns in order; the number of children per row should match `columns.length`.
 
+**Chevron auto-column.** When at least one child row declares `expandable: true` with non-empty `details`, the table prepends a fixed `24px` column to `gridTemplateColumns` and renders an empty header cell at index 0. The chevron column is purely presentational — it is NOT part of `columns[]` and does NOT count toward `columns.length` for cell-count validation. When no row is expandable, the table renders exactly as before (no extra column).
+
 - **React**: `TableComponent` -- `components/base/Table.tsx`
-- **"use client"**: No (wraps children in a client `TableColumnsProvider`)
-- **Renders**: `div[role="table"]` as a CSS Grid with `grid-template-columns` derived from `columns[].width`. Header row renders above children with a bottom border and a muted background.
+- **"use client"**: No (wraps children in a client `TableColumnsProvider` that exposes `columns` and `hasChevronColumn`)
+- **Renders**: `div[role="table"]` as a CSS Grid with `grid-template-columns` derived from `columns[].width`, optionally prefixed with `24px` when chevron column is active. Header row renders above children with a bottom border and a muted background.
 
 ### table_row
 
-A row inside a `table`. Uses CSS subgrid so every row shares the same column tracks as the table — the header and every body row align on the same boundaries. Supports `navigate` / `navigate_back` click actions for row-level interaction (e.g. row click opens a detail screen).
+A row inside a `table`. Uses CSS subgrid so every row shares the same column tracks as the table — the header and every body row align on the same boundaries. Supports `navigate` / `navigate_back` click actions for row-level interaction (e.g. row click opens a detail screen). Optionally togglable: when `expandable: true` and `details` is non-empty, the row toggles a full-width panel rendered directly below it.
 
-| Prop   | Type | Required | Description                |
-| ------ | ---- | -------- | -------------------------- |
-| (none) | --   | --       | Shape comes from the table |
+| Prop       | Type            | Required | Description                                                                                                                                                                                                                                |
+| ---------- | --------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| expandable | boolean         | no       | Default `false`. When `true` AND `details` is a non-empty array, click anywhere on the main row toggles the details panel. The frontend renders a chevron indicator in the table's auto-added chevron column.                                              |
+| details    | `Component[]`   | no       | Subtree rendered as a full-width panel directly below the row when expanded. Pre-emitted in the tree (no fetch on expand). Must be non-empty for the row to be expandable; an empty or absent `details` silently downgrades the row to non-expandable.     |
 
 Each child of `table_row` is rendered into a cell (`div[role="cell"]`) and aligned according to the column's `align`. Use `text`, `badge`, `image`, or any component as a cell; the scaffold does not constrain cell content.
 
+**Toggle and state.** When expandable, click on any cell of the main row toggles the panel. The chevron rotates between `ChevronDown` (collapsed) and `ChevronUp` (expanded). State is local to the frontend, keyed implicitly by the row's React `key` (the SDUI `id`). Multiple rows in the same table can be expanded simultaneously. State is lost on any `replace` that rebuilds the row's subtree (filter change, pagination, mutation refresh) and is not persisted across page loads. No round-trip on expand — `details` is already in the DOM.
+
+**Interaction with `actions`.** When `expandable` is active (i.e. `expandable: true` and `details` non-empty), it takes precedence over `actions` — clicks toggle the panel and do not fire navigation. Backends should not combine the two on the same row.
+
+**Panel rendering.** The details panel is emitted as a sibling grid item with `gridColumn: "1 / -1"`, breaking the subgrid and spanning all columns including the chevron column. Its content is arbitrary components (typically another `table`, a `column`, etc.).
+
 - **React**: `TableRowComponent` -- `components/base/TableRow.tsx`
-- **"use client"**: Yes (uses `useRouter` for click navigation and `useTableColumns` for per-cell alignment)
-- **Renders**: `div[role="row"]` as a subgrid that spans all columns. Each cell is wrapped in `div[role="cell"]` with `px-4 py-3` padding and alignment classes. Adds `cursor-pointer hover:bg-gray-50` when actions are present.
+- **"use client"**: Yes (uses `useRouter` for click navigation, `useTableColumns` for per-cell alignment and chevron column awareness, and `useState` for expand/collapse state)
+- **Renders**: `div[role="row"]` as a subgrid that spans all columns, optionally followed by a sibling panel `div[data-table-row-details][role="presentation"]` when expanded. Cells are wrapped in `div[role="cell"]` with `px-4 py-3` padding and alignment classes. When the table has a chevron column, every row also renders a leading 24px cell (chevron icon when expandable, empty placeholder otherwise). Adds `cursor-pointer hover:bg-surface-secondary` when the row is expandable or has actions.
 
 ### badge
 
