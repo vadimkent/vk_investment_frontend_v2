@@ -45,7 +45,9 @@ describe("Table — chevron column auto-add", () => {
   it("does NOT prepend chevron column when no row is expandable", () => {
     const { container } = render(
       <TableComponent
-        component={table([row("r1", [textCell("c1", "x"), textCell("c2", "y")])])}
+        component={table([
+          row("r1", [textCell("c1", "x"), textCell("c2", "y")]),
+        ])}
       />,
     );
     const grid = container.querySelector('[role="table"]') as HTMLElement;
@@ -179,9 +181,8 @@ describe("TableRow — expandable behavior", () => {
       useRouter: () => ({ push: pushSpy, back: vi.fn() }),
     }));
 
-    const { TableComponent: FreshTable } = await import(
-      "@/components/base/Table"
-    );
+    const { TableComponent: FreshTable } =
+      await import("@/components/base/Table");
     const { render: freshRender } = await import("@testing-library/react");
     const { fireEvent: freshFire } = await import("@testing-library/react");
 
@@ -236,19 +237,13 @@ describe("TableRow — expandable behavior", () => {
 
 describe("TableRow — silent fallback for invalid expandable", () => {
   it("expandable: true with no details renders no chevron and no toggle", () => {
-    const r = row(
-      "r1",
-      [textCell("c1", "x"), textCell("c2", "y")],
-      {
-        props: {
-          expandable: true,
-          // no details
-        },
+    const r = row("r1", [textCell("c1", "x"), textCell("c2", "y")], {
+      props: {
+        expandable: true,
+        // no details
       },
-    );
-    const { container } = render(
-      <TableComponent component={table([r])} />,
-    );
+    });
+    const { container } = render(<TableComponent component={table([r])} />);
     // No chevron column was added (this is the only row, and it's not really expandable)
     const grid = container.querySelector('[role="table"]') as HTMLElement;
     expect(grid.style.gridTemplateColumns).toBe("100px 1fr");
@@ -261,16 +256,10 @@ describe("TableRow — silent fallback for invalid expandable", () => {
   });
 
   it("expandable: true with details: [] is also treated as plain row", () => {
-    const r = row(
-      "r1",
-      [textCell("c1", "x"), textCell("c2", "y")],
-      {
-        props: { expandable: true, details: [] },
-      },
-    );
-    const { container } = render(
-      <TableComponent component={table([r])} />,
-    );
+    const r = row("r1", [textCell("c1", "x"), textCell("c2", "y")], {
+      props: { expandable: true, details: [] },
+    });
+    const { container } = render(<TableComponent component={table([r])} />);
     const grid = container.querySelector('[role="table"]') as HTMLElement;
     expect(grid.style.gridTemplateColumns).toBe("100px 1fr");
     expect(container.querySelector(".lucide-chevron-down")).toBeNull();

@@ -42,9 +42,7 @@ export function TableComponent({ component }: { component: SDUIComponent }) {
           }}
           className="border-b border-border bg-surface-secondary font-medium text-sm text-content-secondary"
         >
-          {hasChevronColumn && (
-            <div role="columnheader" aria-hidden="true" />
-          )}
+          {hasChevronColumn && <div role="columnheader" aria-hidden="true" />}
           {columns.map((col) => (
             <div
               key={col.id}
