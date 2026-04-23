@@ -113,3 +113,121 @@ describe("Wizard step indicator", () => {
     expect(visibility.summary).toBe(true);
   });
 });
+
+describe("Wizard button row", () => {
+  it("info step shows Dismiss + Next", () => {
+    const { getByText, queryByText } = render(
+      wrap(
+        wizard([
+          { id: "info", label: "Info", kind: "info", children: [textChild("t1", "S1")] },
+          { id: "summary", label: "Summary", kind: "summary", children: [textChild("t2", "S2")] },
+        ]),
+      ),
+    );
+    expect(getByText("Next")).not.toBeNull();
+    expect(getByText("Dismiss")).not.toBeNull();
+    expect(queryByText("Back")).toBeNull();
+    expect(queryByText("Skip")).toBeNull();
+    expect(queryByText("Include")).toBeNull();
+    expect(queryByText("Update")).toBeNull();
+    expect(queryByText("Submit")).toBeNull();
+  });
+
+  it("entry step with skippable=true shows Dismiss + Back + Skip + Include", () => {
+    const { getByText, queryByText } = render(
+      wrap(
+        wizard(
+          [
+            { id: "info", label: "Info", kind: "info", children: [textChild("t1", "S1")] },
+            {
+              id: "entry",
+              label: "AAPL",
+              kind: "entry",
+              skippable: true,
+              children: [textChild("t2", "S2")],
+            },
+          ],
+          { initial_step_id: "entry" },
+        ),
+      ),
+    );
+    expect(getByText("Back")).not.toBeNull();
+    expect(getByText("Skip")).not.toBeNull();
+    expect(getByText("Include")).not.toBeNull();
+    expect(queryByText("Update")).toBeNull();
+    expect(queryByText("Next")).toBeNull();
+  });
+
+  it("entry step with skippable=false shows Dismiss + Back + Update", () => {
+    const { getByText, queryByText } = render(
+      wrap(
+        wizard(
+          [
+            { id: "info", label: "Info", kind: "info", children: [textChild("t1", "S1")] },
+            {
+              id: "entry",
+              label: "AAPL",
+              kind: "entry",
+              skippable: false,
+              include_default: true,
+              children: [textChild("t2", "S2")],
+            },
+          ],
+          { initial_step_id: "entry" },
+        ),
+      ),
+    );
+    expect(getByText("Back")).not.toBeNull();
+    expect(getByText("Update")).not.toBeNull();
+    expect(queryByText("Skip")).toBeNull();
+    expect(queryByText("Include")).toBeNull();
+  });
+
+  it("summary step shows Dismiss + Back + Submit", () => {
+    const { getByText, queryByText } = render(
+      wrap(
+        wizard(
+          [
+            { id: "info", label: "Info", kind: "info", children: [textChild("t1", "S1")] },
+            { id: "summary", label: "Summary", kind: "summary", children: [textChild("t2", "S2")] },
+          ],
+          { initial_step_id: "summary" },
+        ),
+      ),
+    );
+    expect(getByText("Back")).not.toBeNull();
+    expect(getByText("Submit")).not.toBeNull();
+    expect(queryByText("Next")).toBeNull();
+  });
+
+  it("clicking Back returns to the previous step (no validation)", () => {
+    const { getByText } = render(
+      wrap(
+        wizard(
+          [
+            { id: "info", label: "Info", kind: "info", children: [textChild("t1", "S1")] },
+            { id: "summary", label: "Summary", kind: "summary", children: [textChild("t2", "S2")] },
+          ],
+          { initial_step_id: "summary" },
+        ),
+      ),
+    );
+    expect(getByText("Step 2 of 2")).not.toBeNull();
+    fireEvent.click(getByText("Back"));
+    expect(getByText("Step 1 of 2")).not.toBeNull();
+  });
+
+  it("clicking Next on info advances without validation when no required fields are present", () => {
+    const { getByText } = render(
+      wrap(
+        wizard([
+          { id: "info", label: "Info", kind: "info", children: [textChild("t1", "S1")] },
+          { id: "summary", label: "Summary", kind: "summary", children: [textChild("t2", "S2")] },
+        ]),
+      ),
+    );
+    expect(getByText("Step 1 of 2")).not.toBeNull();
+    fireEvent.click(getByText("Next"));
+    expect(getByText("Step 2 of 2")).not.toBeNull();
+  });
+});
