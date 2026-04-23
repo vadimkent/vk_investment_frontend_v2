@@ -5,6 +5,7 @@ import type { SDUIComponent } from "@/lib/types/sdui";
 import { ComponentRenderer } from "@/components/renderer";
 import { FormStateProvider } from "@/components/form-state-context";
 import { collectInitialValues } from "@/lib/collect-initial-values";
+import { WizardStepIndicator } from "@/components/custom/WizardStepIndicator";
 
 export type WizardStep = {
   id: string;
@@ -22,7 +23,7 @@ export function WizardComponent({ component }: { component: SDUIComponent }) {
   const initialStepId =
     (component.props.initial_step_id as string | undefined) ?? steps[0]?.id;
 
-  const [activeStepId] = useState<string | undefined>(initialStepId);
+  const [activeStepId, setActiveStepId] = useState<string | undefined>(initialStepId);
 
   const initial = useMemo(() => {
     const allChildren: SDUIComponent[] = steps.flatMap((s) => s.children);
@@ -43,6 +44,11 @@ export function WizardComponent({ component }: { component: SDUIComponent }) {
         className="flex flex-col gap-4"
       >
         <h2 className="text-lg font-semibold">{title}</h2>
+        <WizardStepIndicator
+          steps={steps}
+          activeStepId={activeStepId}
+          onJump={setActiveStepId}
+        />
         {steps.map((step) => (
           <div
             key={step.id}
