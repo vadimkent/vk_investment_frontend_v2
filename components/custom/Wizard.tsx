@@ -3,8 +3,12 @@
 import { useMemo, useState } from "react";
 import type { SDUIComponent } from "@/lib/types/sdui";
 import { ComponentRenderer } from "@/components/renderer";
-import { FormStateProvider } from "@/components/form-state-context";
+import {
+  FormStateProvider,
+  useFormState,
+} from "@/components/form-state-context";
 import { collectInitialValues } from "@/lib/collect-initial-values";
+import { hasInvalidFields } from "@/components/action-dispatcher";
 import { WizardStepIndicator } from "@/components/custom/WizardStepIndicator";
 
 export type WizardStep = {
@@ -18,12 +22,7 @@ export type WizardStep = {
 
 export function WizardComponent({ component }: { component: SDUIComponent }) {
   const wizardId = component.id;
-  const title = component.props.title as string;
   const steps = (component.props.steps as WizardStep[] | undefined) ?? [];
-  const initialStepId =
-    (component.props.initial_step_id as string | undefined) ?? steps[0]?.id;
-
-  const [activeStepId, setActiveStepId] = useState<string | undefined>(initialStepId);
 
   const initial = useMemo(() => {
     const allChildren: SDUIComponent[] = steps.flatMap((s) => s.children);
@@ -36,8 +35,43 @@ export function WizardComponent({ component }: { component: SDUIComponent }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wizardId]);
 
+  return (
+    <FormStateProvider initial={initial}>
+      <WizardInner component={component} />
+    </FormStateProvider>
+  );
+}
+
+function WizardInner({ component }: { component: SDUIComponent }) {
+  const wizardId = component.id;
+  const title = component.props.title as string;
+  const steps = (component.props.steps as WizardStep[] | undefined) ?? [];
+  const initialStepId =
+    (component.props.initial_step_id as string | undefined) ?? steps[0]?.id;
+
+  const [activeStepId, setActiveStepId] = useState<string | undefined>(initialStepId);
+  const formCtx = useFormState();
+
   const activeIndex = steps.findIndex((s) => s.id === activeStepId);
   const activeStep: WizardStep | undefined = steps[activeIndex];
+
+  function validateActiveStep(): boolean {
+    if (!activeStep) return true;
+    const containerId = `${wizardId}__step__${activeStep.id}`;
+    if (!hasInvalidFields(containerId)) return true;
+    formCtx?.triggerRevealErrors();
+    const container = document.querySelector(`[data-sdui-id="${containerId}"]`);
+    if (container) {
+      const fields = container.querySelectorAll<
+        HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+      >("input[name]:not([type='hidden']), textarea[name], select[name]");
+      for (const f of fields) {
+        f.dispatchEvent(new Event("input", { bubbles: true }));
+        f.dispatchEvent(new Event("blur", { bubbles: true }));
+      }
+    }
+    return false;
+  }
 
   function goToStep(id: string) {
     setActiveStepId(id);
@@ -46,68 +80,61 @@ export function WizardComponent({ component }: { component: SDUIComponent }) {
     if (activeIndex > 0) setActiveStepId(steps[activeIndex - 1].id);
   }
   function goNext() {
-    // Validation wired in W5. For now: just advance.
+    if (!validateActiveStep()) return;
     if (activeIndex < steps.length - 1) setActiveStepId(steps[activeIndex + 1].id);
   }
   function skip() {
-    // Include map wired in W6. For now: advance.
-    goNext();
+    if (activeIndex < steps.length - 1) setActiveStepId(steps[activeIndex + 1].id);
   }
   function include() {
-    // Validation + include map wired in W5/W6. For now: advance.
-    goNext();
+    if (!validateActiveStep()) return;
+    if (activeIndex < steps.length - 1) setActiveStepId(steps[activeIndex + 1].id);
   }
   function update() {
-    // Validation + include map wired in W5/W6. For now: advance.
-    goNext();
+    if (!validateActiveStep()) return;
+    if (activeIndex < steps.length - 1) setActiveStepId(steps[activeIndex + 1].id);
   }
-  function submit() {
-    // Dispatch wired in W7.
-  }
-  function dismiss() {
-    // Handler wired in W8.
-  }
+  function submit() {}
+  function dismiss() {}
 
   return (
-    <FormStateProvider initial={initial}>
-      <div
-        data-sdui-id={wizardId}
-        data-sdui-form="true"
-        className="flex flex-col gap-4"
-      >
-        <h2 className="text-lg font-semibold">{title}</h2>
-        <WizardStepIndicator
-          steps={steps}
-          activeStepId={activeStepId}
-          onJump={goToStep}
+    <div
+      data-sdui-id={wizardId}
+      data-sdui-form="true"
+      className="flex flex-col gap-4"
+    >
+      <h2 className="text-lg font-semibold">{title}</h2>
+      <WizardStepIndicator
+        steps={steps}
+        activeStepId={activeStepId}
+        onJump={goToStep}
+      />
+      {steps.map((step) => (
+        <div
+          key={step.id}
+          data-step-id={step.id}
+          data-sdui-id={`${wizardId}__step__${step.id}`}
+          hidden={step.id !== activeStepId}
+        >
+          {step.children.map((child) => (
+            <ComponentRenderer key={child.id} component={child} />
+          ))}
+        </div>
+      ))}
+      {activeStep && (
+        <WizardButtonRow
+          step={activeStep}
+          isFirst={activeIndex === 0}
+          onBack={goBack}
+          onNext={goNext}
+          onSkip={skip}
+          onInclude={include}
+          onUpdate={update}
+          onSubmit={submit}
+          onDismiss={dismiss}
         />
-        {steps.map((step) => (
-          <div
-            key={step.id}
-            data-step-id={step.id}
-            data-sdui-id={`${wizardId}__step__${step.id}`}
-            hidden={step.id !== activeStepId}
-          >
-            {step.children.map((child) => (
-              <ComponentRenderer key={child.id} component={child} />
-            ))}
-          </div>
-        ))}
-        {activeStep && (
-          <WizardButtonRow
-            step={activeStep}
-            isFirst={activeIndex === 0}
-            onBack={goBack}
-            onNext={goNext}
-            onSkip={skip}
-            onInclude={include}
-            onUpdate={update}
-            onSubmit={submit}
-            onDismiss={dismiss}
-          />
-        )}
-      </div>
-    </FormStateProvider>
+      )}
+    </div>
   );
 }
 

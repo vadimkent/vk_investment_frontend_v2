@@ -231,3 +231,97 @@ describe("Wizard button row", () => {
     expect(getByText("Step 2 of 2")).not.toBeNull();
   });
 });
+
+function inputChild(id: string, name: string, opts: Record<string, unknown> = {}): SDUIComponent {
+  return {
+    type: "input",
+    id,
+    props: { name, ...opts },
+  };
+}
+
+describe("Wizard validation gate", () => {
+  it("Next does NOT advance when active step has an invalid required input", () => {
+    const { getByText, container } = render(
+      wrap(
+        wizard([
+          {
+            id: "info",
+            label: "Info",
+            kind: "info",
+            children: [inputChild("i1", "field_required", { required: true, label: "Field" })],
+          },
+          { id: "summary", label: "Summary", kind: "summary", children: [textChild("t1", "S2")] },
+        ]),
+      ),
+    );
+
+    expect(getByText("Step 1 of 2")).not.toBeNull();
+    fireEvent.click(getByText("Next"));
+    expect(getByText("Step 1 of 2")).not.toBeNull();
+    const input = container.querySelector("input[name=field_required]") as HTMLInputElement;
+    expect(input.validity.valid).toBe(false);
+  });
+
+  it("Next advances when the required input is filled", () => {
+    const { getByText, container } = render(
+      wrap(
+        wizard([
+          {
+            id: "info",
+            label: "Info",
+            kind: "info",
+            children: [inputChild("i1", "field_required", { required: true, label: "Field" })],
+          },
+          { id: "summary", label: "Summary", kind: "summary", children: [textChild("t1", "S2")] },
+        ]),
+      ),
+    );
+    const input = container.querySelector("input[name=field_required]") as HTMLInputElement;
+    input.value = "hello";
+    fireEvent.input(input);
+    fireEvent.click(getByText("Next"));
+    expect(getByText("Step 2 of 2")).not.toBeNull();
+  });
+
+  it("Back never validates — works even with invalid fields on the active step", () => {
+    const { getByText } = render(
+      wrap(
+        wizard(
+          [
+            { id: "info", label: "Info", kind: "info", children: [textChild("t1", "S1")] },
+            {
+              id: "entry",
+              label: "Bad",
+              kind: "entry",
+              skippable: true,
+              children: [inputChild("i1", "needed", { required: true })],
+            },
+          ],
+          { initial_step_id: "entry" },
+        ),
+      ),
+    );
+    expect(getByText("Step 2 of 2")).not.toBeNull();
+    fireEvent.click(getByText("Back"));
+    expect(getByText("Step 1 of 2")).not.toBeNull();
+  });
+
+  it("chip-jump never validates", () => {
+    const { getByText } = render(
+      wrap(
+        wizard([
+          {
+            id: "info",
+            label: "Info",
+            kind: "info",
+            children: [inputChild("i1", "required_field", { required: true })],
+          },
+          { id: "summary", label: "Summary", kind: "summary", children: [textChild("t1", "S2")] },
+        ]),
+      ),
+    );
+    fireEvent.click(getByText("Summary"));
+    expect(getByText("Step 2 of 2")).not.toBeNull();
+  });
+});
