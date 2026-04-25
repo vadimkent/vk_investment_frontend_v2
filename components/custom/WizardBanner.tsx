@@ -21,7 +21,7 @@ export function WizardBanner({ banner }: { banner: WizardBannerProps }) {
   const [dismissed, setDismissed] = useState(false);
   if (dismissed) return null;
 
-  const cls = `relative rounded border px-4 py-3 text-sm ${variantClass[banner.variant]}`;
+  const cls = `relative rounded border px-4 py-3 text-sm ${variantClass[banner.variant] ?? variantClass.info}`;
   return (
     <div data-wizard-banner data-variant={banner.variant} className={cls}>
       {banner.title && (
