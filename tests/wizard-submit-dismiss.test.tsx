@@ -1,7 +1,10 @@
 import { describe, it, expect, afterEach, vi, beforeEach } from "vitest";
 import { cleanup, fireEvent, render, waitFor } from "@testing-library/react";
 import type { SDUIComponent } from "@/lib/types/sdui";
-import { OverrideMapProvider } from "@/components/override-map-context";
+import {
+  OverrideMapProvider,
+  useOverrideMap,
+} from "@/components/override-map-context";
 import { SnackbarProvider } from "@/components/snackbar-provider";
 import { ComponentRenderer } from "@/components/renderer";
 
@@ -203,8 +206,6 @@ describe("Wizard submit", () => {
     expect(body.data).toEqual({ recorded_at: "2026-04-22" });
   });
 });
-
-import { useOverrideMap } from "@/components/override-map-context";
 
 describe("Wizard dismiss", () => {
   it("with type=replace and tree=null clears the target override", async () => {
