@@ -285,7 +285,7 @@ Above the step content: `Step X of Y` counter and a chip row with each step's `l
 | `entry`, `skippable: false` | Dismiss, Back, Update        |
 | `summary`                   | Dismiss, Back, Submit        |
 
-`Back` is omitted on the first step. `mode` is informational only in v1 — copy is fixed English regardless.
+`Back` is omitted on the first step and on all `info` steps regardless of position. `mode` is informational only in v1 — copy is fixed English regardless.
 
 ### 3.5. Include map
 
