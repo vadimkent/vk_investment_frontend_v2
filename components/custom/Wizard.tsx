@@ -134,6 +134,9 @@ function WizardInner({ component }: { component: SDUIComponent }) {
     if (activeIndex < steps.length - 1)
       setActiveStepId(steps[activeIndex + 1].id);
   }
+  // Semantically distinct from include() (edit mode on pre-existing entry) but
+  // currently shares the same steps per spec §3.5. Kept separate so the two
+  // can diverge without renaming call sites.
   function update() {
     if (!activeStep) return;
     if (!validateActiveStep()) return;

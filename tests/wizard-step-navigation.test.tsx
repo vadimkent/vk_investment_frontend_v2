@@ -336,6 +336,41 @@ describe("Wizard button row", () => {
     fireEvent.click(getByText("Next"));
     expect(getByText("Step 2 of 2")).not.toBeNull();
   });
+
+  it("info step at non-first position still has no Back button", () => {
+    const { getByText, queryByText } = render(
+      wrap(
+        wizard(
+          [
+            {
+              id: "e1",
+              label: "AAPL",
+              kind: "entry",
+              skippable: true,
+              children: [textChild("t1", "S1")],
+            },
+            {
+              id: "info",
+              label: "Notice",
+              kind: "info",
+              children: [textChild("t2", "S2")],
+            },
+            {
+              id: "summary",
+              label: "Summary",
+              kind: "summary",
+              children: [textChild("t3", "S3")],
+            },
+          ],
+          { initial_step_id: "info" },
+        ),
+      ),
+    );
+    expect(getByText("Step 2 of 3")).not.toBeNull();
+    expect(getByText("Next")).not.toBeNull();
+    // Back is omitted on info regardless of position
+    expect(queryByText("Back")).toBeNull();
+  });
 });
 
 function inputChild(
