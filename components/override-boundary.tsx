@@ -12,6 +12,20 @@ function SectionLoading() {
   );
 }
 
+function ModalSlotOverlay({ children }: { children: ReactNode }) {
+  return (
+    <div
+      data-testid="modal-overlay"
+      data-modal-overlay
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-overlay/70 p-0 sm:p-4"
+    >
+      <div className="bg-surface-card border border-border rounded-t-lg sm:rounded-lg shadow-2xl w-full sm:max-w-lg max-h-[90vh] overflow-y-auto p-6">
+        {children}
+      </div>
+    </div>
+  );
+}
+
 export function OverrideBoundary({
   id,
   children,
@@ -24,7 +38,11 @@ export function OverrideBoundary({
   const loading = isLoading(id);
 
   if (loading) return <SectionLoading />;
+  if (!override) return <>{children}</>;
 
-  const content = override ? <RawRenderer component={override} /> : children;
+  const content = <RawRenderer component={override} />;
+  if (id.endsWith("-modal-slot")) {
+    return <ModalSlotOverlay>{content}</ModalSlotOverlay>;
+  }
   return <>{content}</>;
 }

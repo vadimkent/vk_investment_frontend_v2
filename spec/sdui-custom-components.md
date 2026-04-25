@@ -272,11 +272,15 @@ Multi-step form container with client-side step machine, per-step include/skip s
 | title       | string | no       | Optional bold prefix.                                        |
 | dismissible | bool   | no       | Default `false`. When `true`, the user can close the banner. |
 
-### 3.3. Step indicator
+### 3.3. Presentation
+
+The middleend emits a bare `wizard` component — it is **not** wrapped in a `modal`. The frontend is responsible for presenting it. When the wizard lives in a [modal slot](sdui-base-components.md#modal-slot-pattern) (e.g. `snapshots-modal-slot`), the slot's overlay container renders it as a dialog on desktop or a drawer/sheet on mobile. When placed inline as a child of a screen's content tree, the frontend renders it inline. The `dismiss_action` is the wizard's contract for "the user closed it" — typically `components.Dismiss()`, which the frontend interprets as "close the overlay" or "remove from the tree."
+
+### 3.4. Step indicator
 
 Above the step content: `Step X of Y` counter and a chip row with each step's `label`. Chips are clickable — direct jump between steps. **Chip-jump never validates.**
 
-### 3.4. Buttons by kind
+### 3.5. Buttons by kind
 
 | `kind` (and modifier)       | Buttons (in order)           |
 | --------------------------- | ---------------------------- |
@@ -287,7 +291,7 @@ Above the step content: `Step X of Y` counter and a chip row with each step's `l
 
 `Back` is omitted on the first step and on all `info` steps regardless of position. `mode` is informational only in v1 — copy is fixed English regardless.
 
-### 3.5. Include map
+### 3.6. Include map
 
 The wizard maintains an internal `{stepId → boolean}` seeded from each step's `include_default`. Mutations:
 
@@ -297,7 +301,7 @@ The wizard maintains an internal `{stepId → boolean}` seeded from each step's 
 
 Excluded entry steps do NOT contribute inputs to the submit payload.
 
-### 3.6. Navigation and validation
+### 3.7. Navigation and validation
 
 | Action     | Validates active step? | Advances?                  |
 | ---------- | ---------------------- | -------------------------- |
@@ -311,11 +315,11 @@ Excluded entry steps do NOT contribute inputs to the submit payload.
 
 Validation uses the standard input props (`required`, `pattern`, `min`, `max`, `max_length`). The wizard does not invent a separate validation layer.
 
-### 3.7. Summary
+### 3.8. Summary
 
 The server's `summary` step children are typically a short descriptive text (e.g. "Review and submit"). Below that, the frontend renders a derived list of included entries: one row per `kind=entry` step where `includeMap[id] === true`, showing `step.label` and an Edit button that chip-jumps to that step. The list is reactive to include-map changes triggered by chip-jumping back to entry steps.
 
-### 3.8. Submit
+### 3.9. Submit
 
 1. Wizard collects inputs from:
    - All `kind=info` steps (always included).
@@ -325,7 +329,7 @@ The server's `summary` step children are typically a short descriptive text (e.g
 
 There is NO client-side validation gate on Submit. If the user chip-jumps over invalid steps, the backend returns 422 and re-emits the wizard with banner `variant: error` and `initial_step_id` pointing at the broken step.
 
-### 3.9. Dismiss
+### 3.10. Dismiss
 
 Wizard handles `dismiss_action`:
 
@@ -333,7 +337,7 @@ Wizard handles `dismiss_action`:
 - `type: "replace"` with `tree: null` (or absent) → calls `clearOverride(target_id)`. Common pattern: dismiss clears the modal slot that contains the wizard, closing the modal client-side.
 - Otherwise: falls through to `dispatch(endpoint, method)` (no body).
 
-### 3.10. BE validation error (422)
+### 3.11. BE validation error (422)
 
 The middleend returns an `ActionResponse` with `action: "replace"`, `target_id` matching the wizard's container, and `tree` being the same wizard re-emitted with:
 
@@ -343,7 +347,7 @@ The middleend returns an `ActionResponse` with `action: "replace"`, `target_id` 
 
 When the override is applied, the new wizard tree replaces the old one. React unmounts the prior wizard and mounts the new one; `useState` initializers re-run, so the include map and active step come from the re-emitted definition.
 
-### 3.11. Implementation
+### 3.12. Implementation
 
 - **React**: `WizardComponent` -- `components/custom/Wizard.tsx`. Splits into outer `WizardComponent` (installs `FormStateProvider` with initial values collected from ALL steps' children) and inner `WizardInner` (state machine + render).
 - **Sub-components**: `WizardStepIndicator`, `WizardBanner`, `WizardSummaryEntries` — all in `components/custom/`.
