@@ -234,7 +234,125 @@ Allocation donut by asset:
 
 ---
 
-## 3. Custom Attributes
+## 3. `wizard`
+
+Multi-step form container with client-side step machine, per-step include/skip semantics, validation on advance, and submit/dismiss action dispatch. The server emits the full step definition; the frontend manages step navigation, validation, the include map, and submit collection.
+
+### 3.1. Props
+
+| Prop            | Type     | Required | Description                                                                                                                           |
+| --------------- | -------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| mode            | enum     | yes      | `create` / `edit`. Informational; reserved for future copy variation.                                                                 |
+| title           | string   | yes      | Wizard title. Localized by the server.                                                                                                |
+| steps           | `Step[]` | yes      | Ordered, at least 1.                                                                                                                  |
+| submit_action   | Action   | yes      | Action fired by the Submit button on the summary step. Typically `submit` with an endpoint.                                           |
+| dismiss_action  | Action   | yes      | Action fired when the user dismisses the wizard. Typically `replace` with `tree: null` to clear the modal slot containing the wizard. |
+| banner          | Banner   | no       | Optional banner above the step content. Used by post-validation re-emission and contextual notices.                                   |
+| initial_step_id | string   | no       | Step `id` to open. Defaults to the first step. Server sets this on re-emission after a validation error to focus the relevant step.   |
+
+### 3.2. Sub-types
+
+#### Step
+
+| Field           | Type          | Required | Description                                                                                                                                                                          |
+| --------------- | ------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| id              | string        | yes      | Stable id (React key + DOM grouping selector).                                                                                                                                       |
+| label           | string        | yes      | Short text for the step indicator chip. Localized by the server.                                                                                                                     |
+| kind            | enum          | yes      | `info` / `entry` / `summary`. Determines which buttons render — see Buttons by kind.                                                                                                 |
+| skippable       | boolean       | yes      | Only relevant when `kind=entry`. `false` disables Skip and removes the "exclude" affordance (used in edit mode on existing entries the backend won't allow removing).                |
+| include_default | boolean       | yes      | Only relevant when `kind=entry`. Initial value of the include flag for this step. `true` for pre-existing entries in edit mode; `false` for new entries in create mode.              |
+| children        | `Component[]` | yes      | Step content (inputs, text, etc.). The wizard mounts ALL steps' children at once; non-active steps are hidden via the `hidden` attribute, so input state persists across navigation. |
+
+#### Banner
+
+| Field       | Type   | Required | Description                                                  |
+| ----------- | ------ | -------- | ------------------------------------------------------------ |
+| variant     | enum   | yes      | `info` / `success` / `warning` / `error`.                    |
+| message     | string | yes      | Body text. Localized by the server.                          |
+| title       | string | no       | Optional bold prefix.                                        |
+| dismissible | bool   | no       | Default `false`. When `true`, the user can close the banner. |
+
+### 3.3. Step indicator
+
+Above the step content: `Step X of Y` counter and a chip row with each step's `label`. Chips are clickable — direct jump between steps. **Chip-jump never validates.**
+
+### 3.4. Buttons by kind
+
+| `kind` (and modifier)       | Buttons (in order)           |
+| --------------------------- | ---------------------------- |
+| `info`                      | Dismiss, Next                |
+| `entry`, `skippable: true`  | Dismiss, Back, Skip, Include |
+| `entry`, `skippable: false` | Dismiss, Back, Update        |
+| `summary`                   | Dismiss, Back, Submit        |
+
+`Back` is omitted on the first step. `mode` is informational only in v1 — copy is fixed English regardless.
+
+### 3.5. Include map
+
+The wizard maintains an internal `{stepId → boolean}` seeded from each step's `include_default`. Mutations:
+
+- **Skip** → `included = false`, advance.
+- **Include** → validate, `included = true`, advance.
+- **Update** (edit mode on pre-existing entry, `skippable: false`) → validate, `included = true` (unchanged), advance.
+
+Excluded entry steps do NOT contribute inputs to the submit payload.
+
+### 3.6. Navigation and validation
+
+| Action     | Validates active step? | Advances?                  |
+| ---------- | ---------------------- | -------------------------- |
+| Back       | no                     | back one                   |
+| Next       | yes                    | forward one                |
+| Skip       | no                     | forward one                |
+| Include    | yes                    | forward one                |
+| Update     | yes                    | forward one                |
+| Chip click | no                     | direct jump                |
+| Submit     | no                     | dispatches `submit_action` |
+
+Validation uses the standard input props (`required`, `pattern`, `min`, `max`, `max_length`). The wizard does not invent a separate validation layer.
+
+### 3.7. Summary
+
+The server's `summary` step children are typically a short descriptive text (e.g. "Review and submit"). Below that, the frontend renders a derived list of included entries: one row per `kind=entry` step where `includeMap[id] === true`, showing `step.label` and an Edit button that chip-jumps to that step. The list is reactive to include-map changes triggered by chip-jumping back to entry steps.
+
+### 3.8. Submit
+
+1. Wizard collects inputs from:
+   - All `kind=info` steps (always included).
+   - All `kind=entry` steps where `includeMap[id] === true`.
+2. Builds the form body using each input's `name` (the wizard does NOT impose a schema — it uses whatever names the server emits; bracket notation per asset is the suggested convention for entry inputs, e.g. `entries[<asset_id>].mode`).
+3. Dispatches `submit_action` with the body via the standard action dispatcher (`/api/action`).
+
+There is NO client-side validation gate on Submit. If the user chip-jumps over invalid steps, the backend returns 422 and re-emits the wizard with banner `variant: error` and `initial_step_id` pointing at the broken step.
+
+### 3.9. Dismiss
+
+Wizard handles `dismiss_action`:
+
+- `type: "replace"` with `tree: <subtree>` → calls `setOverride(target_id, tree)`.
+- `type: "replace"` with `tree: null` (or absent) → calls `clearOverride(target_id)`. Common pattern: dismiss clears the modal slot that contains the wizard, closing the modal client-side.
+- Otherwise: falls through to `dispatch(endpoint, method)` (no body).
+
+### 3.10. BE validation error (422)
+
+The middleend returns an `ActionResponse` with `action: "replace"`, `target_id` matching the wizard's container, and `tree` being the same wizard re-emitted with:
+
+- Inputs pre-loaded (via `default_value`).
+- A `banner` of `variant: "error"` describing the problem.
+- Optional `initial_step_id` pointing at the step that needs attention.
+
+When the override is applied, the new wizard tree replaces the old one. React unmounts the prior wizard and mounts the new one; `useState` initializers re-run, so the include map and active step come from the re-emitted definition.
+
+### 3.11. Implementation
+
+- **React**: `WizardComponent` -- `components/custom/Wizard.tsx`. Splits into outer `WizardComponent` (installs `FormStateProvider` with initial values collected from ALL steps' children) and inner `WizardInner` (state machine + render).
+- **Sub-components**: `WizardStepIndicator`, `WizardBanner`, `WizardSummaryEntries` — all in `components/custom/`.
+- **"use client"**: Yes (uses `useState`, `useFormState`, `useActionDispatcher`, `useOverrideMap`).
+- **Renders**: `<div data-sdui-id={wizardId} data-sdui-form="true">` containing title, step indicator, optional banner, one container per step (`<div data-step-id data-sdui-id data-included hidden>`), and the button row.
+
+---
+
+## 4. Custom Attributes
 
 Project-specific props that may appear on any component. The frontend reads them alongside base shared props (`align_items`, `gap`, etc.) and applies project-specific behavior.
 
@@ -271,7 +389,7 @@ When HideValues is active, the frontend renders `"••••"` instead of `"$1
 
 ---
 
-## 4. Custom Actions
+## 5. Custom Actions
 
 Project-specific action types that extend the base set in `sdui-actions.md`. The frontend maps these types to local behavior; no server round-trip is involved.
 

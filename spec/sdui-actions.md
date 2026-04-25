@@ -29,21 +29,29 @@ Actions are in the `actions` array on any `SDUIComponent`. Button uses the first
 
 Action types handled by `ButtonComponent` (all of the below). `IconToggleComponent` handles a subset — the client-only toggles (`toggle_theme`, `toggle_sensitive`, `toggle_sidebar`) plus any action with an `endpoint` for server round-trips.
 
-| Type               | Behavior                                                                                                                         | Required Fields                              |
-| ------------------ | -------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
-| `navigate`         | Client-side navigation via `router.push(url)`. Opens new tab if `target === "blank"`.                                            | `url`                                        |
-| `navigate_back`    | Browser back via `router.back()`.                                                                                                | (none)                                       |
-| `submit`           | Collects form data from `target_id` container, sends to middleend via `/api/action` proxy, processes response.                   | `endpoint`, optionally `target_id`, `method` |
-| `reload`           | Sends GET to middleend endpoint via `/api/action`, processes response.                                                           | `endpoint`                                   |
-| `refresh`          | Triggers `router.refresh()` to re-render server components.                                                                      | (none)                                       |
-| `open_url`         | Opens URL in a new tab via `window.open`.                                                                                        | `url`                                        |
-| `dismiss`          | Closes the enclosing `modal` client-side via `useModal().close()`. No-op when the button is not inside a modal. No round-trip.   | (none)                                       |
-| `logout`           | POSTs to `/api/auth/logout`, then navigates to `/login`.                                                                         | (none)                                       |
-| `toggle_theme`     | Toggles light/dark mode. Client-side only, no round-trip.                                                                        | (none)                                       |
-| `toggle_sensitive` | Toggles the global sensitive-data mask (hides amounts/values). Client-side only.                                                 | (none)                                       |
-| `toggle_sidebar`   | Toggles the sidebar's collapsed/expanded state (persisted in the `sidebar-collapsed` cookie, server-readable). Client-side only. | (none)                                       |
+| Type               | Behavior                                                                                                                                                                                                                                                  | Required Fields                              |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| `navigate`         | Client-side navigation via `router.push(url)`. Opens new tab if `target === "blank"`.                                                                                                                                                                     | `url`                                        |
+| `navigate_back`    | Browser back via `router.back()`.                                                                                                                                                                                                                         | (none)                                       |
+| `submit`           | Collects form data from `target_id` container, sends to middleend via `/api/action` proxy, processes response.                                                                                                                                            | `endpoint`, optionally `target_id`, `method` |
+| `reload`           | Sends GET to middleend endpoint via `/api/action`, processes response.                                                                                                                                                                                    | `endpoint`                                   |
+| `refresh`          | Triggers `router.refresh()` to re-render server components.                                                                                                                                                                                               | (none)                                       |
+| `open_url`         | Opens URL in a new tab via `window.open`.                                                                                                                                                                                                                 | `url`                                        |
+| `dismiss`          | Closes the enclosing `modal` client-side via `useModal().close()`. No-op when the button is not inside a modal. No round-trip.                                                                                                                            | (none)                                       |
+| `replace`          | Client-side override mutation. With `tree` set, calls `setOverride(target_id, tree)`; with `tree: null` or absent, calls `clearOverride(target_id)`. No round-trip. Used for things like dismissing a wizard by clearing the modal slot that contains it. | `target_id`, optionally `tree`               |
+| `logout`           | POSTs to `/api/auth/logout`, then navigates to `/login`.                                                                                                                                                                                                  | (none)                                       |
+| `toggle_theme`     | Toggles light/dark mode. Client-side only, no round-trip.                                                                                                                                                                                                 | (none)                                       |
+| `toggle_sensitive` | Toggles the global sensitive-data mask (hides amounts/values). Client-side only.                                                                                                                                                                          | (none)                                       |
+| `toggle_sidebar`   | Toggles the sidebar's collapsed/expanded state (persisted in the `sidebar-collapsed` cookie, server-readable). Client-side only.                                                                                                                          | (none)                                       |
 
-Custom action types (project-specific, not part of the base set) are documented in `sdui-custom-components.md §4`.
+Custom action types (project-specific, not part of the base set) are documented in `sdui-custom-components.md §5`.
+
+### Client-emitted `replace` vs. server-returned `replace`
+
+Both share the override map, but they enter from different sides:
+
+- **Server-returned** (§5): the BE responds to a `submit`/`reload`/etc. with `{ action: "replace", target_id, tree }`, processed by `useActionDispatcher`.
+- **Client-emitted** (this section): an action declared with `type: "replace"` runs entirely client-side — no `/api/action` call. The component dispatching the action reads `target_id` and `tree` directly from the action shape and calls `setOverride` (with tree) or `clearOverride` (without). First user: `wizard.dismiss_action`.
 
 ---
 
