@@ -69,6 +69,12 @@ function WizardInner({ component }: { component: SDUIComponent }) {
         f.dispatchEvent(new Event("input", { bubbles: true }));
         f.dispatchEvent(new Event("blur", { bubbles: true }));
       }
+      const firstInvalid =
+        container.querySelector<HTMLElement>('[data-sdui-invalid="true"]') ??
+        container.querySelector<HTMLElement>(
+          "input[name]:not([type='hidden']):invalid, textarea[name]:invalid, select[name]:invalid",
+        );
+      firstInvalid?.focus();
     }
     return false;
   }
