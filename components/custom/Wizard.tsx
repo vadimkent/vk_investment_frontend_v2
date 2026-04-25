@@ -15,6 +15,7 @@ import {
 } from "@/components/action-dispatcher";
 import type { SDUIAction } from "@/lib/types/sdui";
 import { WizardStepIndicator } from "@/components/custom/WizardStepIndicator";
+import { useOverrideMap } from "@/components/override-map-context";
 
 export type WizardStep = {
   id: string;
@@ -54,7 +55,9 @@ function WizardInner({ component }: { component: SDUIComponent }) {
   const initialStepId =
     (component.props.initial_step_id as string | undefined) ?? steps[0]?.id;
 
-  const [activeStepId, setActiveStepId] = useState<string | undefined>(initialStepId);
+  const [activeStepId, setActiveStepId] = useState<string | undefined>(
+    initialStepId,
+  );
   const [includeMap, setIncludeMap] = useState<Record<string, boolean>>(() => {
     const seed: Record<string, boolean> = {};
     for (const s of steps) seed[s.id] = s.include_default;
@@ -63,9 +66,15 @@ function WizardInner({ component }: { component: SDUIComponent }) {
   const formCtx = useFormState();
   const dispatch = useActionDispatcher();
   const submitAction = component.props.submit_action as SDUIAction;
+  const { setOverride, clearOverride } = useOverrideMap();
+  const dismissAction = component.props.dismiss_action as SDUIAction & {
+    tree?: SDUIComponent | null;
+  };
 
   function setIncluded(id: string, value: boolean) {
-    setIncludeMap((prev) => (prev[id] === value ? prev : { ...prev, [id]: value }));
+    setIncludeMap((prev) =>
+      prev[id] === value ? prev : { ...prev, [id]: value },
+    );
   }
 
   const activeIndex = steps.findIndex((s) => s.id === activeStepId);
@@ -103,24 +112,28 @@ function WizardInner({ component }: { component: SDUIComponent }) {
   }
   function goNext() {
     if (!validateActiveStep()) return;
-    if (activeIndex < steps.length - 1) setActiveStepId(steps[activeIndex + 1].id);
+    if (activeIndex < steps.length - 1)
+      setActiveStepId(steps[activeIndex + 1].id);
   }
   function skip() {
     if (!activeStep) return;
     setIncluded(activeStep.id, false);
-    if (activeIndex < steps.length - 1) setActiveStepId(steps[activeIndex + 1].id);
+    if (activeIndex < steps.length - 1)
+      setActiveStepId(steps[activeIndex + 1].id);
   }
   function include() {
     if (!activeStep) return;
     if (!validateActiveStep()) return;
     setIncluded(activeStep.id, true);
-    if (activeIndex < steps.length - 1) setActiveStepId(steps[activeIndex + 1].id);
+    if (activeIndex < steps.length - 1)
+      setActiveStepId(steps[activeIndex + 1].id);
   }
   function update() {
     if (!activeStep) return;
     if (!validateActiveStep()) return;
     setIncluded(activeStep.id, true);
-    if (activeIndex < steps.length - 1) setActiveStepId(steps[activeIndex + 1].id);
+    if (activeIndex < steps.length - 1)
+      setActiveStepId(steps[activeIndex + 1].id);
   }
   async function submit() {
     const data: Record<string, unknown> = {};
@@ -135,7 +148,19 @@ function WizardInner({ component }: { component: SDUIComponent }) {
       loading: submitAction.loading,
     });
   }
-  function dismiss() {}
+  async function dismiss() {
+    if (dismissAction.type === "replace" && dismissAction.target_id) {
+      if (dismissAction.tree) {
+        setOverride(dismissAction.target_id, dismissAction.tree);
+      } else {
+        clearOverride(dismissAction.target_id);
+      }
+      return;
+    }
+    if (dismissAction.endpoint && dismissAction.method) {
+      await dispatch(dismissAction.endpoint, dismissAction.method);
+    }
+  }
 
   return (
     <div

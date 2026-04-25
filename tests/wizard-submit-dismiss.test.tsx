@@ -36,11 +36,18 @@ function wrap(component: SDUIComponent) {
 function textChild(id: string, content: string): SDUIComponent {
   return { type: "text", id, props: { content } };
 }
-function inputChild(id: string, name: string, opts: Record<string, unknown> = {}): SDUIComponent {
+function inputChild(
+  id: string,
+  name: string,
+  opts: Record<string, unknown> = {},
+): SDUIComponent {
   return { type: "input", id, props: { name, ...opts } };
 }
 
-function w(steps: SDUIComponent["props"]["steps"], extra: Record<string, unknown> = {}) {
+function w(
+  steps: SDUIComponent["props"]["steps"],
+  extra: Record<string, unknown> = {},
+) {
   return {
     type: "wizard",
     id: "w1",
@@ -74,7 +81,9 @@ describe("Wizard submit", () => {
         kind: "info",
         skippable: false,
         include_default: true,
-        children: [inputChild("i1", "recorded_at", { default_value: "2026-04-22" })],
+        children: [
+          inputChild("i1", "recorded_at", { default_value: "2026-04-22" }),
+        ],
       },
       {
         id: "e1",
@@ -82,7 +91,9 @@ describe("Wizard submit", () => {
         kind: "entry",
         skippable: true,
         include_default: false,
-        children: [inputChild("i2", "entries[a].mode", { default_value: "long" })],
+        children: [
+          inputChild("i2", "entries[a].mode", { default_value: "long" }),
+        ],
       },
       {
         id: "summary",
@@ -115,7 +126,9 @@ describe("Wizard submit", () => {
         kind: "info",
         skippable: false,
         include_default: true,
-        children: [inputChild("i1", "recorded_at", { default_value: "2026-04-22" })],
+        children: [
+          inputChild("i1", "recorded_at", { default_value: "2026-04-22" }),
+        ],
       },
       {
         id: "e1",
@@ -123,7 +136,9 @@ describe("Wizard submit", () => {
         kind: "entry",
         skippable: true,
         include_default: false,
-        children: [inputChild("i2", "entries[a].mode", { default_value: "long" })],
+        children: [
+          inputChild("i2", "entries[a].mode", { default_value: "long" }),
+        ],
       },
       {
         id: "summary",
@@ -155,7 +170,9 @@ describe("Wizard submit", () => {
         kind: "info",
         skippable: false,
         include_default: true,
-        children: [inputChild("i1", "recorded_at", { default_value: "2026-04-22" })],
+        children: [
+          inputChild("i1", "recorded_at", { default_value: "2026-04-22" }),
+        ],
       },
       {
         id: "e1",
@@ -163,7 +180,9 @@ describe("Wizard submit", () => {
         kind: "entry",
         skippable: true,
         include_default: true,
-        children: [inputChild("i2", "entries[a].mode", { default_value: "long" })],
+        children: [
+          inputChild("i2", "entries[a].mode", { default_value: "long" }),
+        ],
       },
       {
         id: "summary",
@@ -182,5 +201,107 @@ describe("Wizard submit", () => {
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
     const body = JSON.parse(fetchMock.mock.calls[0][1].body as string);
     expect(body.data).toEqual({ recorded_at: "2026-04-22" });
+  });
+});
+
+import { useOverrideMap } from "@/components/override-map-context";
+
+describe("Wizard dismiss", () => {
+  it("with type=replace and tree=null clears the target override", async () => {
+    function Probe({ wizard }: { wizard: SDUIComponent }) {
+      const { setOverride, getOverride } = useOverrideMap();
+      return (
+        <>
+          <div data-testid="slot-state">
+            {getOverride("slot") ? "PRESENT" : "ABSENT"}
+          </div>
+          <button
+            data-testid="seed"
+            onClick={() =>
+              setOverride("slot", {
+                type: "text",
+                id: "x",
+                props: { content: "x" },
+              })
+            }
+          >
+            Seed
+          </button>
+          <ComponentRenderer component={wizard} />
+        </>
+      );
+    }
+
+    const wiz = w([
+      {
+        id: "info",
+        label: "Info",
+        kind: "info",
+        skippable: false,
+        include_default: true,
+        children: [textChild("t1", "S1")],
+      },
+    ]);
+
+    const { getByText, getByTestId } = render(
+      <OverrideMapProvider>
+        <SnackbarProvider>
+          <Probe wizard={wiz} />
+        </SnackbarProvider>
+      </OverrideMapProvider>,
+    );
+
+    fireEvent.click(getByTestId("seed"));
+    expect(getByTestId("slot-state").textContent).toBe("PRESENT");
+    fireEvent.click(getByText("Dismiss"));
+    expect(getByTestId("slot-state").textContent).toBe("ABSENT");
+  });
+
+  it("with type=replace and tree=<subtree> sets the target override to that subtree", () => {
+    const replacementTree: SDUIComponent = {
+      type: "text",
+      id: "replacement",
+      props: { content: "REPLACED" },
+    };
+
+    function Probe() {
+      const { getOverride } = useOverrideMap();
+      const o = getOverride("slot");
+      return <div data-testid="slot-state">{o ? o.id : "none"}</div>;
+    }
+
+    const wiz = w(
+      [
+        {
+          id: "info",
+          label: "Info",
+          kind: "info",
+          skippable: false,
+          include_default: true,
+          children: [textChild("t1", "S1")],
+        },
+      ],
+      {
+        dismiss_action: {
+          trigger: "click",
+          type: "replace",
+          target_id: "slot",
+          tree: replacementTree,
+        },
+      },
+    );
+
+    const { getByText, getByTestId } = render(
+      <OverrideMapProvider>
+        <SnackbarProvider>
+          <Probe />
+          <ComponentRenderer component={wiz} />
+        </SnackbarProvider>
+      </OverrideMapProvider>,
+    );
+
+    expect(getByTestId("slot-state").textContent).toBe("none");
+    fireEvent.click(getByText("Dismiss"));
+    expect(getByTestId("slot-state").textContent).toBe("replacement");
   });
 });
