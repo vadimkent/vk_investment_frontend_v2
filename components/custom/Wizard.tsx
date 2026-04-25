@@ -16,6 +16,10 @@ import {
 import type { SDUIAction } from "@/lib/types/sdui";
 import { WizardStepIndicator } from "@/components/custom/WizardStepIndicator";
 import { useOverrideMap } from "@/components/override-map-context";
+import {
+  WizardBanner,
+  type WizardBannerProps,
+} from "@/components/custom/WizardBanner";
 
 export type WizardStep = {
   id: string;
@@ -70,6 +74,7 @@ function WizardInner({ component }: { component: SDUIComponent }) {
   const dismissAction = component.props.dismiss_action as SDUIAction & {
     tree?: SDUIComponent | null;
   };
+  const banner = component.props.banner as WizardBannerProps | undefined;
 
   function setIncluded(id: string, value: boolean) {
     setIncludeMap((prev) =>
@@ -174,6 +179,7 @@ function WizardInner({ component }: { component: SDUIComponent }) {
         activeStepId={activeStepId}
         onJump={goToStep}
       />
+      {banner && <WizardBanner banner={banner} />}
       {steps.map((step) => (
         <div
           key={step.id}
