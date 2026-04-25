@@ -8,7 +8,12 @@ import {
   useFormState,
 } from "@/components/form-state-context";
 import { collectInitialValues } from "@/lib/collect-initial-values";
-import { hasInvalidFields } from "@/components/action-dispatcher";
+import {
+  collectFormData,
+  hasInvalidFields,
+  useActionDispatcher,
+} from "@/components/action-dispatcher";
+import type { SDUIAction } from "@/lib/types/sdui";
 import { WizardStepIndicator } from "@/components/custom/WizardStepIndicator";
 
 export type WizardStep = {
@@ -56,6 +61,8 @@ function WizardInner({ component }: { component: SDUIComponent }) {
     return seed;
   });
   const formCtx = useFormState();
+  const dispatch = useActionDispatcher();
+  const submitAction = component.props.submit_action as SDUIAction;
 
   function setIncluded(id: string, value: boolean) {
     setIncludeMap((prev) => (prev[id] === value ? prev : { ...prev, [id]: value }));
@@ -115,7 +122,19 @@ function WizardInner({ component }: { component: SDUIComponent }) {
     setIncluded(activeStep.id, true);
     if (activeIndex < steps.length - 1) setActiveStepId(steps[activeIndex + 1].id);
   }
-  function submit() {}
+  async function submit() {
+    const data: Record<string, unknown> = {};
+    for (const s of steps) {
+      if (s.kind === "summary") continue;
+      if (s.kind === "entry" && !includeMap[s.id]) continue;
+      Object.assign(data, collectFormData(`${wizardId}__step__${s.id}`));
+    }
+    if (!submitAction.endpoint || !submitAction.method) return;
+    await dispatch(submitAction.endpoint, submitAction.method, data, {
+      targetId: wizardId,
+      loading: submitAction.loading,
+    });
+  }
   function dismiss() {}
 
   return (
