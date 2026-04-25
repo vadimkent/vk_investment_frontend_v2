@@ -43,8 +43,18 @@ function wizard(
     props: {
       mode: "create",
       title: "Wizard",
-      submit_action: { trigger: "click", type: "submit", endpoint: "/x", method: "POST" },
-      dismiss_action: { trigger: "click", type: "replace", target_id: "slot", tree: null },
+      submit_action: {
+        trigger: "click",
+        type: "submit",
+        endpoint: "/x",
+        method: "POST",
+      },
+      dismiss_action: {
+        trigger: "click",
+        type: "replace",
+        target_id: "slot",
+        tree: null,
+      },
       steps: steps.map((s) => ({
         id: s.id,
         label: s.label,
@@ -63,9 +73,24 @@ describe("Wizard step indicator", () => {
     const { getByText } = render(
       wrap(
         wizard([
-          { id: "info", label: "Info", kind: "info", children: [textChild("t1", "S1")] },
-          { id: "entry", label: "AAPL", kind: "entry", children: [textChild("t2", "S2")] },
-          { id: "summary", label: "Summary", kind: "summary", children: [textChild("t3", "S3")] },
+          {
+            id: "info",
+            label: "Info",
+            kind: "info",
+            children: [textChild("t1", "S1")],
+          },
+          {
+            id: "entry",
+            label: "AAPL",
+            kind: "entry",
+            children: [textChild("t2", "S2")],
+          },
+          {
+            id: "summary",
+            label: "Summary",
+            kind: "summary",
+            children: [textChild("t3", "S3")],
+          },
         ]),
       ),
     );
@@ -76,9 +101,24 @@ describe("Wizard step indicator", () => {
     const { getByText } = render(
       wrap(
         wizard([
-          { id: "info", label: "Info", kind: "info", children: [textChild("t1", "S1")] },
-          { id: "entry", label: "AAPL", kind: "entry", children: [textChild("t2", "S2")] },
-          { id: "summary", label: "Summary", kind: "summary", children: [textChild("t3", "S3")] },
+          {
+            id: "info",
+            label: "Info",
+            kind: "info",
+            children: [textChild("t1", "S1")],
+          },
+          {
+            id: "entry",
+            label: "AAPL",
+            kind: "entry",
+            children: [textChild("t2", "S2")],
+          },
+          {
+            id: "summary",
+            label: "Summary",
+            kind: "summary",
+            children: [textChild("t3", "S3")],
+          },
         ]),
       ),
     );
@@ -91,9 +131,24 @@ describe("Wizard step indicator", () => {
     const { getByText, container } = render(
       wrap(
         wizard([
-          { id: "info", label: "Info", kind: "info", children: [textChild("t1", "S1")] },
-          { id: "entry", label: "AAPL", kind: "entry", children: [textChild("t2", "S2")] },
-          { id: "summary", label: "Summary", kind: "summary", children: [textChild("t3", "S3")] },
+          {
+            id: "info",
+            label: "Info",
+            kind: "info",
+            children: [textChild("t1", "S1")],
+          },
+          {
+            id: "entry",
+            label: "AAPL",
+            kind: "entry",
+            children: [textChild("t2", "S2")],
+          },
+          {
+            id: "summary",
+            label: "Summary",
+            kind: "summary",
+            children: [textChild("t3", "S3")],
+          },
         ]),
       ),
     );
@@ -107,7 +162,8 @@ describe("Wizard step indicator", () => {
     const containers = container.querySelectorAll("[data-step-id]");
     const visibility: Record<string, boolean> = {};
     containers.forEach((el) => {
-      visibility[el.getAttribute("data-step-id")!] = !(el as HTMLElement).hidden;
+      visibility[el.getAttribute("data-step-id")!] = !(el as HTMLElement)
+        .hidden;
     });
     expect(visibility.info).toBe(false);
     expect(visibility.summary).toBe(true);
@@ -119,8 +175,18 @@ describe("Wizard button row", () => {
     const { getByText, queryByText } = render(
       wrap(
         wizard([
-          { id: "info", label: "Info", kind: "info", children: [textChild("t1", "S1")] },
-          { id: "summary", label: "Summary", kind: "summary", children: [textChild("t2", "S2")] },
+          {
+            id: "info",
+            label: "Info",
+            kind: "info",
+            children: [textChild("t1", "S1")],
+          },
+          {
+            id: "summary",
+            label: "Summary",
+            kind: "summary",
+            children: [textChild("t2", "S2")],
+          },
         ]),
       ),
     );
@@ -138,7 +204,12 @@ describe("Wizard button row", () => {
       wrap(
         wizard(
           [
-            { id: "info", label: "Info", kind: "info", children: [textChild("t1", "S1")] },
+            {
+              id: "info",
+              label: "Info",
+              kind: "info",
+              children: [textChild("t1", "S1")],
+            },
             {
               id: "entry",
               label: "AAPL",
@@ -163,7 +234,12 @@ describe("Wizard button row", () => {
       wrap(
         wizard(
           [
-            { id: "info", label: "Info", kind: "info", children: [textChild("t1", "S1")] },
+            {
+              id: "info",
+              label: "Info",
+              kind: "info",
+              children: [textChild("t1", "S1")],
+            },
             {
               id: "entry",
               label: "AAPL",
@@ -188,8 +264,18 @@ describe("Wizard button row", () => {
       wrap(
         wizard(
           [
-            { id: "info", label: "Info", kind: "info", children: [textChild("t1", "S1")] },
-            { id: "summary", label: "Summary", kind: "summary", children: [textChild("t2", "S2")] },
+            {
+              id: "info",
+              label: "Info",
+              kind: "info",
+              children: [textChild("t1", "S1")],
+            },
+            {
+              id: "summary",
+              label: "Summary",
+              kind: "summary",
+              children: [textChild("t2", "S2")],
+            },
           ],
           { initial_step_id: "summary" },
         ),
@@ -205,8 +291,18 @@ describe("Wizard button row", () => {
       wrap(
         wizard(
           [
-            { id: "info", label: "Info", kind: "info", children: [textChild("t1", "S1")] },
-            { id: "summary", label: "Summary", kind: "summary", children: [textChild("t2", "S2")] },
+            {
+              id: "info",
+              label: "Info",
+              kind: "info",
+              children: [textChild("t1", "S1")],
+            },
+            {
+              id: "summary",
+              label: "Summary",
+              kind: "summary",
+              children: [textChild("t2", "S2")],
+            },
           ],
           { initial_step_id: "summary" },
         ),
@@ -221,8 +317,18 @@ describe("Wizard button row", () => {
     const { getByText } = render(
       wrap(
         wizard([
-          { id: "info", label: "Info", kind: "info", children: [textChild("t1", "S1")] },
-          { id: "summary", label: "Summary", kind: "summary", children: [textChild("t2", "S2")] },
+          {
+            id: "info",
+            label: "Info",
+            kind: "info",
+            children: [textChild("t1", "S1")],
+          },
+          {
+            id: "summary",
+            label: "Summary",
+            kind: "summary",
+            children: [textChild("t2", "S2")],
+          },
         ]),
       ),
     );
@@ -232,7 +338,11 @@ describe("Wizard button row", () => {
   });
 });
 
-function inputChild(id: string, name: string, opts: Record<string, unknown> = {}): SDUIComponent {
+function inputChild(
+  id: string,
+  name: string,
+  opts: Record<string, unknown> = {},
+): SDUIComponent {
   return {
     type: "input",
     id,
@@ -249,9 +359,19 @@ describe("Wizard validation gate", () => {
             id: "info",
             label: "Info",
             kind: "info",
-            children: [inputChild("i1", "field_required", { required: true, label: "Field" })],
+            children: [
+              inputChild("i1", "field_required", {
+                required: true,
+                label: "Field",
+              }),
+            ],
           },
-          { id: "summary", label: "Summary", kind: "summary", children: [textChild("t1", "S2")] },
+          {
+            id: "summary",
+            label: "Summary",
+            kind: "summary",
+            children: [textChild("t1", "S2")],
+          },
         ]),
       ),
     );
@@ -259,7 +379,9 @@ describe("Wizard validation gate", () => {
     expect(getByText("Step 1 of 2")).not.toBeNull();
     fireEvent.click(getByText("Next"));
     expect(getByText("Step 1 of 2")).not.toBeNull();
-    const input = container.querySelector("input[name=field_required]") as HTMLInputElement;
+    const input = container.querySelector(
+      "input[name=field_required]",
+    ) as HTMLInputElement;
     expect(input.validity.valid).toBe(false);
   });
 
@@ -271,13 +393,25 @@ describe("Wizard validation gate", () => {
             id: "info",
             label: "Info",
             kind: "info",
-            children: [inputChild("i1", "field_required", { required: true, label: "Field" })],
+            children: [
+              inputChild("i1", "field_required", {
+                required: true,
+                label: "Field",
+              }),
+            ],
           },
-          { id: "summary", label: "Summary", kind: "summary", children: [textChild("t1", "S2")] },
+          {
+            id: "summary",
+            label: "Summary",
+            kind: "summary",
+            children: [textChild("t1", "S2")],
+          },
         ]),
       ),
     );
-    const input = container.querySelector("input[name=field_required]") as HTMLInputElement;
+    const input = container.querySelector(
+      "input[name=field_required]",
+    ) as HTMLInputElement;
     input.value = "hello";
     fireEvent.input(input);
     fireEvent.click(getByText("Next"));
@@ -289,7 +423,12 @@ describe("Wizard validation gate", () => {
       wrap(
         wizard(
           [
-            { id: "info", label: "Info", kind: "info", children: [textChild("t1", "S1")] },
+            {
+              id: "info",
+              label: "Info",
+              kind: "info",
+              children: [textChild("t1", "S1")],
+            },
             {
               id: "entry",
               label: "Bad",
@@ -317,7 +456,12 @@ describe("Wizard validation gate", () => {
             kind: "info",
             children: [inputChild("i1", "required_field", { required: true })],
           },
-          { id: "summary", label: "Summary", kind: "summary", children: [textChild("t1", "S2")] },
+          {
+            id: "summary",
+            label: "Summary",
+            kind: "summary",
+            children: [textChild("t1", "S2")],
+          },
         ]),
       ),
     );
@@ -331,17 +475,42 @@ describe("Wizard include map", () => {
     const { container } = render(
       wrap(
         wizard([
-          { id: "info", label: "Info", kind: "info", include_default: true, children: [textChild("t1", "S1")] },
-          { id: "e1", label: "AAPL", kind: "entry", include_default: false, children: [textChild("t2", "S2")] },
-          { id: "e2", label: "MSFT", kind: "entry", include_default: true, children: [textChild("t3", "S3")] },
-          { id: "summary", label: "Summary", kind: "summary", include_default: true, children: [textChild("t4", "S4")] },
+          {
+            id: "info",
+            label: "Info",
+            kind: "info",
+            include_default: true,
+            children: [textChild("t1", "S1")],
+          },
+          {
+            id: "e1",
+            label: "AAPL",
+            kind: "entry",
+            include_default: false,
+            children: [textChild("t2", "S2")],
+          },
+          {
+            id: "e2",
+            label: "MSFT",
+            kind: "entry",
+            include_default: true,
+            children: [textChild("t3", "S3")],
+          },
+          {
+            id: "summary",
+            label: "Summary",
+            kind: "summary",
+            include_default: true,
+            children: [textChild("t4", "S4")],
+          },
         ]),
       ),
     );
     const steps = container.querySelectorAll("[data-step-id]");
     const map: Record<string, string> = {};
     steps.forEach((el) => {
-      map[el.getAttribute("data-step-id")!] = el.getAttribute("data-included") ?? "";
+      map[el.getAttribute("data-step-id")!] =
+        el.getAttribute("data-included") ?? "";
     });
     expect(map.info).toBe("true");
     expect(map.e1).toBe("false");
@@ -352,12 +521,22 @@ describe("Wizard include map", () => {
   it("Skip sets the active step's include map to false and advances", () => {
     const { container, getByText } = render(
       wrap(
-        wizard(
-          [
-            { id: "e1", label: "AAPL", kind: "entry", skippable: true, include_default: false, children: [textChild("t1", "S1")] },
-            { id: "summary", label: "Summary", kind: "summary", children: [textChild("t2", "S2")] },
-          ],
-        ),
+        wizard([
+          {
+            id: "e1",
+            label: "AAPL",
+            kind: "entry",
+            skippable: true,
+            include_default: false,
+            children: [textChild("t1", "S1")],
+          },
+          {
+            id: "summary",
+            label: "Summary",
+            kind: "summary",
+            children: [textChild("t2", "S2")],
+          },
+        ]),
       ),
     );
     fireEvent.click(getByText("Skip"));
@@ -370,8 +549,20 @@ describe("Wizard include map", () => {
     const { container, getByText } = render(
       wrap(
         wizard([
-          { id: "e1", label: "AAPL", kind: "entry", skippable: true, include_default: false, children: [textChild("t1", "S1")] },
-          { id: "summary", label: "Summary", kind: "summary", children: [textChild("t2", "S2")] },
+          {
+            id: "e1",
+            label: "AAPL",
+            kind: "entry",
+            skippable: true,
+            include_default: false,
+            children: [textChild("t1", "S1")],
+          },
+          {
+            id: "summary",
+            label: "Summary",
+            kind: "summary",
+            children: [textChild("t2", "S2")],
+          },
         ]),
       ),
     );
@@ -385,8 +576,20 @@ describe("Wizard include map", () => {
     const { container, getByText } = render(
       wrap(
         wizard([
-          { id: "e1", label: "AAPL", kind: "entry", skippable: false, include_default: true, children: [textChild("t1", "S1")] },
-          { id: "summary", label: "Summary", kind: "summary", children: [textChild("t2", "S2")] },
+          {
+            id: "e1",
+            label: "AAPL",
+            kind: "entry",
+            skippable: false,
+            include_default: true,
+            children: [textChild("t1", "S1")],
+          },
+          {
+            id: "summary",
+            label: "Summary",
+            kind: "summary",
+            children: [textChild("t2", "S2")],
+          },
         ]),
       ),
     );

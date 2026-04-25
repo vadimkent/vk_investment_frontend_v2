@@ -22,21 +22,14 @@ function Probe({ targetId }: { targetId: string }) {
   );
 }
 
-function Controls({
-  setId,
-  clearId,
-}: {
-  setId?: string;
-  clearId?: string;
-}) {
+function Controls({ setId, clearId }: { setId?: string; clearId?: string }) {
   const { setOverride, clearOverride } = useOverrideMap();
   return (
     <>
       <button
         data-testid="set"
         onClick={() =>
-          setId &&
-          setOverride(setId, { type: "text", id: "t1", props: {} })
+          setId && setOverride(setId, { type: "text", id: "t1", props: {} })
         }
       />
       <button
@@ -61,9 +54,7 @@ describe("OverrideMap.clearOverride", () => {
     );
 
     fireEvent.click(getByTestId("set"));
-    expect(getByTestId("probe").getAttribute("data-has-override")).toBe(
-      "true",
-    );
+    expect(getByTestId("probe").getAttribute("data-has-override")).toBe("true");
 
     fireEvent.click(getByTestId("clear"));
     expect(getByTestId("probe").getAttribute("data-has-override")).toBe(
@@ -88,10 +79,7 @@ describe("OverrideMap.clearOverride", () => {
               setOverride("b", { type: "text", id: "tb", props: {} })
             }
           />
-          <button
-            data-testid="clear-a"
-            onClick={() => clearOverride("a")}
-          />
+          <button data-testid="clear-a" onClick={() => clearOverride("a")} />
           <div data-testid="a">{getOverride("a") ? "A" : "-"}</div>
           <div data-testid="b">{getOverride("b") ? "B" : "-"}</div>
         </>

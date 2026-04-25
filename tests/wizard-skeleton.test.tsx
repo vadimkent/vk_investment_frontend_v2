@@ -41,7 +41,12 @@ const dismissAction = {
 };
 
 function wizard(
-  steps: { id: string; label: string; kind: "info" | "entry" | "summary"; children: SDUIComponent[] }[],
+  steps: {
+    id: string;
+    label: string;
+    kind: "info" | "entry" | "summary";
+    children: SDUIComponent[];
+  }[],
   extraProps: Record<string, unknown> = {},
 ): SDUIComponent {
   return {
@@ -70,7 +75,12 @@ describe("Wizard skeleton", () => {
     const { getByText } = render(
       wrap(
         wizard([
-          { id: "info", label: "Info", kind: "info", children: [textChild("t1", "STEP1")] },
+          {
+            id: "info",
+            label: "Info",
+            kind: "info",
+            children: [textChild("t1", "STEP1")],
+          },
         ]),
       ),
     );
@@ -81,8 +91,18 @@ describe("Wizard skeleton", () => {
     const { getByText } = render(
       wrap(
         wizard([
-          { id: "info", label: "Info", kind: "info", children: [textChild("t1", "STEP1")] },
-          { id: "summary", label: "Summary", kind: "summary", children: [textChild("t2", "STEP2")] },
+          {
+            id: "info",
+            label: "Info",
+            kind: "info",
+            children: [textChild("t1", "STEP1")],
+          },
+          {
+            id: "summary",
+            label: "Summary",
+            kind: "summary",
+            children: [textChild("t2", "STEP2")],
+          },
         ]),
       ),
     );
@@ -92,8 +112,18 @@ describe("Wizard skeleton", () => {
   it("honors initial_step_id when set", () => {
     const w = wizard(
       [
-        { id: "info", label: "Info", kind: "info", children: [textChild("t1", "STEP1")] },
-        { id: "summary", label: "Summary", kind: "summary", children: [textChild("t2", "STEP2")] },
+        {
+          id: "info",
+          label: "Info",
+          kind: "info",
+          children: [textChild("t1", "STEP1")],
+        },
+        {
+          id: "summary",
+          label: "Summary",
+          kind: "summary",
+          children: [textChild("t2", "STEP2")],
+        },
       ],
       { initial_step_id: "summary" },
     );
@@ -111,9 +141,24 @@ describe("Wizard skeleton", () => {
     const { container } = render(
       wrap(
         wizard([
-          { id: "info", label: "Info", kind: "info", children: [textChild("t1", "STEP1")] },
-          { id: "entry", label: "AAPL", kind: "entry", children: [textChild("t2", "STEP2")] },
-          { id: "summary", label: "Summary", kind: "summary", children: [textChild("t3", "STEP3")] },
+          {
+            id: "info",
+            label: "Info",
+            kind: "info",
+            children: [textChild("t1", "STEP1")],
+          },
+          {
+            id: "entry",
+            label: "AAPL",
+            kind: "entry",
+            children: [textChild("t2", "STEP2")],
+          },
+          {
+            id: "summary",
+            label: "Summary",
+            kind: "summary",
+            children: [textChild("t3", "STEP3")],
+          },
         ]),
       ),
     );
