@@ -599,3 +599,123 @@ describe("Wizard include map", () => {
     expect(getByText("Step 2 of 2")).not.toBeNull();
   });
 });
+
+describe("Wizard summary entries", () => {
+  it("on the summary step, lists included entry labels", () => {
+    const { getByText, getAllByText } = render(
+      wrap(
+        wizard(
+          [
+            {
+              id: "info",
+              label: "Info",
+              kind: "info",
+              children: [textChild("t1", "S1")],
+            },
+            {
+              id: "e1",
+              label: "AAPL",
+              kind: "entry",
+              skippable: true,
+              include_default: true,
+              children: [textChild("t2", "S2")],
+            },
+            {
+              id: "e2",
+              label: "MSFT",
+              kind: "entry",
+              skippable: true,
+              include_default: false,
+              children: [textChild("t3", "S3")],
+            },
+            {
+              id: "summary",
+              label: "Summary",
+              kind: "summary",
+              children: [textChild("t4", "Review")],
+            },
+          ],
+          { initial_step_id: "summary" },
+        ),
+      ),
+    );
+    expect(getByText("Review")).not.toBeNull();
+    expect(getAllByText("AAPL").length).toBeGreaterThan(0);
+  });
+
+  it("clicking the Edit affordance on a summary entry chip-jumps to that step", () => {
+    const { getByText, getAllByTestId } = render(
+      wrap(
+        wizard(
+          [
+            {
+              id: "info",
+              label: "Info",
+              kind: "info",
+              children: [textChild("t1", "S1")],
+            },
+            {
+              id: "e1",
+              label: "AAPL",
+              kind: "entry",
+              skippable: true,
+              include_default: true,
+              children: [textChild("t2", "S2")],
+            },
+            {
+              id: "summary",
+              label: "Summary",
+              kind: "summary",
+              children: [textChild("t3", "Review")],
+            },
+          ],
+          { initial_step_id: "summary" },
+        ),
+      ),
+    );
+    expect(getByText("Step 3 of 3")).not.toBeNull();
+    const editBtns = getAllByTestId("wizard-summary-edit");
+    expect(editBtns.length).toBeGreaterThan(0);
+    fireEvent.click(editBtns[0]);
+    expect(getByText("Step 2 of 3")).not.toBeNull();
+  });
+
+  it("does NOT list entries that are excluded (include map false)", () => {
+    const { container, getByText } = render(
+      wrap(
+        wizard(
+          [
+            {
+              id: "info",
+              label: "Info",
+              kind: "info",
+              children: [textChild("t1", "S1")],
+            },
+            {
+              id: "e1",
+              label: "AAPL",
+              kind: "entry",
+              skippable: true,
+              include_default: false,
+              children: [textChild("t2", "S2")],
+            },
+            {
+              id: "summary",
+              label: "Summary",
+              kind: "summary",
+              children: [textChild("t3", "Review")],
+            },
+          ],
+          { initial_step_id: "summary" },
+        ),
+      ),
+    );
+    const summaryList = container.querySelector(
+      "[data-wizard-summary-entries]",
+    );
+    expect(summaryList).not.toBeNull();
+    const rows = summaryList!.querySelectorAll("[data-wizard-summary-entry]");
+    expect(rows.length).toBe(0);
+    expect(getByText("AAPL")).not.toBeNull(); // chip nav still has AAPL
+  });
+});

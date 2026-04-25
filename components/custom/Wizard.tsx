@@ -20,6 +20,7 @@ import {
   WizardBanner,
   type WizardBannerProps,
 } from "@/components/custom/WizardBanner";
+import { WizardSummaryEntries } from "@/components/custom/WizardSummaryEntries";
 
 export type WizardStep = {
   id: string;
@@ -191,6 +192,13 @@ function WizardInner({ component }: { component: SDUIComponent }) {
           {step.children.map((child) => (
             <ComponentRenderer key={child.id} component={child} />
           ))}
+          {step.kind === "summary" && step.id === activeStepId && (
+            <WizardSummaryEntries
+              steps={steps}
+              includeMap={includeMap}
+              onEdit={goToStep}
+            />
+          )}
         </div>
       ))}
       {activeStep && (
