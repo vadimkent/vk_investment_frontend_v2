@@ -325,3 +325,74 @@ describe("Wizard validation gate", () => {
     expect(getByText("Step 2 of 2")).not.toBeNull();
   });
 });
+
+describe("Wizard include map", () => {
+  it("seeds include map from each step's include_default", () => {
+    const { container } = render(
+      wrap(
+        wizard([
+          { id: "info", label: "Info", kind: "info", include_default: true, children: [textChild("t1", "S1")] },
+          { id: "e1", label: "AAPL", kind: "entry", include_default: false, children: [textChild("t2", "S2")] },
+          { id: "e2", label: "MSFT", kind: "entry", include_default: true, children: [textChild("t3", "S3")] },
+          { id: "summary", label: "Summary", kind: "summary", include_default: true, children: [textChild("t4", "S4")] },
+        ]),
+      ),
+    );
+    const steps = container.querySelectorAll("[data-step-id]");
+    const map: Record<string, string> = {};
+    steps.forEach((el) => {
+      map[el.getAttribute("data-step-id")!] = el.getAttribute("data-included") ?? "";
+    });
+    expect(map.info).toBe("true");
+    expect(map.e1).toBe("false");
+    expect(map.e2).toBe("true");
+    expect(map.summary).toBe("true");
+  });
+
+  it("Skip sets the active step's include map to false and advances", () => {
+    const { container, getByText } = render(
+      wrap(
+        wizard(
+          [
+            { id: "e1", label: "AAPL", kind: "entry", skippable: true, include_default: false, children: [textChild("t1", "S1")] },
+            { id: "summary", label: "Summary", kind: "summary", children: [textChild("t2", "S2")] },
+          ],
+        ),
+      ),
+    );
+    fireEvent.click(getByText("Skip"));
+    const e1 = container.querySelector('[data-step-id="e1"]');
+    expect(e1?.getAttribute("data-included")).toBe("false");
+    expect(getByText("Step 2 of 2")).not.toBeNull();
+  });
+
+  it("Include sets the active step's include map to true and advances", () => {
+    const { container, getByText } = render(
+      wrap(
+        wizard([
+          { id: "e1", label: "AAPL", kind: "entry", skippable: true, include_default: false, children: [textChild("t1", "S1")] },
+          { id: "summary", label: "Summary", kind: "summary", children: [textChild("t2", "S2")] },
+        ]),
+      ),
+    );
+    fireEvent.click(getByText("Include"));
+    const e1 = container.querySelector('[data-step-id="e1"]');
+    expect(e1?.getAttribute("data-included")).toBe("true");
+    expect(getByText("Step 2 of 2")).not.toBeNull();
+  });
+
+  it("Update keeps included=true and advances", () => {
+    const { container, getByText } = render(
+      wrap(
+        wizard([
+          { id: "e1", label: "AAPL", kind: "entry", skippable: false, include_default: true, children: [textChild("t1", "S1")] },
+          { id: "summary", label: "Summary", kind: "summary", children: [textChild("t2", "S2")] },
+        ]),
+      ),
+    );
+    fireEvent.click(getByText("Update"));
+    const e1 = container.querySelector('[data-step-id="e1"]');
+    expect(e1?.getAttribute("data-included")).toBe("true");
+    expect(getByText("Step 2 of 2")).not.toBeNull();
+  });
+});

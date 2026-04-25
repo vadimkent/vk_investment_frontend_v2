@@ -50,7 +50,16 @@ function WizardInner({ component }: { component: SDUIComponent }) {
     (component.props.initial_step_id as string | undefined) ?? steps[0]?.id;
 
   const [activeStepId, setActiveStepId] = useState<string | undefined>(initialStepId);
+  const [includeMap, setIncludeMap] = useState<Record<string, boolean>>(() => {
+    const seed: Record<string, boolean> = {};
+    for (const s of steps) seed[s.id] = s.include_default;
+    return seed;
+  });
   const formCtx = useFormState();
+
+  function setIncluded(id: string, value: boolean) {
+    setIncludeMap((prev) => (prev[id] === value ? prev : { ...prev, [id]: value }));
+  }
 
   const activeIndex = steps.findIndex((s) => s.id === activeStepId);
   const activeStep: WizardStep | undefined = steps[activeIndex];
@@ -90,14 +99,20 @@ function WizardInner({ component }: { component: SDUIComponent }) {
     if (activeIndex < steps.length - 1) setActiveStepId(steps[activeIndex + 1].id);
   }
   function skip() {
+    if (!activeStep) return;
+    setIncluded(activeStep.id, false);
     if (activeIndex < steps.length - 1) setActiveStepId(steps[activeIndex + 1].id);
   }
   function include() {
+    if (!activeStep) return;
     if (!validateActiveStep()) return;
+    setIncluded(activeStep.id, true);
     if (activeIndex < steps.length - 1) setActiveStepId(steps[activeIndex + 1].id);
   }
   function update() {
+    if (!activeStep) return;
     if (!validateActiveStep()) return;
+    setIncluded(activeStep.id, true);
     if (activeIndex < steps.length - 1) setActiveStepId(steps[activeIndex + 1].id);
   }
   function submit() {}
@@ -120,6 +135,7 @@ function WizardInner({ component }: { component: SDUIComponent }) {
           key={step.id}
           data-step-id={step.id}
           data-sdui-id={`${wizardId}__step__${step.id}`}
+          data-included={includeMap[step.id] ? "true" : "false"}
           hidden={step.id !== activeStepId}
         >
           {step.children.map((child) => (
