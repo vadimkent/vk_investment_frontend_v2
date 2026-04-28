@@ -29,6 +29,7 @@ import {
   Sun,
   Trash2,
   Upload,
+  User,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -67,6 +68,7 @@ const iconRegistry: Record<string, LucideIcon> = {
   sun: Sun,
   trash: Trash2,
   upload: Upload,
+  user: User,
 };
 
 export function getIcon(name: string): LucideIcon | null {
