@@ -347,6 +347,9 @@ Text input field with label.
 - **React**: `InputComponent` -- `components/base/Input.tsx`
 - **"use client"**: Yes
 - **Renders**: `<input>` with `data-sdui-id` attribute. Uses `defaultValue` (uncontrolled).
+- **Submit serialization**: `collectFormData` (in `components/action-dispatcher.tsx`) reads `input.value` as-is for most types. Two normalizations:
+  - `input_type: "datetime-local"` — the browser's native value is `"YYYY-MM-DDTHH:mm"` (local time, no timezone). Before submit, `collectFormData` parses it as local time and emits an RFC3339 UTC string via `new Date(value).toISOString()` (e.g. `"2026-04-27T22:15"` becomes `"2026-04-28T01:15:00.000Z"` in a `UTC-3` browser). Empty value stays empty. BE handlers expecting RFC3339 timestamps work directly.
+  - `checkbox` and `toggle` — emitted as booleans, not strings.
 
 ### form
 

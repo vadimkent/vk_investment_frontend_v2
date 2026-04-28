@@ -30,6 +30,11 @@ export function collectFormData(targetId: string): Record<string, unknown> {
       data[i.name] = i.checked;
     } else if (i.dataset.sduiKind === "toggle") {
       data[i.name] = i.value === "true";
+    } else if (i.type === "datetime-local" && i.value) {
+      // Browser returns "YYYY-MM-DDTHH:mm" (local, no tz). BE expects RFC3339.
+      // Date(...) interprets as local time; toISOString() emits UTC.
+      const d = new Date(i.value);
+      data[i.name] = isNaN(d.getTime()) ? i.value : d.toISOString();
     } else {
       data[i.name] = i.value;
     }
