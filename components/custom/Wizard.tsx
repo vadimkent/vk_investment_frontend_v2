@@ -113,6 +113,10 @@ function WizardInner({ component }: { component: SDUIComponent }) {
   }
 
   function goToStep(id: string) {
+    const targetIdx = steps.findIndex((s) => s.id === id);
+    // Forward jumps gate on the active step's validation (parity with Next).
+    // Backward jumps are free (parity with Back).
+    if (targetIdx > activeIndex && !validateActiveStep()) return;
     setActiveStepId(id);
   }
   function goBack() {

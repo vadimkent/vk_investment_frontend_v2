@@ -481,7 +481,7 @@ describe("Wizard validation gate", () => {
     expect(getByText("Step 1 of 2")).not.toBeNull();
   });
 
-  it("chip-jump never validates", () => {
+  it("forward chip-jump validates the active step (parity with Next)", () => {
     const { getByText } = render(
       wrap(
         wizard([
@@ -500,8 +500,65 @@ describe("Wizard validation gate", () => {
         ]),
       ),
     );
+    // Required field empty → forward chip-jump is blocked, stays on info.
+    fireEvent.click(getByText("Summary"));
+    expect(getByText("Step 1 of 2")).not.toBeNull();
+  });
+
+  it("forward chip-jump advances when the active step is valid", () => {
+    const { getByText, container } = render(
+      wrap(
+        wizard([
+          {
+            id: "info",
+            label: "Info",
+            kind: "info",
+            children: [inputChild("i1", "required_field", { required: true })],
+          },
+          {
+            id: "summary",
+            label: "Summary",
+            kind: "summary",
+            children: [textChild("t1", "S2")],
+          },
+        ]),
+      ),
+    );
+    const input = container.querySelector(
+      "input[name=required_field]",
+    ) as HTMLInputElement;
+    input.value = "filled";
+    fireEvent.input(input);
     fireEvent.click(getByText("Summary"));
     expect(getByText("Step 2 of 2")).not.toBeNull();
+  });
+
+  it("backward chip-jump never validates — works even with invalid fields on the active step", () => {
+    const { getByText } = render(
+      wrap(
+        wizard(
+          [
+            {
+              id: "info",
+              label: "Info",
+              kind: "info",
+              children: [textChild("t1", "S1")],
+            },
+            {
+              id: "entry",
+              label: "Bad",
+              kind: "entry",
+              skippable: true,
+              children: [inputChild("i1", "needed", { required: true })],
+            },
+          ],
+          { initial_step_id: "entry" },
+        ),
+      ),
+    );
+    expect(getByText("Step 2 of 2")).not.toBeNull();
+    fireEvent.click(getByText("Info"));
+    expect(getByText("Step 1 of 2")).not.toBeNull();
   });
 });
 

@@ -278,7 +278,7 @@ The middleend emits a bare `wizard` component — it is **not** wrapped in a `mo
 
 ### 3.4. Step indicator
 
-Above the step content: `Step X of Y` counter and a chip row with each step's `label`. Chips are clickable — direct jump between steps. **Chip-jump never validates.**
+Above the step content: `Step X of Y` counter and a chip row with each step's `label`. Chips are clickable — direct jump between steps. **Forward chip-jumps gate on the active step's validation (parity with Next); backward chip-jumps never validate (parity with Back).**
 
 ### 3.5. Buttons by kind
 
@@ -310,7 +310,7 @@ Excluded entry steps do NOT contribute inputs to the submit payload.
 | Skip       | no                     | forward one                |
 | Include    | yes                    | forward one                |
 | Update     | yes                    | forward one                |
-| Chip click | no                     | direct jump                |
+| Chip click | yes (forward only)     | direct jump                |
 | Submit     | no                     | dispatches `submit_action` |
 
 Validation uses the standard input props (`required`, `pattern`, `min`, `max`, `max_length`). The wizard does not invent a separate validation layer.
