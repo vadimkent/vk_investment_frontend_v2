@@ -81,7 +81,7 @@ export function InputComponent({ component }: { component: SDUIComponent }) {
         data-sdui-invalid={invalid ? "true" : undefined}
         onInput={(e) => runChecks(e.currentTarget)}
         onBlur={(e) => runChecks(e.currentTarget)}
-        className={`bg-transparent text-content-primary placeholder:text-content-muted border ${borderClass} rounded px-3 py-2 w-full${disabledClass}`}
+        className={`bg-transparent text-sm text-content-primary placeholder:text-content-muted border ${borderClass} rounded px-3 py-2 w-full${disabledClass}`}
         data-sdui-id={component.id}
       />
     </div>
