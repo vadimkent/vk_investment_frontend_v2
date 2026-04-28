@@ -16,6 +16,7 @@ import {
 import type { SDUIAction } from "@/lib/types/sdui";
 import { WizardStepIndicator } from "@/components/custom/WizardStepIndicator";
 import { useOverrideMap } from "@/components/override-map-context";
+import { useModal } from "@/components/modal-context";
 import {
   WizardBanner,
   type WizardBannerProps,
@@ -72,6 +73,7 @@ function WizardInner({ component }: { component: SDUIComponent }) {
   const dispatch = useActionDispatcher();
   const submitAction = component.props.submit_action as SDUIAction;
   const { setOverride, clearOverride } = useOverrideMap();
+  const modal = useModal();
   const dismissAction = component.props.dismiss_action as SDUIAction & {
     tree?: SDUIComponent | null;
   };
@@ -158,6 +160,10 @@ function WizardInner({ component }: { component: SDUIComponent }) {
     });
   }
   async function dismiss() {
+    if (dismissAction.type === "dismiss") {
+      modal?.close();
+      return;
+    }
     if (dismissAction.type === "replace" && dismissAction.target_id) {
       if (dismissAction.tree) {
         setOverride(dismissAction.target_id, dismissAction.tree);

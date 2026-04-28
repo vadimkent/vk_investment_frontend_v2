@@ -333,8 +333,9 @@ There is NO client-side validation gate on Submit. If the user chip-jumps over i
 
 Wizard handles `dismiss_action`:
 
+- `type: "dismiss"` → calls `useModal()?.close()`. When the wizard is inside a [modal slot](sdui-base-components.md#modal-slot-pattern) (the typical case), the slot's overlay context closes the slot. When outside any modal context, this is a silent no-op. **This is the recommended shape** (`components.Dismiss()` on the BE).
 - `type: "replace"` with `tree: <subtree>` → calls `setOverride(target_id, tree)`.
-- `type: "replace"` with `tree: null` (or absent) → calls `clearOverride(target_id)`. Common pattern: dismiss clears the modal slot that contains the wizard, closing the modal client-side.
+- `type: "replace"` with `tree: null` (or absent) → calls `clearOverride(target_id)`. Equivalent to the `dismiss` shape but explicit about the target.
 - Otherwise: falls through to `dispatch(endpoint, method)` (no body).
 
 ### 3.11. BE validation error (422)

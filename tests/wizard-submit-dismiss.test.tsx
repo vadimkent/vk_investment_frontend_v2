@@ -305,4 +305,58 @@ describe("Wizard dismiss", () => {
     fireEvent.click(getByText("Dismiss"));
     expect(getByTestId("slot-state").textContent).toBe("replacement");
   });
+
+  it("with type=dismiss inside a -modal-slot, closes the overlay via ModalContext", () => {
+    const wizardTree = w([
+      {
+        id: "info",
+        label: "Info",
+        kind: "info",
+        skippable: false,
+        include_default: true,
+        children: [textChild("t1", "S1")],
+      },
+    ]);
+    // Override dismiss_action to use type:"dismiss" (BE convention via components.Dismiss())
+    (wizardTree.props as Record<string, unknown>).dismiss_action = {
+      trigger: "click",
+      type: "dismiss",
+    };
+
+    function Seeder({ slotId }: { slotId: string }) {
+      const { setOverride } = useOverrideMap();
+      return (
+        <button
+          data-testid="seed"
+          onClick={() => setOverride(slotId, wizardTree)}
+        />
+      );
+    }
+
+    // Render an OverrideBoundary that maps to a modal-slot id; seed it with the wizard.
+    const { getByText, getByTestId, queryByTestId } = render(
+      <OverrideMapProvider>
+        <SnackbarProvider>
+          <Seeder slotId="snapshots-modal-slot" />
+          <ComponentRenderer
+            component={{
+              type: "column",
+              id: "snapshots-modal-slot",
+              props: {},
+              children: [],
+            }}
+          />
+        </SnackbarProvider>
+      </OverrideMapProvider>,
+    );
+
+    fireEvent.click(getByTestId("seed"));
+    // Overlay appears with wizard inside
+    expect(getByTestId("modal-overlay")).not.toBeNull();
+    expect(getByText("Dismiss")).not.toBeNull();
+
+    fireEvent.click(getByText("Dismiss"));
+    // Overlay is gone — wizard.dismiss() called modal.close() which cleared the slot
+    expect(queryByTestId("modal-overlay")).toBeNull();
+  });
 });

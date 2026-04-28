@@ -71,6 +71,8 @@ The frontend swaps the slot's children for the new subtree.
 
 **Frontend rendering.** The slot is a presentational container: when it has children, the frontend renders them as an overlay layer above the section (dialog on desktop, drawer/sheet on mobile). Empty slot → no overlay. Components placed inside the slot may carry their own chrome (`modal` has its own title bar and dismiss button) or rely on the slot's overlay container (`wizard` does this).
 
+**ModalContext on the slot's overlay.** The slot's overlay container installs a `ModalContext.Provider` (same context Modal uses, see `components/modal-context.tsx`) whose `close()` calls `clearOverride(<slot-id>)`. Any descendant component with a `dismiss`-style action — including a `button` with `{ type: "dismiss" }` or a `wizard` whose `dismiss_action` is `{ type: "dismiss" }` — closes the slot by calling `useModal()?.close()`. ESC key and backdrop click also fire close. This means the BE can emit a generic `components.Dismiss()` action for any component inside a modal slot without knowing the slot's id.
+
 **Closing a modal.**
 
 - A `dismiss` action on a button → frontend closes the overlay locally and clears the slot.

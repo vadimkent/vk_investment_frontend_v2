@@ -88,4 +88,27 @@ describe("OverrideBoundary modal slot pattern", () => {
     expect(queryByTestId("modal-overlay")).toBeNull();
     expect(getByTestId("empty-slot")).not.toBeNull();
   });
+
+  it("ESC key closes the overlay", () => {
+    const { getByTestId, queryByTestId } = setup("snapshots-modal-slot");
+    fireEvent.click(getByTestId("seed-snapshots-modal-slot"));
+    expect(getByTestId("modal-overlay")).not.toBeNull();
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(queryByTestId("modal-overlay")).toBeNull();
+  });
+
+  it("clicking the backdrop closes the overlay", () => {
+    const { getByTestId, queryByTestId } = setup("snapshots-modal-slot");
+    fireEvent.click(getByTestId("seed-snapshots-modal-slot"));
+    const overlay = getByTestId("modal-overlay");
+    fireEvent.click(overlay);
+    expect(queryByTestId("modal-overlay")).toBeNull();
+  });
+
+  it("clicking inside the dialog content does NOT close the overlay", () => {
+    const { getByTestId, getByText } = setup("snapshots-modal-slot");
+    fireEvent.click(getByTestId("seed-snapshots-modal-slot"));
+    fireEvent.click(getByText("OVERLAY_CONTENT"));
+    expect(getByTestId("modal-overlay")).not.toBeNull();
+  });
 });
