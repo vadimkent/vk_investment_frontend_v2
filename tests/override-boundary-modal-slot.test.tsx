@@ -111,6 +111,29 @@ describe("OverrideBoundary modal slot pattern", () => {
     fireEvent.click(getByText("OVERLAY_CONTENT"));
     expect(getByTestId("modal-overlay")).not.toBeNull();
   });
+
+  it("does NOT wrap the slot's overlay around a `modal` override (Modal carries its own chrome)", () => {
+    const modalTree: SDUIComponent = {
+      type: "modal",
+      id: "inner-modal",
+      props: { visible: true },
+      children: [
+        { type: "text", id: "mt", props: { content: "INSIDE_MODAL" } },
+      ],
+    };
+    const { getByTestId, queryByTestId, getByText } = render(
+      <OverrideMapProvider>
+        <Seed id="snapshots-modal-slot" tree={modalTree} />
+        <OverrideBoundary id="snapshots-modal-slot">
+          <div>EMPTY</div>
+        </OverrideBoundary>
+      </OverrideMapProvider>,
+    );
+    fireEvent.click(getByTestId("seed-snapshots-modal-slot"));
+    // Modal renders its own overlay — but no slot-overlay wrapper around it.
+    expect(queryByTestId("modal-overlay")).toBeNull();
+    expect(getByText("INSIDE_MODAL")).not.toBeNull();
+  });
 });
 
 describe("OverrideBoundary section loading overlay", () => {

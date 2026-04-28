@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import type { SDUIComponent } from "@/lib/types/sdui";
 import { ComponentRenderer } from "@/components/renderer";
-import { ModalContext } from "@/components/modal-context";
+import { ModalContext, useModal } from "@/components/modal-context";
 
 export function ModalComponent({ component }: { component: SDUIComponent }) {
   const visible = component.props.visible === true;
@@ -11,12 +11,21 @@ export function ModalComponent({ component }: { component: SDUIComponent }) {
   const dismissible = component.props.dismissible !== false;
   const presentation = (component.props.presentation as string) ?? "dialog";
 
+  // If we're nested inside another ModalContext (typically a `-modal-slot`'s
+  // overlay), cascade close so the outer container also clears. Without this,
+  // dismissing a Modal inside a slot would unmount the Modal but leave the
+  // slot's override (and its empty overlay) behind.
+  const parent = useModal();
+
   const [dismissed, setDismissed] = useState(false);
   useEffect(() => {
     if (visible) setDismissed(false);
   }, [visible]);
 
-  const close = useCallback(() => setDismissed(true), []);
+  const close = useCallback(() => {
+    setDismissed(true);
+    parent?.close();
+  }, [parent]);
 
   const shown = visible && !dismissed;
 

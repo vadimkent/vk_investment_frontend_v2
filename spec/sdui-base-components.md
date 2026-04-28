@@ -73,6 +73,8 @@ The frontend swaps the slot's children for the new subtree.
 
 **ModalContext on the slot's overlay.** The slot's overlay container installs a `ModalContext.Provider` (same context Modal uses, see `components/modal-context.tsx`) whose `close()` calls `clearOverride(<slot-id>)`. Any descendant component with a `dismiss`-style action — including a `button` with `{ type: "dismiss" }` or a `wizard` whose `dismiss_action` is `{ type: "dismiss" }` — closes the slot by calling `useModal()?.close()`. ESC key and backdrop click also fire close. This means the BE can emit a generic `components.Dismiss()` action for any component inside a modal slot without knowing the slot's id.
 
+**`modal` inside a `-modal-slot`.** When the override is a `modal` (which carries its own backdrop + chrome), the slot installs the `ModalContext` but **does not** render its own overlay — that would stack two visually identical overlays and dismissing the inner Modal would leave the outer shell behind. Modal's `close()` cascades up: it both hides the Modal locally (`setDismissed`) and calls the slot's `parent.close()` (`clearOverride`), so a single dismiss collapses the whole thing. Modal used standalone (not inside a slot) finds no parent context and behaves exactly as before — local close only.
+
 **Closing a modal.**
 
 - A `dismiss` action on a button → frontend closes the overlay locally and clears the slot.
