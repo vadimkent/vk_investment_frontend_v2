@@ -112,3 +112,66 @@ describe("OverrideBoundary modal slot pattern", () => {
     expect(getByTestId("modal-overlay")).not.toBeNull();
   });
 });
+
+describe("OverrideBoundary section loading overlay", () => {
+  function LoadingControls({ id }: { id: string }) {
+    const { setLoading, clearLoading } = useOverrideMap();
+    return (
+      <>
+        <button
+          data-testid="start-loading"
+          onClick={() => setLoading(id, "section")}
+        />
+        <button data-testid="stop-loading" onClick={() => clearLoading(id)} />
+      </>
+    );
+  }
+
+  it("renders existing children behind a translucent overlay (does NOT unmount them)", () => {
+    const { getByTestId, getByText } = render(
+      <OverrideMapProvider>
+        <LoadingControls id="my-section" />
+        <OverrideBoundary id="my-section">
+          <div data-testid="kid">VISIBLE_BEHIND_OVERLAY</div>
+        </OverrideBoundary>
+      </OverrideMapProvider>,
+    );
+    fireEvent.click(getByTestId("start-loading"));
+    // Children stay mounted (key UX win — preserves form state, context).
+    expect(getByText("VISIBLE_BEHIND_OVERLAY")).not.toBeNull();
+    expect(getByTestId("kid")).not.toBeNull();
+    // Spinner is shown via the section-loading wrapper.
+    expect(getByTestId("section-loading")).not.toBeNull();
+  });
+
+  it("removes the overlay when loading clears", () => {
+    const { getByTestId, queryByTestId, getByText } = render(
+      <OverrideMapProvider>
+        <LoadingControls id="my-section" />
+        <OverrideBoundary id="my-section">
+          <div>SOME_CONTENT</div>
+        </OverrideBoundary>
+      </OverrideMapProvider>,
+    );
+    fireEvent.click(getByTestId("start-loading"));
+    expect(getByTestId("section-loading")).not.toBeNull();
+    fireEvent.click(getByTestId("stop-loading"));
+    expect(queryByTestId("section-loading")).toBeNull();
+    expect(getByText("SOME_CONTENT")).not.toBeNull();
+  });
+
+  it("blocks pointer events on the underlying content while loading", () => {
+    const { getByTestId, container } = render(
+      <OverrideMapProvider>
+        <LoadingControls id="my-section" />
+        <OverrideBoundary id="my-section">
+          <div data-testid="kid">BLOCKED</div>
+        </OverrideBoundary>
+      </OverrideMapProvider>,
+    );
+    fireEvent.click(getByTestId("start-loading"));
+    const wrapper = container.querySelector(".pointer-events-none");
+    expect(wrapper).not.toBeNull();
+    expect(wrapper!.contains(getByTestId("kid"))).toBe(true);
+  });
+});

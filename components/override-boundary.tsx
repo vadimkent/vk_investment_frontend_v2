@@ -5,10 +5,19 @@ import { useOverrideMap } from "@/components/override-map-context";
 import { ModalContext } from "@/components/modal-context";
 import { RawRenderer } from "@/components/renderer";
 
-function SectionLoading() {
+function SectionLoadingOverlay({ children }: { children: ReactNode }) {
   return (
-    <div className="flex items-center justify-center py-8">
-      <div className="animate-spin h-5 w-5 border-2 border-accent-primary border-t-transparent rounded-full" />
+    <div data-testid="section-loading" className="relative">
+      <div className="opacity-50 pointer-events-none" aria-hidden="true">
+        {children}
+      </div>
+      <div className="absolute inset-0 flex items-center justify-center bg-overlay/30">
+        <div
+          role="status"
+          aria-label="Loading"
+          className="animate-spin h-5 w-5 border-2 border-accent-primary border-t-transparent rounded-full"
+        />
+      </div>
     </div>
   );
 }
@@ -64,12 +73,18 @@ export function OverrideBoundary({
   const override = getOverride(id);
   const loading = isLoading(id);
 
-  if (loading) return <SectionLoading />;
-  if (!override) return <>{children}</>;
+  const baseContent = override ? (
+    <RawRenderer component={override} />
+  ) : (
+    children
+  );
+  const wrapped =
+    id.endsWith("-modal-slot") && override ? (
+      <ModalSlotOverlay slotId={id}>{baseContent}</ModalSlotOverlay>
+    ) : (
+      <>{baseContent}</>
+    );
 
-  const content = <RawRenderer component={override} />;
-  if (id.endsWith("-modal-slot")) {
-    return <ModalSlotOverlay slotId={id}>{content}</ModalSlotOverlay>;
-  }
-  return <>{content}</>;
+  if (loading) return <SectionLoadingOverlay>{wrapped}</SectionLoadingOverlay>;
+  return wrapped;
 }
