@@ -37,6 +37,8 @@ import { TableRowComponent } from "@/components/base/TableRow";
 import { LineChartComponent } from "@/components/custom/LineChart";
 import { PieChartComponent } from "@/components/custom/PieChart";
 import { WizardComponent } from "@/components/custom/Wizard";
+import { FileUploadComponent } from "@/components/custom/FileUpload";
+import { AnalysisChatComponent } from "@/components/custom/AnalysisChat";
 
 export type SDUIRenderer = ComponentType<{ component: SDUIComponent }>;
 
@@ -77,6 +79,8 @@ const registry: Record<string, SDUIRenderer> = {
   line_chart: LineChartComponent,
   pie_chart: PieChartComponent,
   wizard: WizardComponent,
+  file_upload: FileUploadComponent,
+  analysis_chat: AnalysisChatComponent,
 };
 
 export function getComponent(type: string): SDUIRenderer | null {

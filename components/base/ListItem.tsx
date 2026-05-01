@@ -39,6 +39,7 @@ export function ListItemComponent({ component }: { component: SDUIComponent }) {
 
   return (
     <div
+      data-sdui-id={component.id}
       className={classes}
       style={styleObj}
       onClick={hasActions ? handleClick : undefined}

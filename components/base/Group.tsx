@@ -18,6 +18,7 @@ export function GroupComponent({ component }: { component: SDUIComponent }) {
 
   return (
     <div
+      data-sdui-id={component.id}
       className={shared.className || undefined}
       style={Object.keys(shared.style).length ? shared.style : undefined}
     >

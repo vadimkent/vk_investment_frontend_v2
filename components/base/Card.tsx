@@ -6,6 +6,7 @@ export function CardComponent({ component }: { component: SDUIComponent }) {
   const shared = containerProps(component);
   const elevation = component.props.elevation as string | undefined;
   const borderRadius = component.props.border_radius as string | undefined;
+  const fill = component.props.fill === true;
 
   const elevationStyles: Record<string, string> = {
     none: "shadow-none",
@@ -20,6 +21,7 @@ export function CardComponent({ component }: { component: SDUIComponent }) {
   const classes = [
     "bg-surface-card border border-border rounded-lg p-4",
     shadowClass,
+    fill ? "flex flex-col flex-1 min-h-0 overflow-hidden" : null,
     shared.className,
   ]
     .filter(Boolean)
@@ -33,7 +35,11 @@ export function CardComponent({ component }: { component: SDUIComponent }) {
   const hasStyle = Object.keys(mergedStyle).length > 0;
 
   return (
-    <div className={classes} style={hasStyle ? mergedStyle : undefined}>
+    <div
+      data-sdui-id={component.id}
+      className={classes}
+      style={hasStyle ? mergedStyle : undefined}
+    >
       {component.children?.map((child) => (
         <ComponentRenderer key={child.id} component={child} />
       ))}

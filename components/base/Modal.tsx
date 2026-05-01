@@ -56,7 +56,8 @@ export function ModalComponent({ component }: { component: SDUIComponent }) {
   };
 
   const contentClasses: Record<string, string> = {
-    dialog: "rounded-lg max-w-lg w-full max-h-[80vh]",
+    dialog:
+      "rounded-lg w-fit sm:min-w-[32rem] max-w-4xl max-h-[80vh] mx-4 sm:mx-0",
     bottom_sheet: "rounded-t-lg w-full max-h-[80vh]",
     fullscreen: "w-full h-full",
   };
@@ -73,6 +74,7 @@ export function ModalComponent({ component }: { component: SDUIComponent }) {
       >
         <div className="absolute inset-0 bg-overlay/70" />
         <div
+          data-sdui-id={component.id}
           className={`relative bg-surface-card border border-border shadow-2xl overflow-y-auto ${panelClass}`}
           onClick={(e) => e.stopPropagation()}
         >

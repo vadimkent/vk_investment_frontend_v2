@@ -118,6 +118,19 @@ export function ButtonComponent({ component }: { component: SDUIComponent }) {
           window.open(url, "_blank");
         }
         break;
+      case "download":
+        if (action.url) {
+          const url = substitutePlaceholders(action.url, placeholders);
+          const proxyUrl = `/api/action-download?url=${encodeURIComponent(url)}`;
+          const a = document.createElement("a");
+          a.href = proxyUrl;
+          a.download = "";
+          a.style.display = "none";
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+        }
+        break;
       case "dismiss":
         modal?.close();
         break;
@@ -173,10 +186,13 @@ export function ButtonComponent({ component }: { component: SDUIComponent }) {
     : (sizeStyles[btnSize] ?? sizeStyles.md);
   const layoutClass = iconOnly ? "inline-flex justify-center" : "flex";
 
+  const isSubmit = component.actions?.[0]?.type === "submit";
+
   return (
     <button
       onClick={handleClick}
       disabled={isDisabled}
+      data-sdui-submit={isSubmit ? "true" : undefined}
       className={`${sizeClass} rounded ${layoutClass} items-center gap-2 ${classes}${disabledClass}`}
     >
       {loading && (

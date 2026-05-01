@@ -17,7 +17,10 @@ interface SDUIAction {
   endpoint?: string; // Middleend endpoint for server actions
   method?: string; // HTTP method (default "POST")
   target_id?: string; // Form container ID for data collection
-  loading?: "section" | "full"; // Loading indicator mode (see below)
+  loading?:
+    | "section"
+    | "full"
+    | { scope: "section" | "full"; messages?: string[] }; // Loading indicator (see §2b)
 }
 ```
 
@@ -29,22 +32,23 @@ Actions are in the `actions` array on any `SDUIComponent`. Button uses the first
 
 Action types handled by `ButtonComponent` (all of the below). `IconToggleComponent` handles a subset — the client-only toggles (`toggle_theme`, `toggle_sensitive`, `toggle_sidebar`) plus any action with an `endpoint` for server round-trips.
 
-| Type               | Behavior                                                                                                                                                                                                                                                  | Required Fields                              |
-| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
-| `navigate`         | Client-side navigation via `router.push(url)`. Opens new tab if `target === "blank"`.                                                                                                                                                                     | `url`                                        |
-| `navigate_back`    | Browser back via `router.back()`.                                                                                                                                                                                                                         | (none)                                       |
-| `submit`           | Collects form data from `target_id` container, sends to middleend via `/api/action` proxy, processes response.                                                                                                                                            | `endpoint`, optionally `target_id`, `method` |
-| `reload`           | Sends GET to middleend endpoint via `/api/action`, processes response.                                                                                                                                                                                    | `endpoint`                                   |
-| `refresh`          | Triggers `router.refresh()` to re-render server components.                                                                                                                                                                                               | (none)                                       |
-| `open_url`         | Opens URL in a new tab via `window.open`.                                                                                                                                                                                                                 | `url`                                        |
-| `dismiss`          | Closes the enclosing `modal` client-side via `useModal().close()`. No-op when the button is not inside a modal. No round-trip.                                                                                                                            | (none)                                       |
-| `replace`          | Client-side override mutation. With `tree` set, calls `setOverride(target_id, tree)`; with `tree: null` or absent, calls `clearOverride(target_id)`. No round-trip. Used for things like dismissing a wizard by clearing the modal slot that contains it. | `target_id`, optionally `tree`               |
-| `logout`           | POSTs to `/api/auth/logout`, then navigates to `/login`.                                                                                                                                                                                                  | (none)                                       |
-| `toggle_theme`     | Toggles light/dark mode. Client-side only, no round-trip.                                                                                                                                                                                                 | (none)                                       |
-| `toggle_sensitive` | Toggles the global sensitive-data mask (hides amounts/values). Client-side only.                                                                                                                                                                          | (none)                                       |
-| `toggle_sidebar`   | Toggles the sidebar's collapsed/expanded state (persisted in the `sidebar-collapsed` cookie, server-readable). Client-side only.                                                                                                                          | (none)                                       |
+| Type               | Behavior                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | Required Fields                              |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------- |
+| `navigate`         | Client-side navigation via `router.push(url)`. Opens new tab if `target === "blank"`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              | `url`                                        |
+| `navigate_back`    | Browser back via `router.back()`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | (none)                                       |
+| `submit`           | Collects form data from `target_id` container, sends to middleend via `/api/action` proxy, processes response.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | `endpoint`, optionally `target_id`, `method` |
+| `reload`           | Sends GET to middleend endpoint via `/api/action`, processes response.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | `endpoint`                                   |
+| `refresh`          | Triggers `router.refresh()` to re-render server components.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | (none)                                       |
+| `open_url`         | Opens URL in a new tab via `window.open`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | `url`                                        |
+| `download`         | Triggers a native browser download from a middleend endpoint. Creates a transient hidden `<a href={proxyUrl} download>`, clicks it, removes it. The frontend proxies through `/api/action-download?url={url}` so the HttpOnly auth cookie is forwarded; `Content-Disposition` is propagated to the browser. No `ActionResponse` is parsed; no SDUI subtree replaced; no loading indicator. The endpoint must respond with `Content-Disposition: attachment; filename="..."` plus the body bytes. **Auth:** if unauthorized, the endpoint must respond with `302 Location: /login` (not the JSON `{error,redirect}` shape used by `submit`/`reload`). 5xx surfaces as the browser's default failed-download UI — no inline error rendering. Use only for endpoints returning binary/CSV/file bytes meant to be saved. Do **not** use `open_url` (that's for external URLs) or `submit`/`reload` (those parse JSON). | `url`                                        |
+| `dismiss`          | Closes the enclosing `modal` client-side via `useModal().close()`. No-op when the button is not inside a modal. No round-trip.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     | (none)                                       |
+| `replace`          | Client-side override mutation. With `tree` set, calls `setOverride(target_id, tree)`; with `tree: null` or absent, calls `clearOverride(target_id)`. No round-trip. Used for things like dismissing a wizard by clearing the modal slot that contains it.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | `target_id`, optionally `tree`               |
+| `logout`           | POSTs to `/api/auth/logout`, then navigates to `/login`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | (none)                                       |
+| `toggle_theme`     | Toggles light/dark mode. Client-side only, no round-trip.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | (none)                                       |
+| `toggle_sensitive` | Toggles the global sensitive-data mask (hides amounts/values). Client-side only.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | (none)                                       |
+| `toggle_sidebar`   | Toggles the sidebar's collapsed/expanded state (persisted in the `sidebar-collapsed` cookie, server-readable). Client-side only.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | (none)                                       |
 
-Custom action types (project-specific, not part of the base set) are documented in `sdui-custom-components.md §5`.
+Custom action types (project-specific, not part of the base set) are documented in `sdui-custom-components.md §7`.
 
 ### Client-emitted `replace` vs. server-returned `replace`
 
@@ -69,13 +73,31 @@ The substituted value is URL-encoded by the frontend before being spliced into t
 
 ## 2b. Loading Indicators
 
-Any action that hits the middleend (`submit`, `reload`) can declare a `loading` field to show a visual indicator while the request is in flight:
+Any action that hits the middleend (`submit`, `reload`) can declare a `loading` field to show a visual indicator while the request is in flight. Two equivalent forms are accepted.
+
+**Form A — string token (default for short waits):**
 
 | Value       | Behavior                                                                                                                                                                                                                                                                                                                                                                      |
 | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `"section"` | Renders a translucent overlay with a spinner over the existing subtree whose `id` matches `target_id`. The previous content stays mounted (faded + non-interactive) so the user keeps visual context. When the response arrives and a `replace` swaps the subtree, React mounts the new tree fresh — the old tree is replaced via the override map, not by the loading state. |
 | `"full"`    | Renders a fullscreen overlay (`z-50`) with spinner over the entire viewport.                                                                                                                                                                                                                                                                                                  |
 | (absent)    | No loading indicator. The action completes silently (current default behavior).                                                                                                                                                                                                                                                                                               |
+
+**Form B — object with cycling messages (for long waits):**
+
+```json
+"loading": {
+  "scope": "section" | "full",
+  "messages": ["Detecting columns…", "Mapping tickers…", "Resolving currencies…"]
+}
+```
+
+| Field      | Type     | Required | Description                                                                                                                                                                                                               |
+| ---------- | -------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `scope`    | enum     | yes      | `"section"` or `"full"` — same semantics as Form A.                                                                                                                                                                       |
+| `messages` | string[] | no       | Localized phrases the frontend rotates through every **4 seconds** in order, looping at the end. Empty / absent → behaves like Form A. The frontend renders one line beneath the spinner with a soft cross-fade (~700ms). |
+
+Messages are purely cosmetic — they have no relationship to actual server-side progress.
 
 The middleend decides **when** to show loading and **what scope** — the frontend only implements the visual. Loading clears automatically when the action response arrives (in a `finally` block, so errors don't leave stale overlays).
 
@@ -121,6 +143,21 @@ The `Form` component renders with `data-sdui-id={component.id}`, making it the t
 
 ---
 
+## 3a. Submitting on Enter
+
+`Form` is a `<div data-sdui-form="true">`, not an HTML `<form>` — so the browser does not natively translate Enter-key presses on inputs into a form submit. The frontend reproduces the standard "press Enter to submit" behavior in user-space:
+
+- Every `<button>` whose action has `type: "submit"` is rendered with `data-sdui-submit="true"`.
+- `Input` listens for `keydown`. When the key is `Enter` (no IME composition in progress), the input walks up to the nearest `[data-sdui-form="true"]` ancestor, finds the first descendant `[data-sdui-submit="true"]:not([disabled])`, and calls `.click()`.
+- The clicked button runs its existing `submit` flow — `hasInvalidFields` check, `revealErrors` if blocked, `collectFormData`, dispatch. Nothing in the submit path is duplicated.
+- `Textarea` does **not** trap Enter; the browser default (insert newline) is preserved.
+- If the form has no `data-sdui-submit="true"` button (e.g. forms that auto-submit via `change` actions), Enter does nothing.
+- If the form has multiple submit buttons (uncommon — typically only one alongside `cancel`/`navigate` siblings), the first in DOM order wins.
+
+**Middleend takeaway:** no contract change required. To opt into Enter-to-submit, simply emit a `button` with a `submit` action inside the form — the same shape used today. To opt out, omit the submit button (rare).
+
+---
+
 ## 4. The `/api/action` Proxy
 
 Defined in `app/api/action/route.ts.tmpl`. All server-bound actions go through this Next.js Route Handler.
@@ -153,21 +190,31 @@ The middleend returns an `SDUIActionResponse`:
 
 ```typescript
 interface SDUIActionResponse {
-  action: "replace" | "navigate" | "refresh" | "none";
+  action: "replace" | "navigate" | "refresh" | "none" | "logout";
   target_id?: string;
   tree?: SDUIComponent;
   feedback?: SDUIComponent;
+  auth?: { token: string; expires_at?: string };
 }
 ```
 
 All action responses are processed by the central `useActionDispatcher` hook in `components/action-dispatcher.tsx`, which every interactive component (Button, Checkbox, Toggle, Select, RadioGroup) uses:
 
-| Response Action | Frontend Behavior                                                                                                                                                              |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `navigate`      | `router.push(target_id)` -- client-side navigation to the given path.                                                                                                          |
-| `refresh`       | `router.refresh()` -- re-runs server components to fetch fresh data.                                                                                                           |
-| `replace`       | Sets `overrideMap[target_id] = tree` via `OverrideMapProvider`. `ComponentRenderer` checks the override for every id it renders and, if present, renders the override instead. |
-| `none`          | No navigation. Used when the action has side effects only (e.g., sending email).                                                                                               |
+| Response Action | Frontend Behavior                                                                                                                                                                                                                                                                           |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `navigate`      | `router.push(target_id)` -- client-side navigation to the given path.                                                                                                                                                                                                                       |
+| `refresh`       | `router.refresh()` -- re-runs server components to fetch fresh data.                                                                                                                                                                                                                        |
+| `replace`       | Sets `overrideMap[target_id] = tree` via `OverrideMapProvider`. `ComponentRenderer` checks the override for every id it renders and, if present, renders the override instead.                                                                                                              |
+| `none`          | No navigation. Used when the action has side effects only (e.g., sending email).                                                                                                                                                                                                            |
+| `logout`        | `POST /api/auth/logout` to clear the HttpOnly auth cookie, then `window.location.href = target_id` (full reload, not `router.push`, so all in-memory state and overrides are dropped). Used by destructive flows (e.g. delete account) where the session must end alongside the navigation. |
+
+### `feedback`
+
+When present, the dispatcher renders the `feedback` component as a transient UI affordance, regardless of the `action` value (any `action`, including `none`, may carry feedback). Today the only supported shape is `{ type: "snackbar", props: { message, variant } }` — `useActionDispatcher` reads `props.message` and `props.variant` and calls the `Snackbar` provider's `show(message, variant)`. Variant is whitelisted to `success | error | warning | info` (anything else falls back to `info`).
+
+### `auth`
+
+Any response may carry `auth`. The `/api/action` proxy intercepts it server-side, sets the `token` as an HttpOnly cookie, and strips the field from the response forwarded to the browser. The browser never sees the token. See §6 (Auth Flow) for the login/logout lifecycle.
 
 ### Partial Replacement (`replace`)
 
@@ -214,13 +261,12 @@ The token **never reaches client-side JavaScript**. All subsequent requests from
 
 ### Logout
 
-1. Button with `logout` action calls:
-   ```typescript
-   await fetch("/api/auth/logout", { method: "POST" });
-   router.push("/login");
-   ```
-2. The `/api/auth/logout` route clears the `token` cookie.
-3. The user is redirected to `/login`.
+There are two ways the session ends:
+
+1. **Client-emitted** (`SDUIAction.type === "logout"` on a button): `ButtonComponent` calls `await fetch("/api/auth/logout", { method: "POST" })` then sets `window.location.href = "/login"`. No middleend round-trip. Used by a plain "Sign out" button.
+2. **Server-returned** (`SDUIActionResponse.action === "logout"`): the middleend ends the session on the server side and returns `{ action: "logout", target_id: <redirect_url> }`. The dispatcher does the same `POST /api/auth/logout` to clear the cookie, then `window.location.href = target_id`. Used by destructive flows (e.g. delete account) where the session must end alongside the navigation.
+
+Either way, `/api/auth/logout` clears the `token` HttpOnly cookie and the browser does a full reload — there is no shared client state to flush manually.
 
 ---
 

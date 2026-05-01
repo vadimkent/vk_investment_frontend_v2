@@ -1,3 +1,9 @@
+export type SDUILoadingScope = "section" | "full";
+
+export type SDUILoading =
+  | SDUILoadingScope
+  | { scope: SDUILoadingScope; messages?: string[] };
+
 export interface SDUIAction {
   trigger: string;
   type: string;
@@ -6,7 +12,7 @@ export interface SDUIAction {
   endpoint?: string;
   method?: string;
   target_id?: string;
-  loading?: "section" | "full";
+  loading?: SDUILoading;
 }
 
 export interface SDUIComponent {

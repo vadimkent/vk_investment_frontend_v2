@@ -4,19 +4,27 @@ import { useCallback, useEffect, type ReactNode } from "react";
 import { useOverrideMap } from "@/components/override-map-context";
 import { ModalContext } from "@/components/modal-context";
 import { RawRenderer } from "@/components/renderer";
+import { CyclingMessage } from "@/components/cycling-message";
 
-function SectionLoadingOverlay({ children }: { children: ReactNode }) {
+function SectionLoadingOverlay({
+  messages,
+  children,
+}: {
+  messages: string[];
+  children: ReactNode;
+}) {
   return (
     <div data-testid="section-loading" className="relative">
       <div className="opacity-50 pointer-events-none" aria-hidden="true">
         {children}
       </div>
-      <div className="absolute inset-0 flex items-center justify-center bg-overlay/30">
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-overlay/30">
         <div
           role="status"
           aria-label="Loading"
           className="animate-spin h-5 w-5 border-2 border-accent-primary border-t-transparent rounded-full"
         />
+        <CyclingMessage messages={messages} />
       </div>
     </div>
   );
@@ -75,9 +83,10 @@ export function OverrideBoundary({
   id: string;
   children: ReactNode;
 }) {
-  const { getOverride, isLoading } = useOverrideMap();
+  const { getOverride, isLoading, getLoadingMessages } = useOverrideMap();
   const override = getOverride(id);
   const loading = isLoading(id);
+  const loadingMessages = loading ? getLoadingMessages(id) : [];
 
   const baseContent = override ? (
     <RawRenderer component={override} />
@@ -99,6 +108,11 @@ export function OverrideBoundary({
     <>{baseContent}</>
   );
 
-  if (loading) return <SectionLoadingOverlay>{wrapped}</SectionLoadingOverlay>;
+  if (loading)
+    return (
+      <SectionLoadingOverlay messages={loadingMessages}>
+        {wrapped}
+      </SectionLoadingOverlay>
+    );
   return wrapped;
 }

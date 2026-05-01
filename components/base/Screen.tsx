@@ -49,6 +49,7 @@ function SidebarLayout({ component }: { component: SDUIComponent }) {
 
   return (
     <div
+      data-sdui-id={component.id}
       className="min-h-screen transition-[grid-template-columns] duration-200"
       style={{
         display: "grid",
@@ -60,7 +61,7 @@ function SidebarLayout({ component }: { component: SDUIComponent }) {
           <ComponentRenderer key={child.id} component={child} />
         ))}
       </div>
-      <div className="flex flex-col min-h-screen [&>*:only-child]:flex-1">
+      <div className="flex flex-col h-dvh overflow-y-auto [&>*:only-child]:flex-1 [&>*:only-child]:min-h-0">
         {contentChildren.map((child) => (
           <ComponentRenderer key={child.id} component={child} />
         ))}
@@ -78,9 +79,9 @@ function BottombarLayout({ component }: { component: SDUIComponent }) {
     ) ?? [];
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div data-sdui-id={component.id} className="h-dvh flex flex-col">
       {navHeader && <ComponentRenderer component={navHeader} />}
-      <div className="flex-1 flex flex-col [&>*:only-child]:flex-1">
+      <div className="flex-1 min-h-0 overflow-y-auto flex flex-col [&>*:only-child]:flex-1 [&>*:only-child]:min-h-0">
         {rest.map((child) => (
           <ComponentRenderer key={child.id} component={child} />
         ))}
@@ -98,14 +99,14 @@ function HeaderFooterLayout({ component }: { component: SDUIComponent }) {
     component.children?.filter((c) => !isNavSlot(c)) ?? [];
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div data-sdui-id={component.id} className="h-dvh flex flex-col">
       {navHeader && (
         <div className="border-b border-border bg-surface-primary">
           <ComponentRenderer component={navHeader} />
           {navMain && <ComponentRenderer component={navMain} />}
         </div>
       )}
-      <div className="flex-1 flex flex-col [&>*:only-child]:flex-1">
+      <div className="flex-1 min-h-0 overflow-y-auto flex flex-col [&>*:only-child]:flex-1 [&>*:only-child]:min-h-0">
         {contentChildren.map((child) => (
           <ComponentRenderer key={child.id} component={child} />
         ))}
@@ -126,14 +127,14 @@ function HeaderOnlyLayout({ component }: { component: SDUIComponent }) {
     component.children?.filter((c) => !isNavSlot(c)) ?? [];
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div data-sdui-id={component.id} className="h-dvh flex flex-col">
       {navHeader && (
         <div className="border-b border-border bg-surface-primary">
           <ComponentRenderer component={navHeader} />
           {navMain && <ComponentRenderer component={navMain} />}
         </div>
       )}
-      <div className="flex-1 flex flex-col [&>*:only-child]:flex-1">
+      <div className="flex-1 min-h-0 overflow-y-auto flex flex-col [&>*:only-child]:flex-1 [&>*:only-child]:min-h-0">
         {contentChildren.map((child) => (
           <ComponentRenderer key={child.id} component={child} />
         ))}
@@ -161,7 +162,7 @@ function DefaultLayout({ component }: { component: SDUIComponent }) {
   }
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col">
+    <div data-sdui-id={component.id} className="flex-1 min-h-0 flex flex-col">
       {hasHeader && (
         <div className="p-4">
           <div className="flex items-center gap-3">
@@ -180,7 +181,7 @@ function DefaultLayout({ component }: { component: SDUIComponent }) {
           </div>
         </div>
       )}
-      <div className="flex-1 flex flex-col [&>*:only-child]:flex-1">
+      <div className="flex-1 min-h-0 flex flex-col [&>*:only-child]:flex-1 [&>*:only-child]:min-h-0">
         {component.children?.map((child) => (
           <ComponentRenderer key={child.id} component={child} />
         ))}

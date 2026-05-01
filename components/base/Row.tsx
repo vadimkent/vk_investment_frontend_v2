@@ -15,7 +15,11 @@ export function RowComponent({ component }: { component: SDUIComponent }) {
   const classes = [shared.className].filter(Boolean).join(" ");
 
   return (
-    <div className={classes || undefined} style={style}>
+    <div
+      data-sdui-id={component.id}
+      className={classes || undefined}
+      style={style}
+    >
       {component.children?.map((child) => (
         <ComponentRenderer key={child.id} component={child} />
       ))}

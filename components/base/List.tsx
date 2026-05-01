@@ -7,7 +7,7 @@ export function ListComponent({ component }: { component: SDUIComponent }) {
   const className = isHorizontal ? "flex overflow-x-auto" : "overflow-y-auto";
 
   return (
-    <div className={className}>
+    <div data-sdui-id={component.id} className={className}>
       {component.children?.map((child) => (
         <ComponentRenderer key={child.id} component={child} />
       ))}

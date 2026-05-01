@@ -17,8 +17,14 @@ type OverrideMapContext = {
   clearOverride: (id: string) => void;
   clearOverrides: () => void;
   isLoading: (id: string) => boolean;
+  getLoadingMessages: (id: string) => string[];
   isFullLoading: boolean;
-  setLoading: (id: string, mode: "section" | "full") => void;
+  fullLoadingMessages: string[];
+  setLoading: (
+    id: string,
+    mode: "section" | "full",
+    messages?: string[],
+  ) => void;
   clearLoading: (id: string) => void;
 };
 
@@ -28,21 +34,28 @@ const Ctx = createContext<OverrideMapContext>({
   clearOverride: () => {},
   clearOverrides: () => {},
   isLoading: () => false,
+  getLoadingMessages: () => [],
   isFullLoading: false,
+  fullLoadingMessages: [],
   setLoading: () => {},
   clearLoading: () => {},
 });
 
 export function OverrideMapProvider({ children }: { children: ReactNode }) {
   const [overrides, setOverrides] = useState<Record<string, SDUIComponent>>({});
-  const [loadingIds, setLoadingIds] = useState<Set<string>>(new Set());
-  const [fullLoading, setFullLoading] = useState(false);
+  const [loadingMap, setLoadingMap] = useState<Map<string, string[]>>(
+    new Map(),
+  );
+  const [fullLoading, setFullLoading] = useState<{
+    active: boolean;
+    messages: string[];
+  }>({ active: false, messages: [] });
   const pathname = usePathname();
 
   useEffect(() => {
     setOverrides({});
-    setLoadingIds(new Set());
-    setFullLoading(false);
+    setLoadingMap(new Map());
+    setFullLoading({ active: false, messages: [] });
   }, [pathname]);
 
   const getOverride = useCallback((id: string) => overrides[id], [overrides]);
@@ -75,22 +88,35 @@ export function OverrideMapProvider({ children }: { children: ReactNode }) {
   const clearOverrides = useCallback(() => setOverrides({}), []);
 
   const isLoading = useCallback(
-    (id: string) => loadingIds.has(id),
-    [loadingIds],
+    (id: string) => loadingMap.has(id),
+    [loadingMap],
   );
 
-  const setLoadingFn = useCallback((id: string, mode: "section" | "full") => {
-    if (mode === "full") {
-      setFullLoading(true);
-    } else {
-      setLoadingIds((prev) => new Set(prev).add(id));
-    }
-  }, []);
+  const getLoadingMessages = useCallback(
+    (id: string) => loadingMap.get(id) ?? [],
+    [loadingMap],
+  );
+
+  const setLoadingFn = useCallback(
+    (id: string, mode: "section" | "full", messages: string[] = []) => {
+      if (mode === "full") {
+        setFullLoading({ active: true, messages });
+      } else {
+        setLoadingMap((prev) => {
+          const next = new Map(prev);
+          next.set(id, messages);
+          return next;
+        });
+      }
+    },
+    [],
+  );
 
   const clearLoadingFn = useCallback((id: string) => {
-    setFullLoading(false);
-    setLoadingIds((prev) => {
-      const next = new Set(prev);
+    setFullLoading({ active: false, messages: [] });
+    setLoadingMap((prev) => {
+      if (!prev.has(id)) return prev;
+      const next = new Map(prev);
       next.delete(id);
       return next;
     });
@@ -104,7 +130,9 @@ export function OverrideMapProvider({ children }: { children: ReactNode }) {
         clearOverride,
         clearOverrides,
         isLoading,
-        isFullLoading: fullLoading,
+        getLoadingMessages,
+        isFullLoading: fullLoading.active,
+        fullLoadingMessages: fullLoading.messages,
         setLoading: setLoadingFn,
         clearLoading: clearLoadingFn,
       }}

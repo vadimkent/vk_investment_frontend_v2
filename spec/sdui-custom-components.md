@@ -357,7 +357,189 @@ When the override is applied, the new wizard tree replaces the old one. React un
 
 ---
 
-## 4. Custom Attributes
+## 4. `file_upload`
+
+Drag-and-drop + click-to-browse file picker with local validation. Generic — used for the Import & Export screen (AI Import upload, Restore upload), and reusable by any future flow that needs a file inside a multipart submit.
+
+### 4.1. Why custom
+
+The base SDUI catalog has no `input` variant for files. Browsers do not let JavaScript programmatically reattach a previously-picked `File` across re-renders, and SDUI re-renders are server-driven — so a custom component that owns local file state, drag-and-drop affordances, and pre-submit validation (size, format) is the cleanest way to model file inputs without leaking browser-specific quirks into every consumer.
+
+### 4.2. Props
+
+| Prop                   | Type   | Required | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| ---------------------- | ------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `name`                 | string | yes      | Multipart field name on submit (e.g. `"file"`).                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `label`                | string | yes      | Visible label rendered above the dropzone. Localized by the middleend.                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `placeholder`          | string | yes      | Dropzone copy when no file is selected (e.g. _"Drop a file here or click to browse"_). Localized.                                                                                                                                                                                                                                                                                                                                                                                                      |
+| `hint`                 | string | no       | Auxiliary copy beneath the dropzone (formats / size limit). Localized.                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `accept`               | string | no       | Comma-separated extensions / MIME types (e.g. `".csv,.tsv,.xlsx"`). Drives the native `<input type="file" accept>` and the local format check. Absent → any file.                                                                                                                                                                                                                                                                                                                                      |
+| `max_size_bytes`       | int    | no       | Local size limit in bytes. When the user picks a larger file, the component renders `error_message_size` inline and clears the selection. Absent → no local limit.                                                                                                                                                                                                                                                                                                                                     |
+| `error_message_size`   | string | no       | Localized message when `max_size_bytes` is exceeded. May contain `{limit}` rendered as a human-readable size (e.g. "5 MB").                                                                                                                                                                                                                                                                                                                                                                            |
+| `error_message_format` | string | no       | Localized message when the file's extension / MIME type doesn't match `accept`.                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| `prefill_filename`     | string | no       | When set, the dropzone renders in the "file selected" state with this filename **but no actual `File` behind it** — purely informational. Used by the middleend when re-emitting a form after a server-side error. To re-submit, the user must re-pick the file (browsers do not let JS reattach a previously-picked file). The dropzone signals this state with the small caption from `reattach_hint`. A change to `prefill_filename` resets local file/error state so the next render starts clean. |
+| `reattach_hint`        | string | no       | Localized small caption shown alongside `prefill_filename` (e.g. "Re-select the file to retry").                                                                                                                                                                                                                                                                                                                                                                                                       |
+
+### 4.3. Frontend behavior
+
+- Render: dashed-bordered dropzone (~10rem tall) with the `upload` icon centered and the placeholder text below. When a file is selected, the placeholder is replaced by the filename (`font-mono` truncation if long). Hover / drag-over / focus states match the design system's other interactive controls (border switches to `border-accent-primary` on drag-over, `border-status-error` when an inline error is shown).
+- The native `<input type="file">` is hidden but rendered with `name`. Click on the dropzone forwards to `inputRef.click()`. Drop events `preventDefault` on `dragover` and read `dataTransfer.files[0]` on `drop`. The dropzone is keyboard-activatable (`Enter` / `Space`).
+- On a new file selection: run the format check against `accept` (if set), then the size check against `max_size_bytes` (if set). On failure, render the corresponding error inline beneath the dropzone (replacing `hint`) and do **not** retain the file (the underlying `<input type="file">.files` is cleared via a fresh `DataTransfer`). On success, the file remains in the input's `FileList` so `collectFormData` can read it at submit time.
+- On `submit` of the enclosing form: contributes its file to the `multipart/form-data` body under `name`. `collectFormData` (in `components/action-dispatcher.tsx`) detects `input[type="file"]` inside the form container and reads `input.files[0]`. If any value in the collected data is a `File`, `useActionDispatcher` switches to the multipart code path: `POST /api/action-multipart` with a `FormData` body that includes `__endpoint`, `__method`, and every collected field; the `/api/action-multipart` Route Handler proxies the multipart upstream to the middleend with the same auth headers as `/api/action`. JSON-only submits keep using `/api/action`.
+- The component does **not** own form-level disabling. If no file is present, the form-level submit button must be disabled by the consumer (e.g. by emitting the button with `disabled: true` while the form has no file). Submitting without a file results in the file simply being absent from the multipart body — middleend behavior on missing file is its concern.
+- A fresh `replace` from the server (matching `id`) clears any local file and any local error. `prefill_filename` lets the server hint at the previously-uploaded filename for context.
+
+### 4.4. Example
+
+```json
+{
+  "type": "file_upload",
+  "id": "import-file",
+  "props": {
+    "name": "file",
+    "label": "File",
+    "placeholder": "Drop a file here or click to browse",
+    "hint": "CSV, TSV, XLS, XLSX, TXT — max 5 MB",
+    "accept": ".csv,.tsv,.xls,.xlsx,.txt",
+    "max_size_bytes": 5242880,
+    "error_message_size": "File exceeds the {limit} limit.",
+    "error_message_format": "Unsupported file format."
+  }
+}
+```
+
+### 4.5. Implementation
+
+- **React**: `FileUploadComponent` — `components/custom/FileUpload.tsx`
+- **"use client"**: Yes (uses `useState`, `useRef`, `useEffect`).
+- **Renders**: outer `<div data-sdui-id={component.id}>` containing the optional `<label>`, the dropzone `<div role="button">`, the hidden `<input type="file" name>`, and the error/hint paragraph. The hidden input's `FileList` is the source of truth at submit time — local state is for visual feedback only.
+
+---
+
+## 5. `analysis_chat`
+
+Self-contained streaming chat surface for the Analysis screen. Opens an SSE channel to a configured endpoint on mount, captures `session_id` from the first SSE event, appends `delta` events to the last assistant message, and accepts follow-up messages that open new SSE channels. Renders markdown in assistant messages and plain text in user messages.
+
+### 5.1. Why custom
+
+- SSE attachment via `fetch` + `ReadableStream`, kept alive across local re-renders. (`EventSource` does not support custom headers, so the standard SDUI auth cookie cannot ride that path.)
+- Incremental append: `delta` events extend the last assistant message in-place without a server SDUI round-trip per chunk.
+- Markdown render in assistant messages (remark-gfm) + `whitespace: pre-wrap` in user messages.
+- Streaming cursor (blinking) while a response is in flight.
+- Auto-scroll on every new chunk.
+- Local `session_id` state captured from the first SSE `session` event, used to fill the `{session_id}` placeholder in `followup_endpoint`.
+- Error-mode bifurcation (recoverable vs terminal) with input gating, all client-side.
+
+### 5.2. Props
+
+| Prop                   | Type                | Required | Description                                                                                                                                                                                                                                                              |
+| ---------------------- | ------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `initial_endpoint`     | string              | yes      | URL the component opens an SSE channel to on mount. The first event must be `session` carrying `session_id`; subsequent events are `delta`, then `done` or `error`. Middleend exposes this as `GET /actions/analysis/stream` (with `?focus=<encoded>` when focus is set). |
+| `followup_endpoint`    | string              | yes      | URL template for follow-up messages. Must contain `{session_id}`, substituted at send time using the captured id. Sent as `POST` with body `{content}`, handled as another SSE stream. Middleend path: `/actions/analysis/sessions/{session_id}/messages`.                |
+| `placeholder`          | string              | yes      | Text displayed in the input when empty. Localized.                                                                                                                                                                                                                       |
+| `submit_label`         | string              | yes      | Aria-label for the icon-only send button. Localized.                                                                                                                                                                                                                     |
+| `streaming_label`      | string              | no       | Small muted text rendered alongside the blinking cursor while a response is streaming. If absent, only the cursor renders. Localized.                                                                                                                                    |
+| `max_input_length`     | int                 | no       | Maximum characters allowed in the input. Default `2000`.                                                                                                                                                                                                                 |
+| `error_messages`       | map<string, string> | yes      | Map of error code to localized message. Must include `default` as fallback. Codes: `ANALYSIS_SESSION_NOT_FOUND`, `ANALYSIS_SESSION_EXPIRED`, `ANALYSIS_TOO_MANY_MESSAGES`, `ANALYSIS_FOCUS_TOO_LONG`, `AI_PROVIDER_UNAVAILABLE`, `AI_RATE_LIMITED`, `AI_TIMEOUT`, `AI_CONTEXT_TOO_LARGE`, `RATE_LIMITED`, `INTERNAL_ERROR`, `default`. |
+| `terminal_error_codes` | string[]            | yes      | Codes that transition the component into terminal mode (input disabled + CTA visible). Recommended: `["ANALYSIS_SESSION_EXPIRED", "ANALYSIS_SESSION_NOT_FOUND", "ANALYSIS_TOO_MANY_MESSAGES"]`.                                                                          |
+| `terminal_cta_label`   | string              | yes      | Label for the CTA button in terminal mode. Localized.                                                                                                                                                                                                                    |
+| `reset_action`         | SDUIAction          | yes      | Action executed by the terminal CTA. Typically `reload` against `/actions/analysis/reset` with `target_id="analysis-content"`.                                                                                                                                          |
+
+### 5.3. SSE event protocol
+
+The component consumes the backend's SSE event names unchanged — the middleend proxy is a transparent relay:
+
+| Event     | Payload                            | Component behavior                                                                                                                                                                                                                              |
+| --------- | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `session` | `{ session_id: string }`           | Stash `session_id` into local state. Append a placeholder assistant message. Show streaming cursor.                                                                                                                                             |
+| `delta`   | `{ text: string }`                 | Append `text` to the last assistant message's content. Auto-scroll to bottom.                                                                                                                                                                   |
+| `done`    | `{}`                               | Hide cursor on the last message. Re-enable input.                                                                                                                                                                                               |
+| `error`   | `{ code: string, message: string }` | Render an inline error banner above the input with `error_messages[code] ?? error_messages["default"]`. If `code ∈ terminal_error_codes`: disable input, show CTA. Otherwise: keep input enabled. Remove the empty placeholder assistant message if it never received any delta. |
+
+Connection-level errors (network drop, fetch abort that wasn't user-initiated) are surfaced internally as `error` with `code: "INTERNAL_ERROR"`. The middleend also emits this code when the upstream connection drops mid-stream.
+
+### 5.4. Frontend behavior
+
+1. **Mount**: open SSE to `initial_endpoint` (via the auth-aware proxy `/api/action-stream`). Initialize `messages: []`, `session_id: null`, `is_streaming: true`, `error: null`, `is_terminal: false`. As soon as the first `session` event arrives, stash `session_id` and push a placeholder assistant message (`{role: "assistant", content: ""}`).
+2. **Streaming render**: messages list scrolls automatically. Each `delta` appends and triggers scroll-to-bottom.
+3. **`done`**: clear cursor; `is_streaming = false`.
+4. **Send follow-up** (Enter without Shift, or Send button):
+   - Validate: trimmed length > 0 and ≤ `max_input_length`.
+   - Push `{role: "user", content}`; push `{role: "assistant", content: ""}`.
+   - Open SSE to `followup_endpoint` with `{session_id}` resolved (via the existing `substitutePlaceholders` helper), `POST`, body `{content}`.
+   - Same `delta`/`done`/`error` loop.
+5. **Error inline**: banner above the input area. Persists until the next send (recoverable) or terminal-CTA click.
+6. **Terminal mode**: input disabled, send button disabled, banner persists, `terminal_cta_label` button rendered below the banner. Clicking executes `reset_action` via the standard `useActionDispatcher`.
+7. **Markdown**: assistant messages via `react-markdown` + `remark-gfm` (tables, lists, code blocks, headings). User messages: plain text with `whitespace: pre-wrap`.
+8. **Character counter**: bottom-right of input, only when `value.length / max_input_length >= 0.75`. Format `<current> / <max>`. Destructive color when over.
+9. **Disconnection**: fetch aborts (network drop, navigation) → surface as `INTERNAL_ERROR` recoverable.
+10. **Enter-to-send**: Enter (no Shift, no IME composition) invokes Send; Shift+Enter inserts newline.
+11. **Unmount cleanup**: on unmount the component aborts any in-flight fetch+SSE before being torn down. Prevents leaked connections.
+
+### 5.5. Layout
+
+- **Outer**: column flex, fills available height of the parent slot.
+- **Messages area**: `flex: 1`, `overflow-y: auto`, centered max-width container; user bubbles right-aligned (`max-width: 85%`, primary background, rounded), assistant bubbles left-aligned with `prose` styling for markdown.
+- **Input area**: pinned bottom, border-top separator, padding; centered max-width row containing `[textarea, send-button]`. Textarea auto-resizes between 1 and ~4 rows. Send button is icon-only (send icon).
+- **Error banner**: between messages and input when `error` is set.
+- **Terminal CTA**: below the error banner when in terminal mode.
+
+### 5.6. Auth
+
+`EventSource` does not support custom headers, so the auth cookie cannot ride that path. The component uses `fetch` + `ReadableStream`, routed through the auth-aware proxy at `/api/action-stream`. The proxy reads the HttpOnly token cookie and attaches `Authorization: Bearer …` server-side, then streams the upstream SSE response back unchanged. See [`sdui-actions.md` §4](sdui-actions.md) for the proxy pattern; the streaming proxy follows the same conventions.
+
+### 5.7. Example
+
+```json
+{
+  "type": "analysis_chat",
+  "id": "analysis-chat",
+  "props": {
+    "initial_endpoint": "/actions/analysis/stream?focus=risk%20exposure",
+    "followup_endpoint": "/actions/analysis/sessions/{session_id}/messages",
+    "placeholder": "Ask a follow-up question…",
+    "submit_label": "Send",
+    "streaming_label": "AI is thinking…",
+    "max_input_length": 2000,
+    "error_messages": {
+      "ANALYSIS_SESSION_NOT_FOUND": "Session not found.",
+      "ANALYSIS_SESSION_EXPIRED": "Session expired. Start a new analysis.",
+      "ANALYSIS_TOO_MANY_MESSAGES": "Conversation length limit reached. Start a new analysis.",
+      "ANALYSIS_FOCUS_TOO_LONG": "Focus area is too long.",
+      "AI_PROVIDER_UNAVAILABLE": "AI provider unavailable. Please retry.",
+      "AI_RATE_LIMITED": "AI rate limit reached. Please retry shortly.",
+      "AI_TIMEOUT": "AI request timed out. Please retry.",
+      "AI_CONTEXT_TOO_LARGE": "Portfolio context is too large for the AI.",
+      "RATE_LIMITED": "Too many requests. Please wait a moment before trying again.",
+      "INTERNAL_ERROR": "Connection lost. Please try again.",
+      "default": "Something went wrong. Please retry."
+    },
+    "terminal_error_codes": [
+      "ANALYSIS_SESSION_EXPIRED",
+      "ANALYSIS_SESSION_NOT_FOUND",
+      "ANALYSIS_TOO_MANY_MESSAGES"
+    ],
+    "terminal_cta_label": "Start a new analysis",
+    "reset_action": {
+      "trigger": "click",
+      "type": "reload",
+      "endpoint": "/actions/analysis/reset",
+      "target_id": "analysis-content",
+      "loading": "section"
+    }
+  }
+}
+```
+
+### 5.8. Implementation
+
+- **React**: `AnalysisChatComponent` — `components/custom/AnalysisChat.tsx`
+- **"use client"**: Yes (uses `useState`, `useEffect`, `useRef`, `useActionDispatcher`).
+- **Renders**: outer `<div data-sdui-id={component.id}>` with column flex layout. Mounts an `AbortController` per stream. Renders messages via `react-markdown` (assistant) or plain `<div>` (user). Inline SSE parser (`event:` / `data:` lines, blank-line delimited) handles the response stream.
+
+---
+
+## 6. Custom Attributes
 
 Project-specific props that may appear on any component. The frontend reads them alongside base shared props (`align_items`, `gap`, etc.) and applies project-specific behavior.
 
@@ -394,7 +576,7 @@ When HideValues is active, the frontend renders `"••••"` instead of `"$1
 
 ---
 
-## 5. Custom Actions
+## 7. Custom Actions
 
 Project-specific action types that extend the base set in `sdui-actions.md`. The frontend maps these types to local behavior; no server round-trip is involved.
 
